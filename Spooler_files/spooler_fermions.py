@@ -156,7 +156,7 @@ def nested_kronecker_product(a):
 
 def jordan_wigner_transform(j, lattice_length):
     """
-    Builds up the fermionic operators in a 1D lattice
+    Builds up the fermionic operators in a 1D lattice. For details see : https://arxiv.org/abs/0705.1928
 
     Args:
         j (int): site index
