@@ -19,5 +19,5 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         port: 22
-        source: "Spooler_files/*.py,Spooler_files/*.sh"
+        source: "Spooler_files/*.py,!Spooler_files/maintainer.py"
         target: "~/Spooler_files_pulled"
