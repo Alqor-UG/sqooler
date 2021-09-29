@@ -20,4 +20,4 @@ jobs:
         passphrase: ${{ secrets.PASSPHRASE }}
         port: ${{ secrets.PORT }}
         source: "Spooler_files/*.py,Spooler_files/*.sh"
-        target: "/home/ubuntu/Spooler_files_pulled"
+        target: "~/Spooler_files_pulled"
