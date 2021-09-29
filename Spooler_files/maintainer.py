@@ -19,7 +19,7 @@ def new_files_exist():
         src_path = pulled_files[i]
         dst_path = dst_files[i]
         shutil.copy(src_path, dst_path)
-    os.rmdir(pulled_dir)
+    shutil.rmtree(pulled_dir)
     return new_files
 
 username = "spooler"  #'synqs_test'#
