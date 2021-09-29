@@ -3,6 +3,24 @@ import requests
 import importlib
 import json
 import time
+import os
+import shutil
+
+def new_files_exist():
+    new_files = False
+    pulled_dir='/home/ubuntu/Spooler_files_pulled/Spooler_files'
+    dst_dir='/home/ubuntu/Spooler_files'
+    if not os.path.isdir(pulled_dir):
+        return new_files
+    new_files = True
+    pulled_files = [os.path.join(pulled_dir,fn) for fn in next(os.walk(pulled_dir))[2]]
+    dst_files = [os.path.join(dst_dir,fn) for fn in next(os.walk(pulled_dir))[2]]
+    for i in range(len(pulled_files)):
+        src_path = pulled_files[i]
+        dst_path = dst_files[i]
+        shutil.copy(src_path, dst_path)
+    os.rmdir(pulled_dir)
+    return new_files
 
 username = "spooler"  #'synqs_test'#
 password = "This_APP==*cool*"
@@ -11,6 +29,10 @@ backends_list = ["fermions", "singlequdit", "multiqudit"]
 # Loop
 while True:
     time.sleep(2)
+    new_files = new_files_exist()
+    if new_files:
+        raise ValueError('New files must have come. So break to restart the program!')
+
     requested_backend = backends_list[0]
     backends_list.append(backends_list.pop(0))
 
