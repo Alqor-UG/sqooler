@@ -57,7 +57,7 @@ while True:
         },
     )
     status_msg_dict = queue_response.json()
-    print(job_json_path)
+    #print(job_json_path)
 
     job_json_dict = json.loads(get_file_content(DROPBOXPATH=job_json_path))
 
