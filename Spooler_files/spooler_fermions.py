@@ -326,7 +326,7 @@ def add_job(json_dict, status_msg_dict):
             exp_dict = {exp: json_dict[exp]}
             # Here we
             result_dict["results"].append(gen_circuit(exp_dict, job_id))
-        print("done form")
+        #print("done form")
         result_json_dir = (
             "/Backend_files/Result/"
             + requested_backend
