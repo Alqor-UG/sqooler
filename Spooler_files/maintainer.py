@@ -24,7 +24,7 @@ def new_files_exist():
 
 username = "spooler"  #'synqs_test'#
 password = "This_APP==*cool*"
-server_domain = "http://qsim-drop.herokuapp.com/"#"http://coquma-sim.herokuapp.com/"#
+server_domain = "http://coquma-sim.herokuapp.com/"#"http://qsim-drop.herokuapp.com/"#
 backends_list = ["fermions", "singlequdit", "multiqudit"]
 # Loop
 while True:
