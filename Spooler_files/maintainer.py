@@ -28,7 +28,7 @@ server_domain = "http://coquma-sim.herokuapp.com/"#"http://qsim-drop.herokuapp.c
 backends_list = ["fermions", "singlequdit", "multiqudit"]
 # Loop
 while True:
-    time.sleep(2)
+    time.sleep(1)
     new_files = new_files_exist()
     if new_files:
         raise ValueError('New files must have come. So break to restart the program!')
