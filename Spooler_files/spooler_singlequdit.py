@@ -307,7 +307,7 @@ def add_job(json_dict, status_msg_dict):
     result_dict = {
         "backend_name": "synqs_single_qudit_simulator",
         "backend_version": "0.0.2",
-        "job_id": "None",
+        "job_id": job_id,
         "qobj_id": None,
         "success": True,
         "status": "finished",
