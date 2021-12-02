@@ -26,7 +26,7 @@ rLx_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["rLx"]},
+        {"type": "string", "enum": ["rlx"]},
         {
             "type": "array",
             "maxItems": 2,
@@ -44,7 +44,7 @@ rLz_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["rLz"]},
+        {"type": "string", "enum": ["rlz"]},
         {
             "type": "array",
             "maxItems": 2,
@@ -62,7 +62,7 @@ rLz2_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["rLz2"]},
+        {"type": "string", "enum": ["rlz2"]},
         {
             "type": "array",
             "maxItems": 2,
@@ -146,9 +146,9 @@ def check_json_dict(json_dict):
     Check if the json file has the appropiate syntax.
     """
     ins_schema_dict = {
-        "rLx": rLx_schema,
-        "rLz": rLz_schema,
-        "rLz2": rLz2_schema,
+        "rlx": rLx_schema,
+        "rlz": rLz_schema,
+        "rlz2": rLz2_schema,
         "barrier": barrier_measure_schema,
         "measure": barrier_measure_schema,
         "load": load_schema,
@@ -265,13 +265,13 @@ def gen_circuit(json_dict, job_id):
             psi = 1j * np.zeros(dim_qudit)
             psi[0] = 1 + 1j * 0
 
-        if inst[0] == "rLx":
+        if inst[0] == "rlx":
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * Lx, psi)
-        if inst[0] == "rLz":
+        if inst[0] == "rlz":
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * Lz, psi)
-        if inst[0] == "rLz2":
+        if inst[0] == "rlz2":
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * Lz2, psi)
         if inst[0] == "measure":

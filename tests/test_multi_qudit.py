@@ -42,7 +42,7 @@ def test_z_gate():
         job_payload = {
             "experiment_0": {
                 "instructions": [
-                    ["rLz", [0], [0.7]],
+                    ["rlz", [0], [0.7]],
                     ["measure", [0], []],
                 ],
                 "num_wires": 1,
@@ -50,7 +50,7 @@ def test_z_gate():
             },
             "experiment_1": {
                 "instructions": [
-                    ["rLz", [0], [0.7]],
+                    ["rlz", [0], [0.7]],
                     ["measure", [0], []],
                 ],
                 "num_wires": 1,
