@@ -34,7 +34,7 @@ rLx_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["rLx"]},
+        {"type": "string", "enum": ["rlx"]},
         {
             "type": "array",
             "maxItems": 1,
@@ -52,7 +52,7 @@ rLz_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["rLz"]},
+        {"type": "string", "enum": ["rlz"]},
         {
             "type": "array",
             "maxItems": 1,
@@ -70,7 +70,7 @@ rLz2_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["rLz2"]},
+        {"type": "string", "enum": ["rlz2"]},
         {
             "type": "array",
             "maxItems": 1,
@@ -170,14 +170,14 @@ def check_json_dict(json_dict):
     Check if the json file has the appropiate syntax.
     """
     ins_schema_dict = {
-        "rLx": rLx_schema,
-        "rLz": rLz_schema,
-        "rLz2": rLz2_schema,
-        "LxLy": XY_schema,
+        "rlx": rLx_schema,
+        "rlz": rLz_schema,
+        "rlz2": rLz2_schema,
+        "rlxly": XY_schema,
         "barrier": barrier_measure_schema,
         "measure": barrier_measure_schema,
         "load": load_schema,
-        "LzLz": LzLz_schema,
+        "rlzlz": LzLz_schema,
     }
     max_exps = 15
     for e in json_dict:
@@ -334,23 +334,23 @@ def gen_circuit(json_dict, job_id):
     shots_array = []
     for i in range(len(ins_list)):
         inst = ins_list[i]
-        if inst[0] == "rLx":
+        if inst[0] == "rlx":
             position = inst[1][0]
             theta = inst[2][0]
             psi = sparse.linalg.expm_multiply(-1j * theta * Lx[position], psi)
-        if inst[0] == "rLy":
+        if inst[0] == "rly":
             position = inst[1][0]
             theta = inst[2][0]
             psi = sparse.linalg.expm_multiply(-1j * theta * Ly[position], psi)
-        if inst[0] == "rLz":
+        if inst[0] == "rlz":
             position = inst[1][0]
             theta = inst[2][0]
             psi = sparse.linalg.expm_multiply(-1j * theta * Lz[position], psi)
-        if inst[0] == "rLz2":
+        if inst[0] == "rlz2":
             position = inst[1][0]
             theta = inst[2][0]
             psi = sparse.linalg.expm_multiply(-1j * theta * Lz2[position], psi)
-        if inst[0] == "LxLy":
+        if inst[0] == "rlxly":
             # apply gate on two qudits
             if len(inst[1]) == 2:
                 position1 = inst[1][0]
@@ -371,7 +371,7 @@ def gen_circuit(json_dict, job_id):
                     XY = XY + LP1.dot(LP2.conjugate().T)
                 XY = XY + XY.conjugate().T
                 psi = sparse.linalg.expm_multiply(-1j * theta * XY, psi)
-        if inst[0] == "LzLz":
+        if inst[0] == "rlzlz":
             # apply gate on two quadits
             if len(inst[1]) == 2:
                 position1 = inst[1][0]
