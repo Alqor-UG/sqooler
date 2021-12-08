@@ -106,7 +106,7 @@ def check_json_dict(json_dict):
         "phase": int_schema,
         "measure": barrier_measure_schema,
     }
-    max_exps = 15
+    max_exps = 50
     for e in json_dict:
         err_code = "Wrong experiment name or too many experiments"
         try:
