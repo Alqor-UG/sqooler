@@ -466,6 +466,10 @@ def add_job(json_dict, status_msg_dict):
             "; Failed json sanity check. File will be deleted. Error message : "
             + err_msg
         )
+        status_msg_dict["error_message"] += (
+            "; Failed json sanity check. File will be deleted. Error message : "
+            + err_msg
+        )
         status_msg_dict["status"] = "ERROR"
         status_binary = json.dumps(status_msg_dict).encode("utf-8")
         upload(DUMPSTRING=status_binary, DROPBOXPATH=status_json_path)

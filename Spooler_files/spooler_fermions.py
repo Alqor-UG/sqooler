@@ -18,12 +18,13 @@ from scipy.sparse import csc_matrix
 
 exper_schema = {
     "type": "object",
-    "required": ["instructions", "shots", "num_wires"],
+    "required": ["instructions", "shots", "num_wires","wire_order"],
     "properties": {
         "instructions": {"type": "array", "items": {"type": "array"}},
         "shots": {"type": "number", "minimum": 0, "maximum": 10 ** 3},
         "num_wires": {"type": "number", "minimum": 1, "maximum": 8},
         "seed": {"type": "number"},
+        "wire_order": {"type": "string", "enum": ["interleaved"]},
     },
     "additionalProperties": False,
 }
@@ -357,6 +358,10 @@ def add_job(json_dict, status_msg_dict):
         move_file(STARTPATH=job_json_start_path, FINALPATH=job_json_final_path)
     else:
         status_msg_dict["detail"] += (
+            "; Failed json sanity check. File will be deleted. Error message : "
+            + err_msg
+        )
+        status_msg_dict["error_message"] += (
             "; Failed json sanity check. File will be deleted. Error message : "
             + err_msg
         )
