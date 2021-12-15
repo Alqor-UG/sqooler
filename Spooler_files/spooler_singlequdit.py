@@ -7,7 +7,8 @@ from scipy.sparse import diags
 from scipy.sparse import csc_matrix
 
 from drpbx import *
-#from .models import Job
+
+# from .models import Job
 
 exper_schema = {
     "type": "object",
@@ -141,6 +142,7 @@ def check_with_schema(obj, schm):
     except Exception as e:
         return str(e), False
 
+
 def check_json_dict(json_dict):
     """
     Check if the json file has the appropiate syntax.
@@ -183,6 +185,7 @@ def check_json_dict(json_dict):
             break
     return err_code.replace("\n", ".."), exp_ok
 
+
 def create_memory_data(shots_array, exp_name, n_shots):
     exp_sub_dict = {
         "header": {"name": "experiment_0", "extra metadata": "text"},
@@ -198,6 +201,7 @@ def create_memory_data(shots_array, exp_name, n_shots):
     ]
     exp_sub_dict["data"]["memory"] = memory_list
     return exp_sub_dict
+
 
 def gen_circuit(json_dict, job_id):
     """The function the creates the instructions for the circuit.
@@ -281,6 +285,7 @@ def gen_circuit(json_dict, job_id):
     shots_array = result.tolist()
     exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
     return exp_sub_dict
+
 
 def add_job(json_dict, status_msg_dict):
     """

@@ -18,7 +18,7 @@ from scipy.sparse import csc_matrix
 
 exper_schema = {
     "type": "object",
-    "required": ["instructions", "shots", "num_wires","wire_order"],
+    "required": ["instructions", "shots", "num_wires", "wire_order"],
     "properties": {
         "instructions": {"type": "array", "items": {"type": "array"}},
         "shots": {"type": "number", "minimum": 0, "maximum": 10 ** 3},
@@ -284,7 +284,7 @@ def gen_circuit(json_dict, job_id):
                 measurements[jj, ii] = int(observed)
         shots_array = measurements.tolist()
 
-    #print("done calc")
+    # print("done calc")
     exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
     return exp_sub_dict
 
@@ -327,7 +327,7 @@ def add_job(json_dict, status_msg_dict):
             exp_dict = {exp: json_dict[exp]}
             # Here we
             result_dict["results"].append(gen_circuit(exp_dict, job_id))
-        #print("done form")
+        # print("done form")
         result_json_dir = (
             "/Backend_files/Result/"
             + requested_backend

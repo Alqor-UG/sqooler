@@ -1,17 +1,13 @@
 import json
-import os
-import time
-import shutil
 from jsonschema import validate
 from drpbx import *
-#from .models import Job
+
+# from .models import Job
 
 
 import numpy as np
-from scipy.sparse.linalg import expm
 from scipy.sparse import identity
 from scipy.sparse import diags
-from scipy.sparse import coo_matrix
 from scipy.sparse import csc_matrix
 from scipy import sparse
 
@@ -25,6 +21,7 @@ exper_schema = {
         "shots": {"type": "number", "minimum": 0, "maximum": 1000},
         "num_wires": {"type": "number", "minimum": 1, "maximum": MAX_NUM_WIRES},
         "seed": {"type": "number"},
+        "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
     },
     "additionalProperties": False,
 }
@@ -187,7 +184,7 @@ def check_json_dict(json_dict):
             exp_ok = (
                 e.startswith("experiment_")
                 and e[11:].isdigit()
-                and (int(e[11:]) <= max_exps)# maximal number of experiments is limited to 15! Whoever coded this. This is original sin.
+                and (int(e[11:]) <= max_exps)
             )
         except:
             exp_ok = False
@@ -394,11 +391,13 @@ def gen_circuit(json_dict, job_id):
     exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
     return exp_sub_dict
 
+
 def add_job(json_dict, status_msg_dict):
     """
     The function that translates the json with the instructions into some circuit and executes it.
 
-    It performs several checks for the job to see if it is properly working. If things are fine the job gets added the list of things that should be executed.
+    It performs several checks for the job to see if it is properly working.
+    If things are fine the job gets added the list of things that should be executed.
 
     json_dict: A dictonary of all the instructions.
     job_id: the ID of the job we are treating.
