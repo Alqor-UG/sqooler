@@ -2,7 +2,7 @@ import pytest
 
 import sys, os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "Spooler_files"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "spooler_files"))
 
 from spooler_singlequdit import *
 
