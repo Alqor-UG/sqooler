@@ -173,7 +173,7 @@ barrier_schema = {
 }
 
 
-def check_with_schema(obj:dict, schm:dict):
+def check_with_schema(obj: dict, schm: dict):
     """
     A wrapper around the validate function of jsonschema
     Args:
@@ -252,7 +252,7 @@ def check_json_dict(json_dict):
     return err_code.replace("\n", ".."), exp_ok and dim_ok
 
 
-def op_at_wire(op: csc_matrix, pos:int, dim_per_wire: list[int]) -> csc_matrix:
+def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: list[int]) -> csc_matrix:
     """
     Applies an operation onto the wire and provides unitaries on the other wires.
     Basically this creates the nice tensor products.
@@ -329,16 +329,26 @@ def gen_circuit(json_dict):
 
     for i1 in np.arange(0, n_wires):
         # let's put together spin matrices
-        spin_length= spin_per_wire[i1]
-        qudit_range = np.arange(spin_length, -(spin_length+ 1), -1)
+        spin_length = spin_per_wire[i1]
+        qudit_range = np.arange(spin_length, -(spin_length + 1), -1)
 
         lx = csc_matrix(
             1
             / 2
             * diags(
                 [
-                    np.sqrt([(spin_length- m + 1) * (spin_length+ m) for m in qudit_range[:-1]]),
-                    np.sqrt([(spin_length+ m + 1) * (spin_length- m) for m in qudit_range[1:]]),
+                    np.sqrt(
+                        [
+                            (spin_length - m + 1) * (spin_length + m)
+                            for m in qudit_range[:-1]
+                        ]
+                    ),
+                    np.sqrt(
+                        [
+                            (spin_length + m + 1) * (spin_length - m)
+                            for m in qudit_range[1:]
+                        ]
+                    ),
                 ],
                 [-1, 1],
             )
@@ -348,8 +358,19 @@ def gen_circuit(json_dict):
             / (2 * 1j)
             * diags(
                 [
-                    np.sqrt([(spin_length- m + 1) * (spin_length+ m) for m in qudit_range[:-1]]),
-                    -1 * np.sqrt([(spin_length+ m + 1) * (spin_length- m) for m in qudit_range[1:]]),
+                    np.sqrt(
+                        [
+                            (spin_length - m + 1) * (spin_length + m)
+                            for m in qudit_range[:-1]
+                        ]
+                    ),
+                    -1
+                    * np.sqrt(
+                        [
+                            (spin_length + m + 1) * (spin_length - m)
+                            for m in qudit_range[1:]
+                        ]
+                    ),
                 ],
                 [-1, 1],
             )
@@ -435,7 +456,7 @@ def gen_circuit(json_dict):
     return exp_sub_dict
 
 
-def add_job(json_dict : dict, status_msg_dict : dict):
+def add_job(json_dict: dict, status_msg_dict: dict):
     """
     The function that translates the json with the instructions into some circuit and executes it.
 

@@ -24,7 +24,7 @@ def run_json_circuit(json_dict, job_id):
         for exp in json_dict:
             exp_dict = {exp: json_dict[exp]}
             # Here we
-            result_dict["results"].append(gen_circuit(exp_dict, job_id))
+            result_dict["results"].append(gen_circuit(exp_dict))
 
     return result_dict
 
@@ -59,6 +59,31 @@ def test_z_gate():
             "num_wires": 1,
             "shots": 3,
         },
+    }
+
+    job_id = 1
+    data = run_json_circuit(job_payload, job_id)
+
+    shots_array = data["results"][0]["data"]["memory"]
+    assert data["job_id"] == 1, "job_id got messed up"
+    assert len(shots_array) > 0, "shots_array got messed up"
+
+
+def test_barrier_gate():
+    """
+    Test that the barrier can be properly applied.
+    """
+
+    # first submit the job
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["barrier", [0, 1], []],
+                ["measure", [0], []],
+            ],
+            "num_wires": 2,
+            "shots": 3,
+        }
     }
 
     job_id = 1
