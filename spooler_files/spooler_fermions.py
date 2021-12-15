@@ -49,7 +49,7 @@ hop_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["hop"]},
+        {"type": "string", "enum": ["fhop"]},
         {
             "type": "array",
             "maxItems": 4,
@@ -67,7 +67,7 @@ int_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["int", "phase"]},
+        {"type": "string", "enum": ["fint", "fphase"]},
         {
             "type": "array",
             "maxItems": 8,
@@ -102,9 +102,9 @@ def check_json_dict(json_dict):
     ins_schema_dict = {
         "load": barrier_measure_schema,
         "barrier": barrier_measure_schema,
-        "hop": hop_schema,
-        "int": int_schema,
-        "phase": int_schema,
+        "fhop": hop_schema,
+        "fint": int_schema,
+        "fphase": int_schema,
         "measure": barrier_measure_schema,
     }
     max_exps = 50
@@ -235,7 +235,7 @@ def gen_circuit(json_dict, job_id):
         if inst[0] == "load":
             latt_ind = inst[1][0]
             psi = np.dot(loweringOp[latt_ind].T, psi)
-        if inst[0] == "hop":
+        if inst[0] == "fhop":
             # the first two indices are the starting points
             # the other two indices are the end points
             latt_ind = inst[1]
@@ -249,14 +249,14 @@ def gen_circuit(json_dict, job_id):
             ].T.dot(loweringOp[latt_ind[1]])
             Uhop = expm(-1j * theta * Hhop)
             psi = np.dot(Uhop, psi)
-        if inst[0] == "int":
+        if inst[0] == "fint":
             # the first two indices are the starting points
             # the other two indices are the end points
             theta = inst[2][0]
             Uint = expm(-1j * theta * Hint)
             # theta = inst[2][0]
             psi = np.dot(Uint, psi)
-        if inst[0] == "phase":
+        if inst[0] == "fphase":
             # the first two indices are the starting points
             # the other two indices are the end points
             Hphase = 0 * number_operators[0]
@@ -327,7 +327,7 @@ def add_job(json_dict, status_msg_dict):
             exp_dict = {exp: json_dict[exp]}
             # Here we
             result_dict["results"].append(gen_circuit(exp_dict, job_id))
-        # print("done form")
+
         result_json_dir = (
             "/Backend_files/Result/"
             + requested_backend

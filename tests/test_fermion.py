@@ -105,7 +105,7 @@ def test_hop_gate():
             "instructions": [
                 ["load", [0], []],
                 ["load", [4], []],
-                ["hop", [0, 4, 1, 5], [np.pi / 2]],
+                ["fhop", [0, 4, 1, 5], [np.pi / 2]],
                 ["measure", [0], []],
                 ["measure", [1], []],
                 ["measure", [4], []],
@@ -136,9 +136,9 @@ def test_phase_gate():
         "experiment_0": {
             "instructions": [
                 ["load", [0], []],
-                ["hop", [0, 4, 1, 5], [np.pi / 4]],
-                ["phase", [2, 6], [np.pi]],
-                ["hop", [0, 4, 1, 5], [np.pi / 4]],
+                ["fhop", [0, 4, 1, 5], [np.pi / 4]],
+                ["fphase", [2, 6], [np.pi]],
+                ["fhop", [0, 4, 1, 5], [np.pi / 4]],
                 ["measure", [0], []],
                 ["measure", [1], []],
             ],
@@ -168,7 +168,7 @@ def test_seed():
             "instructions": [
                 ["load", [0], []],
                 ["load", [1], []],
-                ["hop", [0, 4, 1, 5], [np.pi / 4]],
+                ["fhop", [0, 4, 1, 5], [np.pi / 4]],
                 ["measure", [0], []],
                 ["measure", [1], []],
                 ["measure", [4], []],
@@ -183,7 +183,7 @@ def test_seed():
             "instructions": [
                 ["load", [0], []],
                 ["load", [1], []],
-                ["hop", [0, 4, 1, 5], [np.pi / 4]],
+                ["fhop", [0, 4, 1, 5], [np.pi / 4]],
                 ["measure", [0], []],
                 ["measure", [1], []],
                 ["measure", [4], []],
