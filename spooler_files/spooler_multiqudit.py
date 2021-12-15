@@ -17,7 +17,6 @@ from scipy.sparse import csc_matrix
 from scipy import sparse
 
 
-
 MAX_NUM_WIRES = 16
 
 exper_schema = {
