@@ -3,6 +3,8 @@ The module that contains all the necessary logic for the fermions.
 """
 
 import json
+from typing import List
+
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from drpbx import upload, move_file
@@ -13,6 +15,8 @@ from scipy.sparse import identity
 from scipy.sparse import diags
 from scipy.sparse import csc_matrix
 from scipy import sparse
+
+
 
 MAX_NUM_WIRES = 16
 
@@ -252,7 +256,7 @@ def check_json_dict(json_dict):
     return err_code.replace("\n", ".."), exp_ok and dim_ok
 
 
-def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: list[int]) -> list[csc_matrix]:
+def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: List[int]) -> csc_matrix:
     """
     Applies an operation onto the wire and provides unitaries on the other wires.
     Basically this creates the nice tensor products.
