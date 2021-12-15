@@ -34,3 +34,4 @@ toml==0.10.2
 urllib3==1.26.7
 whitenoise==5.2.0
 wincertstore==0.2
+pylint==2.12.2
