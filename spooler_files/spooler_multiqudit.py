@@ -440,7 +440,7 @@ def gen_circuit(json_dict):
                 position1 = inst[1][0]
                 position2 = inst[1][1]
                 theta = inst[2][0]
-                lzlz = lz[position1].dot(lz[position2])
+                lzlz = lz_list[position1].dot(lz_list[position2])
                 psi = sparse.linalg.expm_multiply(-1j * theta * lzlz, psi)
         if inst[0] == "measure":
             measurement_indices.append(inst[1][0])
