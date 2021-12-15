@@ -252,7 +252,7 @@ def check_json_dict(json_dict):
     return err_code.replace("\n", ".."), exp_ok and dim_ok
 
 
-def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: list[int]) -> csc_matrix:
+def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: list[int]) -> list[csc_matrix]:
     """
     Applies an operation onto the wire and provides unitaries on the other wires.
     Basically this creates the nice tensor products.
