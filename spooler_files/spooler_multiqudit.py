@@ -322,10 +322,12 @@ def gen_circuit(json_dict):
     dim_per_wire = dim_per_wire.astype(int)
     dim_hilbert = np.prod(dim_per_wire)
 
-    lx = []
-    ly = []
-    lz = []
-    lz2 = []
+    # we will need a list of local spin operators as their dimension can change
+    # on each wire
+    lx_list = []
+    ly_list = []
+    lz_list = []
+    lz2_list = []
 
     for i1 in np.arange(0, n_wires):
         # let's put together spin matrices
@@ -378,10 +380,10 @@ def gen_circuit(json_dict):
         lz = csc_matrix(diags([qudit_range], [0]))
         lz2 = lz.dot(lz)
 
-        lx.append(op_at_wire(lx, i1, dim_per_wire))
-        ly.append(op_at_wire(ly, i1, dim_per_wire))
-        lz.append(op_at_wire(lz, i1, dim_per_wire))
-        lz2.append(op_at_wire(lz2, i1, dim_per_wire))
+        lx_list.append(op_at_wire(lx, i1, dim_per_wire))
+        ly_list.append(op_at_wire(ly, i1, dim_per_wire))
+        lz_list.append(op_at_wire(lz, i1, dim_per_wire))
+        lz2_list.append(op_at_wire(lz2, i1, dim_per_wire))
 
     initial_state = 1j * np.zeros(dim_per_wire[0])
     initial_state[0] = 1 + 1j * 0
@@ -398,27 +400,27 @@ def gen_circuit(json_dict):
         if inst[0] == "rlx":
             position = inst[1][0]
             theta = inst[2][0]
-            psi = sparse.linalg.expm_multiply(-1j * theta * lx[position], psi)
+            psi = sparse.linalg.expm_multiply(-1j * theta * lx_list[position], psi)
         if inst[0] == "rly":
             position = inst[1][0]
             theta = inst[2][0]
-            psi = sparse.linalg.expm_multiply(-1j * theta * ly[position], psi)
+            psi = sparse.linalg.expm_multiply(-1j * theta * ly_list[position], psi)
         if inst[0] == "rlz":
             position = inst[1][0]
             theta = inst[2][0]
-            psi = sparse.linalg.expm_multiply(-1j * theta * lz[position], psi)
+            psi = sparse.linalg.expm_multiply(-1j * theta * lz_list[position], psi)
         if inst[0] == "rlz2":
             position = inst[1][0]
             theta = inst[2][0]
-            psi = sparse.linalg.expm_multiply(-1j * theta * lz2[position], psi)
+            psi = sparse.linalg.expm_multiply(-1j * theta * lz2_list[position], psi)
         if inst[0] == "rlxly":
             # apply gate on two qudits
             if len(inst[1]) == 2:
                 position1 = inst[1][0]
                 position2 = inst[1][1]
                 theta = inst[2][0]
-                lp1 = lx[position1] + 1j * ly[position1]
-                lp2 = lx[position2] + 1j * ly[position2]
+                lp1 = lx[position1] + 1j * ly_list[position1]
+                lp2 = lx[position2] + 1j * ly_list[position2]
                 lxly = lp1.dot(lp2.conjugate().T)
                 lxly = lxly + lxly.conjugate().T
                 psi = sparse.linalg.expm_multiply(-1j * theta * lxly, psi)
@@ -427,8 +429,8 @@ def gen_circuit(json_dict):
                 theta = inst[2][0]
                 lxly = csc_matrix((dim_hilbert, dim_hilbert))
                 for i1 in np.arange(0, n_wires - 1):
-                    lp1 = lx[i1] + 1j * ly[i1]
-                    lp2 = lx[i1 + 1] + 1j * ly[i1 + 1]
+                    lp1 = lx_list[i1] + 1j * ly_list[i1]
+                    lp2 = lx_list[i1 + 1] + 1j * ly_list[i1 + 1]
                     lxly = lxly + lp1.dot(lp2.conjugate().T)
                 lxly = lxly + lxly.conjugate().T
                 psi = sparse.linalg.expm_multiply(-1j * theta * lxly, psi)
