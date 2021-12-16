@@ -1,3 +1,6 @@
+"""
+The module that contains all the necessary logic for the fermions.
+"""
 import json
 
 # import os
@@ -16,6 +19,8 @@ from scipy.sparse import diags
 from scipy.sparse import coo_matrix
 from scipy.sparse import csc_matrix
 
+NUM_WIRES = 8
+
 exper_schema = {
     "type": "object",
     "required": ["instructions", "shots", "num_wires", "wire_order"],
@@ -29,16 +34,31 @@ exper_schema = {
     "additionalProperties": False,
 }
 
-barrier_measure_schema = {
+barrier_schema = {
     "type": "array",
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["load", "measure", "barrier"]},
+        {"type": "string", "enum": ["barrier"]},
+        {
+            "type": "array",
+            "maxItems": NUM_WIRES,
+            "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
+        },
+        {"type": "array", "maxItems": 0},
+    ],
+}
+
+load_measure_schema = {
+    "type": "array",
+    "minItems": 3,
+    "maxItems": 3,
+    "items": [
+        {"type": "string", "enum": ["load", "measure"]},
         {
             "type": "array",
             "maxItems": 2,
-            "items": [{"type": "number", "minimum": 0, "maximum": 7}],
+            "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
         },
         {"type": "array", "maxItems": 0},
     ],
@@ -100,12 +120,12 @@ def check_json_dict(json_dict):
         bool: is the expression having the appropiate syntax ?
     """
     ins_schema_dict = {
-        "load": barrier_measure_schema,
-        "barrier": barrier_measure_schema,
+        "load": load_measure_schema,
+        "barrier": barrier_schema,
         "fhop": hop_schema,
         "fint": int_schema,
         "fphase": int_schema,
-        "measure": barrier_measure_schema,
+        "measure": load_measure_schema,
     }
     max_exps = 50
     for e in json_dict:
