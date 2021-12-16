@@ -149,7 +149,7 @@ measure_schema = {
     "minItems": 3,
     "maxItems": 3,
     "items": [
-        {"type": "string", "enum": ["measure", "barrier"]},
+        {"type": "string", "enum": ["measure"]},
         {
             "type": "array",
             "maxItems": 1,
@@ -248,7 +248,7 @@ def check_json_dict(json_dict):
                 qubit_wires = qubit_wires - 1
                 dim_hilbert = dim_hilbert * ins[2][0]
         dim_hilbert = dim_hilbert * (2 ** qubit_wires)
-        dim_ok = dim_hilbert < (2 ** 20) + 1
+        dim_ok = dim_hilbert < (2 ** 12) + 1
         if not dim_ok:
             err_code = "Hilbert space dimension to large"
             break
