@@ -9,7 +9,7 @@ import shutil
 
 def new_files_exist():
     new_files = False
-    pulled_dir = "/home/ubuntu/Spooler_files_pulled/Spooler_files"
+    pulled_dir = "/home/ubuntu/Spooler_files_pulled/spooler_files"
     dst_dir = "/home/ubuntu/Spooler_files"
     if not os.path.isdir(pulled_dir):
         return new_files
