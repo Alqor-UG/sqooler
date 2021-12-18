@@ -15,6 +15,7 @@ from scipy.sparse import identity
 from scipy.sparse import diags
 from scipy.sparse import csc_matrix
 from scipy import sparse
+from scipy.sparse.linalg import expm_multiply
 
 
 MAX_NUM_WIRES = 16
