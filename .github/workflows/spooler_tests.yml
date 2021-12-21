@@ -51,7 +51,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run pylint
       run: |
-        pylint spooler_files/spooler_multiqudit.py
+        pylint spooler_files/spooler_multiqudit.py tests/test_multi_qudit.py
     - name: Run black
       run: |
         black --check .

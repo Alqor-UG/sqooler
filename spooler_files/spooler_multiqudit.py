@@ -404,30 +404,30 @@ def gen_circuit(json_dict):
         if inst[0] == "rlx":
             position = inst[1][0]
             theta = inst[2][0]
-            psi = sparse.linalg.expm_multiply(-1j * theta * lx_list[position], psi)
+            psi = expm_multiply(-1j * theta * lx_list[position], psi)
         if inst[0] == "rly":
             position = inst[1][0]
             theta = inst[2][0]
-            psi = sparse.linalg.expm_multiply(-1j * theta * ly_list[position], psi)
+            psi = expm_multiply(-1j * theta * ly_list[position], psi)
         if inst[0] == "rlz":
             position = inst[1][0]
             theta = inst[2][0]
-            psi = sparse.linalg.expm_multiply(-1j * theta * lz_list[position], psi)
+            psi = expm_multiply(-1j * theta * lz_list[position], psi)
         if inst[0] == "rlz2":
             position = inst[1][0]
             theta = inst[2][0]
-            psi = sparse.linalg.expm_multiply(-1j * theta * lz2_list[position], psi)
+            psi = expm_multiply(-1j * theta * lz2_list[position], psi)
         if inst[0] == "rlxly":
             # apply gate on two qudits
             if len(inst[1]) == 2:
                 position1 = inst[1][0]
                 position2 = inst[1][1]
                 theta = inst[2][0]
-                lp1 = lx[position1] + 1j * ly_list[position1]
-                lp2 = lx[position2] + 1j * ly_list[position2]
+                lp1 = lx_list[position1] + 1j * ly_list[position1]
+                lp2 = lx_list[position2] + 1j * ly_list[position2]
                 lxly = lp1.dot(lp2.conjugate().T)
                 lxly = lxly + lxly.conjugate().T
-                psi = sparse.linalg.expm_multiply(-1j * theta * lxly, psi)
+                psi = expm_multiply(-1j * theta * lxly, psi)
             # apply gate on all qudits
             elif len(inst[1]) == n_wires:
                 theta = inst[2][0]
@@ -437,7 +437,7 @@ def gen_circuit(json_dict):
                     lp2 = lx_list[i1 + 1] + 1j * ly_list[i1 + 1]
                     lxly = lxly + lp1.dot(lp2.conjugate().T)
                 lxly = lxly + lxly.conjugate().T
-                psi = sparse.linalg.expm_multiply(-1j * theta * lxly, psi)
+                psi = expm_multiply(-1j * theta * lxly, psi)
         if inst[0] == "rlzlz":
             # apply gate on two quadits
             if len(inst[1]) == 2:
@@ -445,7 +445,7 @@ def gen_circuit(json_dict):
                 position2 = inst[1][1]
                 theta = inst[2][0]
                 lzlz = lz_list[position1].dot(lz_list[position2])
-                psi = sparse.linalg.expm_multiply(-1j * theta * lzlz, psi)
+                psi = expm_multiply(-1j * theta * lzlz, psi)
         if inst[0] == "measure":
             measurement_indices.append(inst[1][0])
     if measurement_indices:
