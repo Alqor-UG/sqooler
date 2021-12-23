@@ -98,6 +98,7 @@ def test_barrier_gate():
             ],
             "num_wires": 2,
             "shots": 3,
+            "wire_order": "sequential",
         }
     }
 

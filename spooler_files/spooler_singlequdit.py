@@ -18,6 +18,7 @@ exper_schema = {
         "shots": {"type": "number", "minimum": 0, "maximum": 1000},
         "num_wires": {"type": "number", "minimum": 1, "maximum": 2},
         "seed": {"type": "number"},
+        "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
     },
     "additionalProperties": False,
 }
