@@ -1,13 +1,27 @@
-import pytest
+"""
+Test module for the spooler_singlequdit.py file.
+"""
 
-import sys, os
+import sys
+import os
+from typing import Union
 
+# pylint: disable=C0413
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "spooler_files"))
+from spooler_singlequdit import check_json_dict, gen_circuit
 
-from spooler_singlequdit import *
 
+def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
+    """
+    A support function that executes the job.
 
-def run_json_circuit(json_dict, job_id):
+    Args:
+        json_dict: the job dict that will be treated
+        job_id: the number of the job
+
+    Returns:
+        the results dict
+    """
     result_dict = {
         "backend_name": "synqs_single_qudit_simulator",
         "backend_version": "0.0.1",
@@ -19,7 +33,7 @@ def run_json_circuit(json_dict, job_id):
         "results": [],
     }
     err_msg, json_is_fine = check_json_dict(json_dict)
-    assert json_is_fine == True, "Failed JSON sanity check : " + err_msg
+    assert json_is_fine is True, "Failed JSON sanity check : " + err_msg
     if json_is_fine:
         for exp in json_dict:
             exp_dict = {exp: json_dict[exp]}
@@ -50,6 +64,7 @@ def test_z_gate():
             ],
             "num_wires": 1,
             "shots": 3,
+            "wire_order": "sequential",
         },
         "experiment_1": {
             "instructions": [
