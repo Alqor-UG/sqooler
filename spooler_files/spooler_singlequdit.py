@@ -1,14 +1,12 @@
-import json
+"""
+The module that contains all the necessary logic for the singlequdit.
+"""
+
 from jsonschema import validate
-from jsonschema.exceptions import ValidationError
 import numpy as np
 from scipy.sparse.linalg import expm_multiply
 from scipy.sparse import diags
 from scipy.sparse import csc_matrix
-
-from drpbx import *
-
-# from .models import Job
 
 exper_schema = {
     "type": "object",
@@ -135,13 +133,15 @@ barrier_measure_schema = {
 
 def check_with_schema(obj, schm):
     """
-    wrapper for the validate function.
+    Caller for the validate function.
     """
+    # Fix this pylint issue whenever you have time, but be careful !
+    # pylint: disable=W0703
     try:
         validate(instance=obj, schema=schm)
         return "", True
-    except Exception as e:
-        return str(e), False
+    except Exception as err:
+        return str(err), False
 
 
 def check_json_dict(json_dict):
@@ -157,28 +157,32 @@ def check_json_dict(json_dict):
         "load": load_schema,
     }
     max_exps = 15
-    for e in json_dict:
+    for expr in json_dict:
         err_code = "Wrong experiment name or too many experiments"
+        # Fix this pylint issue whenever you have time, but be careful !
+        # pylint: disable=W0702
         try:
             exp_ok = (
-                e.startswith("experiment_")
-                and e[11:].isdigit()
-                and (int(e[11:]) <= max_exps)
+                expr.startswith("experiment_")
+                and expr[11:].isdigit()
+                and (int(expr[11:]) <= max_exps)
             )
         except:
             exp_ok = False
             break
         if not exp_ok:
             break
-        err_code, exp_ok = check_with_schema(json_dict[e], exper_schema)
+        err_code, exp_ok = check_with_schema(json_dict[expr], exper_schema)
         if not exp_ok:
             break
-        ins_list = json_dict[e]["instructions"]
+        ins_list = json_dict[expr]["instructions"]
         for ins in ins_list:
+            # Fix this pylint issue whenever you have time, but be careful !
+            # pylint: disable=W0703
             try:
                 err_code, exp_ok = check_with_schema(ins, ins_schema_dict[ins[0]])
-            except Exception as e:
-                err_code = "Error in instruction " + str(e)
+            except Exception as err:
+                err_code = "Error in instruction " + str(err)
                 exp_ok = False
             if not exp_ok:
                 break
@@ -188,6 +192,10 @@ def check_json_dict(json_dict):
 
 
 def create_memory_data(shots_array, exp_name, n_shots):
+    """
+    The function to create memeory key in results dictionary
+    with proprer formatting.
+    """
     exp_sub_dict = {
         "header": {"name": "experiment_0", "extra metadata": "text"},
         "shots": 3,
@@ -204,10 +212,9 @@ def create_memory_data(shots_array, exp_name, n_shots):
     return exp_sub_dict
 
 
-def gen_circuit(json_dict, job_id):
+def gen_circuit(json_dict):
     """The function the creates the instructions for the circuit.
     json_dict: The list of instructions for the specific run.
-    job_id: The id of the job that we are treating right now.
     """
     # pylint: disable=R0914
     exp_name = next(iter(json_dict))
@@ -218,25 +225,27 @@ def gen_circuit(json_dict, job_id):
 
     n_atoms = 1
 
-    l = n_atoms / 2  # spin length
+    spin_len = n_atoms / 2  # spin length
 
     # let's put together spin matrices
     dim_qudit = n_atoms + 1
-    qudit_range = np.arange(l, -(l + 1), -1)
+    qudit_range = np.arange(spin_len, -(spin_len + 1), -1)
 
-    Lx = csc_matrix(
+    lx = csc_matrix(
         1
         / 2
         * diags(
             [
-                np.sqrt([(l - m + 1) * (l + m) for m in qudit_range[:-1]]),
-                np.sqrt([(l + m + 1) * (l - m) for m in qudit_range[1:]]),
+                np.sqrt(
+                    [(spin_len - m + 1) * (spin_len + m) for m in qudit_range[:-1]]
+                ),
+                np.sqrt([(spin_len + m + 1) * (spin_len - m) for m in qudit_range[1:]]),
             ],
             [-1, 1],
         )
     )
-    Lz = csc_matrix(diags([qudit_range], [0]))
-    Lz2 = Lz.multiply(Lz)
+    lz = csc_matrix(diags([qudit_range], [0]))
+    lz2 = lz.multiply(lz)
 
     psi = 1j * np.zeros(dim_qudit)
     psi[0] = 1 + 1j * 0
@@ -247,38 +256,48 @@ def gen_circuit(json_dict, job_id):
         # raise some error
         if inst[0] == "load":
             n_atoms = int(inst[2][0])
-            l = n_atoms / 2
+            spin_len = n_atoms / 2
             # length of the qudit
             dim_qudit = n_atoms + 1
-            qudit_range = np.arange(l, -(l + 1), -1)
+            qudit_range = np.arange(spin_len, -(spin_len + 1), -1)
 
-            Lx = csc_matrix(
+            lx = csc_matrix(
                 1
                 / 2
                 * diags(
                     [
-                        np.sqrt([(l - m + 1) * (l + m) for m in qudit_range[:-1]]),
-                        np.sqrt([(l + m + 1) * (l - m) for m in qudit_range[1:]]),
+                        np.sqrt(
+                            [
+                                (spin_len - m + 1) * (spin_len + m)
+                                for m in qudit_range[:-1]
+                            ]
+                        ),
+                        np.sqrt(
+                            [
+                                (spin_len + m + 1) * (spin_len - m)
+                                for m in qudit_range[1:]
+                            ]
+                        ),
                     ],
                     [-1, 1],
                 )
             )
-            Lz = csc_matrix(diags([qudit_range], [0]))
+            lz = csc_matrix(diags([qudit_range], [0]))
 
-            Lz2 = Lz.multiply(Lz)
+            lz2 = lz.multiply(lz)
 
             psi = 1j * np.zeros(dim_qudit)
             psi[0] = 1 + 1j * 0
 
         if inst[0] == "rlx":
             theta = inst[2][0]
-            psi = expm_multiply(-1j * theta * Lx, psi)
+            psi = expm_multiply(-1j * theta * lx, psi)
         if inst[0] == "rlz":
             theta = inst[2][0]
-            psi = expm_multiply(-1j * theta * Lz, psi)
+            psi = expm_multiply(-1j * theta * lz, psi)
         if inst[0] == "rlz2":
             theta = inst[2][0]
-            psi = expm_multiply(-1j * theta * Lz2, psi)
+            psi = expm_multiply(-1j * theta * lz2, psi)
         if inst[0] == "measure":
             probs = np.abs(psi) ** 2
             result = np.random.choice(np.arange(dim_qudit), p=probs, size=n_shots)
@@ -291,24 +310,13 @@ def gen_circuit(json_dict, job_id):
 def add_job(json_dict, status_msg_dict):
     """
     The function that translates the json with the instructions into some circuit and executes it.
+    It performs several checks for the job to see if it is properly working.
+    If things are fine the job gets added the list of things that should be executed.
 
-    It performs several checks for the job to see if it is properly working. If things are fine the job gets added the list of things that should be executed.
-
-    json_dict: A dictonary of all the instructions.
+    json_dict: The job dictonary of all the instructions.
     job_id: the ID of the job we are treating.
     """
     job_id = status_msg_dict["job_id"]
-    extracted_username = job_id.split("-")[2]
-    requested_backend = job_id.split("-")[1]
-
-    status_json_dir = (
-        "/Backend_files/Status/" + requested_backend + "/" + extracted_username + "/"
-    )
-    status_json_name = "status-" + job_id + ".json"
-    status_json_path = status_json_dir + status_json_name
-
-    job_json_name = "job-" + job_id + ".json"
-    job_json_start_path = "/Backend_files/Running_Jobs/" + job_json_name
 
     result_dict = {
         "backend_name": "synqs_single_qudit_simulator",
@@ -325,36 +333,13 @@ def add_job(json_dict, status_msg_dict):
         for exp in json_dict:
             exp_dict = {exp: json_dict[exp]}
             # Here we
-            result_dict["results"].append(gen_circuit(exp_dict, job_id))
+            result_dict["results"].append(gen_circuit(exp_dict))
         print("done form")
-        result_json_dir = (
-            "/Backend_files/Result/"
-            + requested_backend
-            + "/"
-            + extracted_username
-            + "/"
-        )
-        result_json_name = "result-" + job_id + ".json"
-        result_json_path = result_json_dir + result_json_name
-        result_binary = json.dumps(result_dict).encode("utf-8")
-        upload(DUMPSTRING=result_binary, DROPBOXPATH=result_json_path)
 
         status_msg_dict[
             "detail"
         ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
         status_msg_dict["status"] = "DONE"
-        status_binary = json.dumps(status_msg_dict).encode("utf-8")
-        upload(DUMPSTRING=status_binary, DROPBOXPATH=status_json_path)
-
-        finished_json_dir = (
-            "/Backend_files/Finished_Jobs/"
-            + requested_backend
-            + "/"
-            + extracted_username
-            + "/"
-        )
-        job_json_final_path = finished_json_dir + job_json_name
-        move_file(STARTPATH=job_json_start_path, FINALPATH=job_json_final_path)
     else:
         status_msg_dict["detail"] += (
             "; Failed json sanity check. File will be deleted. Error message : "
@@ -365,9 +350,4 @@ def add_job(json_dict, status_msg_dict):
             + err_msg
         )
         status_msg_dict["status"] = "ERROR"
-        status_binary = json.dumps(status_msg_dict).encode("utf-8")
-        upload(DUMPSTRING=status_binary, DROPBOXPATH=status_json_path)
-
-        deleted_json_dir = "/Backend_files/Deleted_Jobs/"
-        job_json_final_path = deleted_json_dir + job_json_name
-        move_file(STARTPATH=job_json_start_path, FINALPATH=job_json_final_path)
+    return result_dict, status_msg_dict
