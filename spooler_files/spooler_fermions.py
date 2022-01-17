@@ -336,7 +336,7 @@ def add_job(json_dict, status_msg_dict):
             exp_dict = {exp: json_dict[exp]}
             # Here we
             result_dict["results"].append(gen_circuit(exp_dict))
-            result_dict["jobs"].append(exp_dict)
+            result_dict["experiments"].append(exp_dict)
 
         status_msg_dict[
             "detail"
