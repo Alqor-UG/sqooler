@@ -328,7 +328,7 @@ def add_job(json_dict, status_msg_dict):
         "status": "finished",
         "header": {},
         "results": [],
-        "jobs": [],
+        "experiments": [],
     }
     err_msg, json_is_fine = check_json_dict(json_dict)
     if json_is_fine:
