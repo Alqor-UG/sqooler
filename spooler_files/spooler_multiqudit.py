@@ -14,6 +14,7 @@ from scipy.sparse.linalg import expm_multiply
 
 
 MAX_NUM_WIRES = 16
+MAX_EXPERIMENTS = 1000
 
 exper_schema = {
     "type": "object",
@@ -202,7 +203,7 @@ def check_json_dict(json_dict):
         "load": load_schema,
         "rlzlz": lzlz_schema,
     }
-    max_exps = 15
+    max_exps = MAX_EXPERIMENTS
     for expr in json_dict:
         dim_ok = False
         err_code = "Wrong experiment name or too many experiments"
