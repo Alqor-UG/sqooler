@@ -328,6 +328,7 @@ def add_job(json_dict, status_msg_dict):
         "status": "finished",
         "header": {},
         "results": [],
+        "jobs": [],
     }
     err_msg, json_is_fine = check_json_dict(json_dict)
     if json_is_fine:
@@ -335,6 +336,7 @@ def add_job(json_dict, status_msg_dict):
             exp_dict = {exp: json_dict[exp]}
             # Here we
             result_dict["results"].append(gen_circuit(exp_dict))
+            result_dict["jobs"].append(exp_dict)
 
         status_msg_dict[
             "detail"
