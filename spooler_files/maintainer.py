@@ -103,7 +103,10 @@ def main():
         queue_response = requests.get(
             query_url, params={"username": username, "password": password}
         )
-
+        if queue_response.status_code == 503:
+            raise RuntimeError(
+                "The server did not respond, when we where looking for incoming files."
+            )
         job_json_path = (queue_response.json())["job_json"]
         job_id = (queue_response.json())["job_id"]
         if job_json_path == "None":
@@ -148,4 +151,5 @@ def main():
         update_in_database(result_dict, status_msg_dict, job_id)
 
 
-main()
+if __name__ == "__main__":
+    main()
