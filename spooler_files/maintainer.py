@@ -10,6 +10,7 @@ import traceback
 import regex as re
 import requests
 from drpbx import upload, move_file, get_file_content
+from decouple import config
 
 
 def new_files_exist():
@@ -81,10 +82,11 @@ def main():
     Function for processing jobs continuously.
     """
     # parameters for server
-    username = "spooler"  #'synqs_test'#
-    password = "This_APP==*cool*"
-    server_domain = "http://coquma-sim.herokuapp.com/api/"
+    username = config("USERNAME_SPOOLER")
+    password = config("PASSWORD_SPOOLER")
+    # server_domain = "http://coquma-sim.herokuapp.com/api/"
     # server_domain = "http://qsim-drop.herokuapp.com/"
+    server_domain = "http://qlued.herokuapp.com/api/"
     backends_list = ["fermions", "singlequdit", "multiqudit"]
 
     # loop
@@ -107,6 +109,11 @@ def main():
             raise RuntimeError(
                 "The server did not respond, when we where looking for incoming files."
             )
+        if queue_response.status_code == 404:
+            raise RuntimeError(
+                "The server responded with 404. Are you sure that your backends are \
+                already added to the server ?"
+            )
         job_json_path = (queue_response.json())["job_json"]
         job_id = (queue_response.json())["job_id"]
         if job_json_path == "None":
@@ -123,7 +130,6 @@ def main():
             },
         )
         status_msg_dict = queue_response.json()
-        # print(job_json_path)
 
         job_json_dict = json.loads(get_file_content(dbx_path=job_json_path))
 
