@@ -1,17 +1,20 @@
 """
 The module that contains all the necessary logic for the accessing the database.
+
+This is mostly based on Dropbox for the moment. So it is closely related to the StorageProvider
+in `qlued`.
 """
 
 import sys
+from typing import List
+import json
+
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
 
 from decouple import config
 
-# Add OAuth2 access token here.
-# You can generate one for yourself in the App Console.
-# See <https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account/>
 APP_KEY = config("APP_KEY")
 REFRESH_TOKEN = config("REFRESH_TOKEN")
 APP_SECRET = config("APP_SECRET")
@@ -85,3 +88,103 @@ def move_file(start_path, final_path):
         except ApiError as err:
             print(err)
             sys.exit()
+
+
+def update_in_database(result_dict, status_msg_dict, job_id):
+    """
+    Upload the status and result to the dropbox.
+    """
+    extracted_username = job_id.split("-")[2]
+    requested_backend = job_id.split("-")[1]
+
+    status_json_dir = (
+        "/Backend_files/Status/" + requested_backend + "/" + extracted_username + "/"
+    )
+    status_json_name = "status-" + job_id + ".json"
+    status_json_path = status_json_dir + status_json_name
+
+    job_json_name = "job-" + job_id + ".json"
+    job_json_start_path = "/Backend_files/Running_Jobs/" + job_json_name
+
+    if status_msg_dict["status"] == "DONE":
+        result_json_dir = (
+            "/Backend_files/Result/"
+            + requested_backend
+            + "/"
+            + extracted_username
+            + "/"
+        )
+        result_json_name = "result-" + job_id + ".json"
+        result_json_path = result_json_dir + result_json_name
+        result_binary = json.dumps(result_dict).encode("utf-8")
+        upload(dump_str=result_binary, dbx_path=result_json_path)
+        finished_json_dir = (
+            "/Backend_files/Finished_Jobs/"
+            + requested_backend
+            + "/"
+            + extracted_username
+            + "/"
+        )
+        job_json_final_path = finished_json_dir + job_json_name
+        move_file(start_path=job_json_start_path, final_path=job_json_final_path)
+    elif status_msg_dict["status"] == "ERROR":
+        deleted_json_dir = "/Backend_files/Deleted_Jobs/"
+        job_json_final_path = deleted_json_dir + job_json_name
+        move_file(start_path=job_json_start_path, final_path=job_json_final_path)
+
+    status_binary = json.dumps(status_msg_dict).encode("utf-8")
+    upload(dump_str=status_binary, dbx_path=status_json_path)
+
+
+def get_file_queue(storage_path: str) -> List[str]:
+    """
+    Get a list of files
+    """
+
+    # Create an instance of a Dropbox class, which can make requests to the API.
+    with dropbox.Dropbox(
+        app_key=APP_KEY,
+        app_secret=APP_SECRET,
+        oauth2_refresh_token=REFRESH_TOKEN,
+    ) as dbx:
+        # Check that the access token is valid
+        try:
+            dbx.users_get_current_account()
+        except AuthError:
+            sys.exit("ERROR: Invalid access token.")
+        # We should really handle these exceptions cleaner, but this seems a bit
+        # complicated right now
+        # pylint: disable=W0703
+        try:
+            response = dbx.files_list_folder(path=storage_path)
+            file_list = response.entries
+            file_list = [item.name for item in file_list]
+
+        except Exception as err:
+            print(err)
+            sys.exit()
+    return file_list
+
+
+def get_next_job_in_queue(backend_name: str) -> dict:
+    """
+    A function that obtains the next job in the queue.
+
+    Args:
+        backend_name (str): The name of the backend
+
+    Returns:
+        the path towards the job
+    """
+    job_json_dir = "/Backend_files/Queued_Jobs/" + backend_name + "/"
+    job_list = get_file_queue(job_json_dir)
+    # if there is a job, we should move it
+    job_dict = {"job_id": 0, "job_json_path": "None"}
+    if len(job_list):
+        job_json_name = job_list[0]
+        job_dict["job_id"] = job_json_name[4:-5]
+        job_json_start_path = job_json_dir + job_json_name
+        job_json_final_path = "/Backend_files/Running_Jobs/" + job_json_name
+        move_file(start_path=job_json_start_path, final_path=job_json_final_path)
+        job_dict["job_json_path"] = job_json_final_path
+    return job_dict

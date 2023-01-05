@@ -8,14 +8,16 @@ import os
 import shutil
 import traceback
 import regex as re
-import requests
-from drpbx import upload, move_file, get_file_content
-from decouple import config
+from drpbx import get_file_content, update_in_database, get_next_job_in_queue
 
 
 def new_files_exist():
     """
     Check if new files have come from GitHub.
+
+    This is important if you host it on your own machine and run the system through `keep_running.sh`
+    and automatically deploy changes. The more modern way is to run through heroku,
+    which handles those issues for you.
     """
     new_files = False
     pulled_dir = "/home/ubuntu/Spooler_files_pulled/spooler_files"
@@ -31,65 +33,14 @@ def new_files_exist():
     return new_files
 
 
-def update_in_database(result_dict, status_msg_dict, job_id):
-    """
-    Upload the status and result to the dropbox.
-    """
-    extracted_username = job_id.split("-")[2]
-    requested_backend = job_id.split("-")[1]
-
-    status_json_dir = (
-        "/Backend_files/Status/" + requested_backend + "/" + extracted_username + "/"
-    )
-    status_json_name = "status-" + job_id + ".json"
-    status_json_path = status_json_dir + status_json_name
-
-    job_json_name = "job-" + job_id + ".json"
-    job_json_start_path = "/Backend_files/Running_Jobs/" + job_json_name
-
-    if status_msg_dict["status"] == "DONE":
-        result_json_dir = (
-            "/Backend_files/Result/"
-            + requested_backend
-            + "/"
-            + extracted_username
-            + "/"
-        )
-        result_json_name = "result-" + job_id + ".json"
-        result_json_path = result_json_dir + result_json_name
-        result_binary = json.dumps(result_dict).encode("utf-8")
-        upload(dump_str=result_binary, dbx_path=result_json_path)
-        finished_json_dir = (
-            "/Backend_files/Finished_Jobs/"
-            + requested_backend
-            + "/"
-            + extracted_username
-            + "/"
-        )
-        job_json_final_path = finished_json_dir + job_json_name
-        move_file(start_path=job_json_start_path, final_path=job_json_final_path)
-    elif status_msg_dict["status"] == "ERROR":
-        deleted_json_dir = "/Backend_files/Deleted_Jobs/"
-        job_json_final_path = deleted_json_dir + job_json_name
-        move_file(start_path=job_json_start_path, final_path=job_json_final_path)
-
-    status_binary = json.dumps(status_msg_dict).encode("utf-8")
-    upload(dump_str=status_binary, dbx_path=status_json_path)
-
-
 def main():
     """
     Function for processing jobs continuously.
     """
-    # parameters for server
-    username = config("USERNAME_SPOOLER")
-    password = config("PASSWORD_SPOOLER")
-    # server_domain = "http://coquma-sim.herokuapp.com/api/"
-    # server_domain = "http://qsim-drop.herokuapp.com/"
-    server_domain = "http://qlued.herokuapp.com/api/"
+    # TODO: This should be pull in automatically from the back-end config at some point.
     backends_list = ["fermions", "singlequdit", "multiqudit"]
 
-    # loop
+    # loop which is looking for the jobs
     while True:
         time.sleep(1)
         new_files = new_files_exist()
@@ -98,44 +49,27 @@ def main():
                 "New files must have come. So break to restart the program!"
             )
 
+        # the following a fancy for loop of going through all the back-ends in the list
         requested_backend = backends_list[0]
         backends_list.append(backends_list.pop(0))
-
-        query_url = server_domain + requested_backend + "/get_next_job_in_queue/"
-        queue_response = requests.get(
-            query_url, params={"username": username, "password": password}
-        )
-        if queue_response.status_code == 503:
-            raise RuntimeError(
-                "The server did not respond, when we where looking for incoming files."
-            )
-        if queue_response.status_code == 404:
-            raise RuntimeError(
-                "The server responded with 404. Are you sure that your backends are \
-                already added to the server ?"
-            )
-        job_json_path = (queue_response.json())["job_json"]
-        job_id = (queue_response.json())["job_id"]
-        if job_json_path == "None":
+        print(requested_backend)
+        # let us first see if jobs are waiting
+        job_dict = get_next_job_in_queue(requested_backend)
+        if job_dict["job_json_path"] == "None":
             continue
-
-        query_url = server_domain + requested_backend + "/get_job_status/"
-        status_payload = {"job_id": job_id}
-        queue_response = requests.get(
-            query_url,
-            params={
-                "json": json.dumps(status_payload),
-                "username": username,
-                "password": password,
-            },
-        )
-        status_msg_dict = queue_response.json()
-
-        job_json_dict = json.loads(get_file_content(dbx_path=job_json_path))
+        print(job_dict)
+        job_json_dict = json.loads(get_file_content(dbx_path=job_dict["job_json_path"]))
 
         requested_spooler = importlib.import_module("spooler_" + requested_backend)
         add_job = getattr(requested_spooler, "add_job")
         result_dict = {}
+        status_msg_dict = {
+            "job_id": job_dict["job_id"],
+            "status": "None",
+            "detail": "None",
+            "error_message": "None",
+        }
+
         # Fix this pylint issue whenever you have time, but be careful !
         # pylint: disable=W0703
         try:
@@ -154,7 +88,7 @@ def main():
             status_msg_dict["status"] = "ERROR"
             status_msg_dict["detail"] += "; " + slimmed_tb
             status_msg_dict["error_message"] += "; " + slimmed_tb
-        update_in_database(result_dict, status_msg_dict, job_id)
+        update_in_database(result_dict, status_msg_dict, job_dict["job_id"])
 
 
 if __name__ == "__main__":
