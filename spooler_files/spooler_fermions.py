@@ -1,9 +1,10 @@
 """
 The module that contains all the necessary logic for the fermions.
 """
+from typing import Tuple, TypedDict
 from jsonschema import validate
 import numpy as np
-from scipy.sparse.linalg import expm
+from scipy.sparse.linalg import expm  # type: ignore
 
 NUM_WIRES = 8
 
@@ -87,7 +88,18 @@ int_schema = {
 }
 
 
-def check_with_schema(obj, schm):
+class ExperimentDict(TypedDict):
+    """
+    A class that defines the structure of the experiments.
+    """
+
+    header: dict
+    shots: int
+    success: bool
+    data: dict
+
+
+def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
     """
     Caller for the validate function.
     """
@@ -100,7 +112,7 @@ def check_with_schema(obj, schm):
         return str(err), False
 
 
-def check_json_dict(json_dict):
+def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
     """
     Check if the json file has the appropiate syntax.
 
@@ -153,7 +165,7 @@ def check_json_dict(json_dict):
     return err_code.replace("\n", ".."), exp_ok
 
 
-def nested_kronecker_product(a):
+def nested_kronecker_product(a: list) -> np.ndarray:
     """putting together a large operator from a list of matrices.
 
     Provide an example here.
@@ -170,7 +182,7 @@ def nested_kronecker_product(a):
         return np.kron(a[0], nested_kronecker_product(a[1:]))
 
 
-def jordan_wigner_transform(j: int, lattice_length: int) -> np.array:
+def jordan_wigner_transform(j: int, lattice_length: int) -> np.ndarray:
     """
     Builds up the fermionic operators in a 1D lattice.
     For details see : https://arxiv.org/abs/0705.1928
@@ -194,12 +206,14 @@ def jordan_wigner_transform(j: int, lattice_length: int) -> np.array:
     return nested_kronecker_product(operators)
 
 
-def create_memory_data(shots_array, exp_name, n_shots):
+def create_memory_data(
+    shots_array: list, exp_name: str, n_shots: int
+) -> ExperimentDict:
     """
-    The function to create memeory key in results dictionary
+    The function to create memory key in results dictionary
     with proprer formatting.
     """
-    exp_sub_dict = {
+    exp_sub_dict: ExperimentDict = {
         "header": {"name": "experiment_0", "extra metadata": "text"},
         "shots": 3,
         "success": True,
@@ -215,7 +229,7 @@ def create_memory_data(shots_array, exp_name, n_shots):
     return exp_sub_dict
 
 
-def gen_circuit(json_dict):
+def gen_circuit(json_dict: dict) -> ExperimentDict:
     """The function the creates the instructions for the circuit.
 
     json_dict: The list of instructions for the specific run.
@@ -308,7 +322,7 @@ def gen_circuit(json_dict):
     return exp_sub_dict
 
 
-def add_job(json_dict, status_msg_dict):
+def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
     """
     The function that translates the json with the instructions into some circuit and executes it.
     It performs several checks for the job to see if it is properly working.

@@ -12,7 +12,7 @@ import regex as re
 import drpbx
 
 
-def new_files_exist():
+def new_files_exist() -> bool:
     """
     Check if new files have come from GitHub.
 
@@ -34,7 +34,7 @@ def new_files_exist():
     return new_files
 
 
-def main():
+def main() -> None:
     """
     Function for processing jobs continuously.
     """
@@ -53,7 +53,6 @@ def main():
         # the following a fancy for loop of going through all the back-ends in the list
         requested_backend = backends_list[0]
         backends_list.append(backends_list.pop(0))
-        print(requested_backend)
         # let us first see if jobs are waiting
         job_dict = drpbx.get_next_job_in_queue(requested_backend)
         if job_dict["job_json_path"] == "None":
