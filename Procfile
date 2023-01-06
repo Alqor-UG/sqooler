@@ -1,1 +1,1 @@
-spooler: python -m spooler_files.maintainer
+spooler: python spooler_files/maintainer.py
