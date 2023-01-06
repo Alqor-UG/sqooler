@@ -9,7 +9,7 @@ import shutil
 import traceback
 import regex as re
 
-import drpbx
+from spooler_files import drpbx
 
 
 def new_files_exist() -> bool:
@@ -61,7 +61,7 @@ def main() -> None:
             drpbx.get_file_content(dbx_path=job_dict["job_json_path"])
         )
 
-        requested_spooler = importlib.import_module("spooler_" + requested_backend)
+        requested_spooler = importlib.import_module("spooler_files.spooler_" + requested_backend)
         add_job = getattr(requested_spooler, "add_job")
         result_dict = {}
         status_msg_dict = {

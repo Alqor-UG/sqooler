@@ -6,6 +6,8 @@ from jsonschema import validate
 import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
+from .schemes import ExperimentDict
+
 NUM_WIRES = 8
 
 exper_schema = {
@@ -88,15 +90,7 @@ int_schema = {
 }
 
 
-class ExperimentDict(TypedDict):
-    """
-    A class that defines the structure of the experiments.
-    """
 
-    header: dict
-    shots: int
-    success: bool
-    data: dict
 
 
 def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
