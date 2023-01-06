@@ -9,20 +9,22 @@ import sys
 from typing import List
 import json
 
-import dropbox
-from dropbox.files import WriteMode
-from dropbox.exceptions import ApiError, AuthError
+import dropbox  # type: ignore
+from dropbox.files import WriteMode  # type: ignore
+from dropbox.exceptions import ApiError, AuthError  # type: ignore
 
-from decouple import config
+from decouple import config  # type: ignore
 
 APP_KEY = config("APP_KEY")
 REFRESH_TOKEN = config("REFRESH_TOKEN")
 APP_SECRET = config("APP_SECRET")
 
 # Uploads contents of dump_str to Dropbox
-def upload(dump_str, dbx_path):
+def upload(dump_str: bytes, dbx_path: str) -> None:
     """
     Upload the file identified to the dropbox.
+
+    dump_str: the content that should be written into the file
     """
     # Create an instance of a Dropbox class, which can make requests to the API.
     with dropbox.Dropbox(
@@ -42,7 +44,7 @@ def upload(dump_str, dbx_path):
             sys.exit()
 
 
-def get_file_content(dbx_path):
+def get_file_content(dbx_path: str) -> str:
     """
     Get the file content from the dropbox.
     """
@@ -67,7 +69,7 @@ def get_file_content(dbx_path):
     return data
 
 
-def move_file(start_path, final_path):
+def move_file(start_path: str, final_path: str) -> None:
     """
     Move the file from start_path to final_path.
     """
@@ -90,7 +92,7 @@ def move_file(start_path, final_path):
             sys.exit()
 
 
-def update_in_database(result_dict, status_msg_dict, job_id):
+def update_in_database(result_dict: dict, status_msg_dict: dict, job_id: str) -> None:
     """
     Upload the status and result to the dropbox.
     """
