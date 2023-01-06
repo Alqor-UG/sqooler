@@ -8,10 +8,11 @@ import os
 import shutil
 import traceback
 import regex as re
-from drpbx import get_file_content, update_in_database, get_next_job_in_queue
+
+from spooler_files import drpbx
 
 
-def new_files_exist():
+def new_files_exist() -> bool:
     """
     Check if new files have come from GitHub.
 
@@ -33,7 +34,7 @@ def new_files_exist():
     return new_files
 
 
-def main():
+def main() -> None:
     """
     Function for processing jobs continuously.
     """
@@ -52,15 +53,17 @@ def main():
         # the following a fancy for loop of going through all the back-ends in the list
         requested_backend = backends_list[0]
         backends_list.append(backends_list.pop(0))
-        print(requested_backend)
         # let us first see if jobs are waiting
-        job_dict = get_next_job_in_queue(requested_backend)
+        job_dict = drpbx.get_next_job_in_queue(requested_backend)
         if job_dict["job_json_path"] == "None":
             continue
-        print(job_dict)
-        job_json_dict = json.loads(get_file_content(dbx_path=job_dict["job_json_path"]))
+        job_json_dict = json.loads(
+            drpbx.get_file_content(dbx_path=job_dict["job_json_path"])
+        )
 
-        requested_spooler = importlib.import_module("spooler_" + requested_backend)
+        requested_spooler = importlib.import_module(
+            "spooler_files.spooler_" + requested_backend
+        )
         add_job = getattr(requested_spooler, "add_job")
         result_dict = {}
         status_msg_dict = {
@@ -88,7 +91,7 @@ def main():
             status_msg_dict["status"] = "ERROR"
             status_msg_dict["detail"] += "; " + slimmed_tb
             status_msg_dict["error_message"] += "; " + slimmed_tb
-        update_in_database(result_dict, status_msg_dict, job_dict["job_id"])
+        drpbx.update_in_database(result_dict, status_msg_dict, job_dict["job_id"])
 
 
 if __name__ == "__main__":
