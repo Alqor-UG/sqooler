@@ -1,12 +1,11 @@
 """
 The module that contains all the necessary logic for the fermions.
 """
-from typing import Tuple, TypedDict
-from jsonschema import validate
+from typing import Tuple
 import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
-from .schemes import ExperimentDict
+from .schemes import ExperimentDict, check_with_schema
 
 NUM_WIRES = 8
 
@@ -88,22 +87,6 @@ int_schema = {
         },
     ],
 }
-
-
-
-
-
-def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
-    """
-    Caller for the validate function.
-    """
-    # Fix this pylint issue whenever you have time, but be careful !
-    # pylint: disable=W0703
-    try:
-        validate(instance=obj, schema=schm)
-        return "", True
-    except Exception as err:
-        return str(err), False
 
 
 def check_json_dict(json_dict: dict) -> Tuple[str, bool]:

@@ -2,14 +2,14 @@
 The module that contains all the necessary logic for the multiqudit.
 """
 
-from typing import List, Tuple, TypedDict
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
+from typing import List, Tuple
+
 import numpy as np
 from scipy.sparse import identity, diags, csc_matrix  # type: ignore
 from scipy import sparse  # type: ignore
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 
+from .schemes import ExperimentDict, check_with_schema
 
 MAX_NUM_WIRES = 16
 MAX_EXPERIMENTS = 1000
@@ -169,33 +169,6 @@ barrier_schema = {
         {"type": "array", "maxItems": 0},
     ],
 }
-
-
-class ExperimentDict(TypedDict):
-    """
-    A class that defines the structure of the experiments.
-    """
-
-    header: dict
-    shots: int
-    success: bool
-    data: dict
-
-
-def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
-    """
-    Caller for the validate function of jsonschema
-    Args:
-        obj (dict): the object that should be checked.
-        schm (dict): the schema that defines the object properties.
-    Returns:
-        boolean flag tellings if dictionary matches schema syntax.
-    """
-    try:
-        validate(instance=obj, schema=schm)
-        return "", True
-    except ValidationError as exc:
-        return str(exc), False
 
 
 def check_json_dict(json_dict: dict) -> Tuple[str, bool]:

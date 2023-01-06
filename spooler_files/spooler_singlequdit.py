@@ -2,13 +2,13 @@
 The module that contains all the necessary logic for the singlequdit.
 """
 
-from typing import Tuple, TypedDict
-
-from jsonschema import validate
+from typing import Tuple
 
 import numpy as np
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 from scipy.sparse import diags, csc_matrix  # type: ignore
+
+from .schemes import ExperimentDict, check_with_schema
 
 exper_schema = {
     "type": "object",
@@ -131,30 +131,6 @@ barrier_measure_schema = {
         {"type": "array", "maxItems": 0},
     ],
 }
-
-
-class ExperimentDict(TypedDict):
-    """
-    A class that defines the structure of the experiments.
-    """
-
-    header: dict
-    shots: int
-    success: bool
-    data: dict
-
-
-def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
-    """
-    Caller for the validate function.
-    """
-    # Fix this pylint issue whenever you have time, but be careful !
-    # pylint: disable=W0703
-    try:
-        validate(instance=obj, schema=schm)
-        return "", True
-    except Exception as err:
-        return str(err), False
 
 
 def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
