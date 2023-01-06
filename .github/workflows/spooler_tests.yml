@@ -57,4 +57,4 @@ jobs:
         black --check .
     - name: Run mypy
       run: |
-        mypy -m --disallow-untyped-defs spooler_files
+        mypy --disallow-untyped-defs -m spooler_files
