@@ -2,14 +2,11 @@
 Test module for the spooler_multiqudit.py file.
 """
 
-import sys
-import os
 from typing import Union
 import numpy as np
 
 # pylint: disable=C0413, E0401
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "spooler_files"))
-from spooler_multiqudit import check_json_dict, gen_circuit
+from spooler_files.spooler_multiqudit import check_json_dict, gen_circuit
 
 
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
