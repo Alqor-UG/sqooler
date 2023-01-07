@@ -289,7 +289,7 @@ def common_add_job(
     Args:
         result_dict: The dictionary that contains the results
         json_dict: A dictonary of all the instructions.
-        job_id: the ID of the job we are treating.
+        status_msg_dict: the dict that will contain the status message.
     """
     err_msg, json_is_fine = check_json_dict(json_dict)
     if json_is_fine:
