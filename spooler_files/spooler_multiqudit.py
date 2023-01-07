@@ -2,24 +2,26 @@
 The module that contains all the necessary logic for the multiqudit.
 """
 
-from typing import List, Tuple, TypedDict
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
+from typing import List, Tuple
+
 import numpy as np
 from scipy.sparse import identity, diags, csc_matrix  # type: ignore
 from scipy import sparse  # type: ignore
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 
+from .schemes import ExperimentDict, check_with_schema, create_memory_data
 
 MAX_NUM_WIRES = 16
+N_MAX_SHOTS = 10 ** 3
 MAX_EXPERIMENTS = 1000
+N_MAX_ATOMS = 500
 
 exper_schema = {
     "type": "object",
     "required": ["instructions", "shots", "num_wires"],
     "properties": {
         "instructions": {"type": "array", "items": {"type": "array"}},
-        "shots": {"type": "number", "minimum": 0, "maximum": 1000},
+        "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
         "num_wires": {"type": "number", "minimum": 1, "maximum": MAX_NUM_WIRES},
         "seed": {"type": "number"},
         "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
@@ -40,7 +42,7 @@ rlx_schema = {
         },
         {
             "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
         },
     ],
 }
@@ -58,7 +60,7 @@ rlz_schema = {
         },
         {
             "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
         },
     ],
 }
@@ -76,7 +78,7 @@ rlz2_schema = {
         },
         {
             "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
         },
     ],
 }
@@ -95,7 +97,7 @@ lxly_schema = {
         {
             "type": "array",
             "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
         },
     ],
 }
@@ -114,7 +116,7 @@ lzlz_schema = {
         {
             "type": "array",
             "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
         },
     ],
 }
@@ -134,7 +136,7 @@ load_schema = {
             "type": "array",
             # set the upper limit for the number of atoms that can be loaded
             # into the single qudit
-            "items": [{"type": "number", "minimum": 0, "maximum": 500}],
+            "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_ATOMS}],
         },
     ],
 }
@@ -169,33 +171,6 @@ barrier_schema = {
         {"type": "array", "maxItems": 0},
     ],
 }
-
-
-class ExperimentDict(TypedDict):
-    """
-    A class that defines the structure of the experiments.
-    """
-
-    header: dict
-    shots: int
-    success: bool
-    data: dict
-
-
-def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
-    """
-    Caller for the validate function of jsonschema
-    Args:
-        obj (dict): the object that should be checked.
-        schm (dict): the schema that defines the object properties.
-    Returns:
-        boolean flag tellings if dictionary matches schema syntax.
-    """
-    try:
-        validate(instance=obj, schema=schm)
-        return "", True
-    except ValidationError as exc:
-        return str(exc), False
 
 
 def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
@@ -287,29 +262,6 @@ def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: List[int]) -> csc_matrix:
         res = sparse.kron(res, temp)
 
     return res
-
-
-def create_memory_data(
-    shots_array: list, exp_name: str, n_shots: int
-) -> ExperimentDict:
-    """
-    The function to create memeory key in results dictionary
-    with proprer formatting.
-    """
-    exp_sub_dict: ExperimentDict = {
-        "header": {"name": "experiment_0", "extra metadata": "text"},
-        "shots": 3,
-        "success": True,
-        "data": {"memory": None},  # slot 1 (Na)      # slot 2 (Li)
-    }
-    exp_sub_dict["header"]["name"] = exp_name
-    exp_sub_dict["shots"] = n_shots
-    memory_list = [
-        str(shot).replace("[", "").replace("]", "").replace(",", "")
-        for shot in shots_array
-    ]
-    exp_sub_dict["data"]["memory"] = memory_list
-    return exp_sub_dict
 
 
 def gen_circuit(json_dict: dict) -> ExperimentDict:

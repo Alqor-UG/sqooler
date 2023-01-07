@@ -30,6 +30,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
         "header": {},
         "results": [],
     }
+
     err_msg, json_is_fine = check_json_dict(json_dict)
     assert json_is_fine is True, "Failed JSON sanity check : " + err_msg
     if json_is_fine:

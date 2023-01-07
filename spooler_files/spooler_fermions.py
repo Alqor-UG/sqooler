@@ -1,20 +1,23 @@
 """
 The module that contains all the necessary logic for the fermions.
 """
-from typing import Tuple, TypedDict
-from jsonschema import validate
+from typing import Tuple
 import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
+from .schemes import ExperimentDict, check_with_schema, create_memory_data
+
 NUM_WIRES = 8
+N_MAX_SHOTS = 10 ** 3
+N_MAX_WIRES = 8
 
 exper_schema = {
     "type": "object",
     "required": ["instructions", "shots", "num_wires", "wire_order"],
     "properties": {
         "instructions": {"type": "array", "items": {"type": "array"}},
-        "shots": {"type": "number", "minimum": 0, "maximum": 10 ** 3},
-        "num_wires": {"type": "number", "minimum": 1, "maximum": 8},
+        "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
+        "num_wires": {"type": "number", "minimum": 1, "maximum": N_MAX_WIRES},
         "seed": {"type": "number"},
         "wire_order": {"type": "string", "enum": ["interleaved"]},
     },
@@ -60,11 +63,11 @@ hop_schema = {
         {
             "type": "array",
             "maxItems": 4,
-            "items": [{"type": "number", "minimum": 0, "maximum": 7}],
+            "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
         },
         {
             "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
         },
     ],
 }
@@ -78,38 +81,14 @@ int_schema = {
         {
             "type": "array",
             "maxItems": 8,
-            "items": [{"type": "number", "minimum": 0, "maximum": 7}],
+            "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
         },
         {
             "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
         },
     ],
 }
-
-
-class ExperimentDict(TypedDict):
-    """
-    A class that defines the structure of the experiments.
-    """
-
-    header: dict
-    shots: int
-    success: bool
-    data: dict
-
-
-def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
-    """
-    Caller for the validate function.
-    """
-    # Fix this pylint issue whenever you have time, but be careful !
-    # pylint: disable=W0703
-    try:
-        validate(instance=obj, schema=schm)
-        return "", True
-    except Exception as err:
-        return str(err), False
 
 
 def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
@@ -130,6 +109,7 @@ def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
         "fphase": int_schema,
         "measure": load_measure_schema,
     }
+
     max_exps = 50
     for expr in json_dict:
         err_code = "Wrong experiment name or too many experiments"
@@ -204,29 +184,6 @@ def jordan_wigner_transform(j: int, lattice_length: int) -> np.ndarray:
     for dummy in range(lattice_length - j - 1):
         operators.append(id_arr)
     return nested_kronecker_product(operators)
-
-
-def create_memory_data(
-    shots_array: list, exp_name: str, n_shots: int
-) -> ExperimentDict:
-    """
-    The function to create memory key in results dictionary
-    with proprer formatting.
-    """
-    exp_sub_dict: ExperimentDict = {
-        "header": {"name": "experiment_0", "extra metadata": "text"},
-        "shots": 3,
-        "success": True,
-        "data": {"memory": None},  # slot 1 (Na)      # slot 2 (Li)
-    }
-    exp_sub_dict["header"]["name"] = exp_name
-    exp_sub_dict["shots"] = n_shots
-    memory_list = [
-        str(shot).replace("[", "").replace("]", "").replace(",", "")
-        for shot in shots_array
-    ]
-    exp_sub_dict["data"]["memory"] = memory_list
-    return exp_sub_dict
 
 
 def gen_circuit(json_dict: dict) -> ExperimentDict:
@@ -322,28 +279,18 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
     return exp_sub_dict
 
 
-def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
+def common_add_job(
+    result_dict: dict, json_dict: dict, status_msg_dict: dict
+) -> Tuple[dict, dict]:
     """
     The function that translates the json with the instructions into some circuit and executes it.
-    It performs several checks for the job to see if it is properly working.
-    If things are fine the job gets added the list of things that should be executed.
+    This is the part the gets called by add_job in each spooler.
 
-    json_dict: A dictonary of all the instructions.
-    job_id: the ID of the job we are treating.
+    Args:
+        result_dict: The dictionary that contains the results
+        json_dict: A dictonary of all the instructions.
+        status_msg_dict: the dict that will contain the status message.
     """
-    job_id = status_msg_dict["job_id"]
-
-    result_dict = {
-        "backend_name": "synqs_fermionic_tweezer_simulator",
-        "backend_version": "0.0.1",
-        "job_id": job_id,
-        "qobj_id": None,
-        "success": True,
-        "status": "finished",
-        "header": {},
-        "results": [],
-        "experiments": [],
-    }
     err_msg, json_is_fine = check_json_dict(json_dict)
     if json_is_fine:
         for exp in json_dict:
@@ -367,3 +314,28 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
         )
         status_msg_dict["status"] = "ERROR"
     return result_dict, status_msg_dict
+
+
+def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
+    """
+    The function that translates the json with the instructions into some circuit and executes it.
+    It performs several checks for the job to see if it is properly working.
+    If things are fine the job gets added the list of things that should be executed.
+
+    json_dict: A dictonary of all the instructions.
+    job_id: the ID of the job we are treating.
+    """
+    job_id = status_msg_dict["job_id"]
+
+    result_dict = {
+        "backend_name": "synqs_fermionic_tweezer_simulator",
+        "backend_version": "0.0.1",
+        "job_id": job_id,
+        "qobj_id": None,
+        "success": True,
+        "status": "finished",
+        "header": {},
+        "results": [],
+        "experiments": [],
+    }
+    return common_add_job(result_dict, json_dict, status_msg_dict)
