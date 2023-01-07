@@ -39,3 +39,27 @@ def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
         return "", True
     except ValidationError as err:
         return str(err), False
+
+
+def create_memory_data(
+    shots_array: list, exp_name: str, n_shots: int
+) -> ExperimentDict:
+    """
+    The function to create memory key in results dictionary
+    with proprer formatting.
+    """
+    exp_sub_dict: ExperimentDict = {
+        "header": {"name": "experiment_0", "extra metadata": "text"},
+        "shots": 3,
+        "success": True,
+        "data": {"memory": None},
+    }
+
+    exp_sub_dict["header"]["name"] = exp_name
+    exp_sub_dict["shots"] = n_shots
+    memory_list = [
+        str(shot).replace("[", "").replace("]", "").replace(",", "")
+        for shot in shots_array
+    ]
+    exp_sub_dict["data"]["memory"] = memory_list
+    return exp_sub_dict

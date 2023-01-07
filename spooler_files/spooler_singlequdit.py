@@ -8,15 +8,18 @@ import numpy as np
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 from scipy.sparse import diags, csc_matrix  # type: ignore
 
-from .schemes import ExperimentDict, check_with_schema
+from .schemes import ExperimentDict, check_with_schema, create_memory_data
+
+MAX_EXPERIMENTS = 1000
+N_MAX_ATOMS = 500
 
 exper_schema = {
     "type": "object",
     "required": ["instructions", "shots", "num_wires"],
     "properties": {
         "instructions": {"type": "array", "items": {"type": "array"}},
-        "shots": {"type": "number", "minimum": 0, "maximum": 1000},
-        "num_wires": {"type": "number", "minimum": 1, "maximum": 2},
+        "shots": {"type": "number", "minimum": 0, "maximum": MAX_EXPERIMENTS},
+        "num_wires": {"type": "number", "minimum": 1, "maximum": 1},
         "seed": {"type": "number"},
         "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
     },
@@ -36,7 +39,7 @@ rLx_schema = {
         },
         {
             "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
         },
     ],
 }
@@ -54,7 +57,7 @@ rLz_schema = {
         },
         {
             "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
         },
     ],
 }
@@ -72,7 +75,7 @@ rLz2_schema = {
         },
         {
             "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 6.284}],
+            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
         },
     ],
 }
@@ -92,27 +95,7 @@ load_schema = {
             "type": "array",
             # set the upper limit for the number of atoms that can be loaded
             # into the single qudit
-            "items": [{"type": "number", "minimum": 0, "maximum": 500}],
-        },
-    ],
-}
-
-load_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["load"]},
-        {
-            "type": "array",
-            "maxItems": 2,
-            "items": [{"type": "number", "minimum": 0, "maximum": 0}],
-        },
-        {
-            "type": "array",
-            # set the upper limit for the number of atoms that can be loaded
-            # into the single qudit
-            "items": [{"type": "number", "minimum": 0, "maximum": 500}],
+            "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_ATOMS}],
         },
     ],
 }
@@ -178,29 +161,6 @@ def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
         if not exp_ok:
             break
     return err_code.replace("\n", ".."), exp_ok
-
-
-def create_memory_data(
-    shots_array: list, exp_name: str, n_shots: int
-) -> ExperimentDict:
-    """
-    The function to create memeory key in results dictionary
-    with proprer formatting.
-    """
-    exp_sub_dict: ExperimentDict = {
-        "header": {"name": "experiment_0", "extra metadata": "text"},
-        "shots": 3,
-        "success": True,
-        "data": {"memory": None},  # slot 1 (Na)      # slot 2 (Li)
-    }
-    exp_sub_dict["header"]["name"] = exp_name
-    exp_sub_dict["shots"] = n_shots
-    memory_list = [
-        str(shot).replace("[", "").replace("]", "").replace(",", "")
-        for shot in shots_array
-    ]
-    exp_sub_dict["data"]["memory"] = memory_list
-    return exp_sub_dict
 
 
 def gen_circuit(json_dict: dict) -> ExperimentDict:
