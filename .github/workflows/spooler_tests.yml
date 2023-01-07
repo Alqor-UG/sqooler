@@ -34,7 +34,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run Tests
         run: |
-          pytest
+          python - m pytest
   lint:
 
     runs-on: ubuntu-latest
@@ -52,6 +52,7 @@ jobs:
     - name: Run pylint
       run: |
         pylint spooler_files
+        pylint spooler_files/tests
     - name: Run black
       run: |
         black --check .
