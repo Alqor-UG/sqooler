@@ -5,90 +5,93 @@ from typing import Tuple
 import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
-from .schemes import ExperimentDict, check_with_schema, create_memory_data
+
+from .schemes import (
+    ExperimentDict,
+    check_with_schema,
+    create_memory_data,
+    ExperimentScheme,
+    InstructionScheme,
+)
 
 NUM_WIRES = 8
 N_MAX_SHOTS = 10 ** 3
 N_MAX_WIRES = 8
 
-exper_schema = {
-    "type": "object",
-    "required": ["instructions", "shots", "num_wires", "wire_order"],
-    "properties": {
-        "instructions": {"type": "array", "items": {"type": "array"}},
-        "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
-        "num_wires": {"type": "number", "minimum": 1, "maximum": N_MAX_WIRES},
-        "seed": {"type": "number"},
-        "wire_order": {"type": "string", "enum": ["interleaved"]},
+properties_dict = {
+    "instructions": {"type": "array", "items": {"type": "array"}},
+    "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
+    "num_wires": {"type": "number", "minimum": 1, "maximum": N_MAX_WIRES},
+    "seed": {"type": "number"},
+    "wire_order": {"type": "string", "enum": ["interleaved"]},
+}
+
+exper_schema = dict(
+    ExperimentScheme(
+        required=["instructions", "shots", "num_wires", "wire_order"],
+        properties=properties_dict,
+    )
+)
+
+# define the instructions in the following
+
+# barrier instruction
+barr_items = [
+    {"type": "string", "enum": ["barrier"]},
+    {
+        "type": "array",
+        "maxItems": NUM_WIRES,
+        "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
     },
-    "additionalProperties": False,
-}
+    {"type": "array", "maxItems": 0},
+]
+barrier_schema = dict(InstructionScheme(items=barr_items))
 
-barrier_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["barrier"]},
-        {
-            "type": "array",
-            "maxItems": NUM_WIRES,
-            "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
-        },
-        {"type": "array", "maxItems": 0},
-    ],
-}
+# load and measure instruction
 
-load_measure_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["load", "measure"]},
-        {
-            "type": "array",
-            "maxItems": 2,
-            "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
-        },
-        {"type": "array", "maxItems": 0},
-    ],
-}
+load_measure_items = [
+    {"type": "string", "enum": ["load", "measure"]},
+    {
+        "type": "array",
+        "maxItems": 2,
+        "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
+    },
+    {"type": "array", "maxItems": 0},
+]
 
-hop_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["fhop"]},
-        {
-            "type": "array",
-            "maxItems": 4,
-            "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
-        },
-        {
-            "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-        },
-    ],
-}
+load_measure_schema = dict(InstructionScheme(items=load_measure_items))
 
-int_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["fint", "fphase"]},
-        {
-            "type": "array",
-            "maxItems": 8,
-            "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
-        },
-        {
-            "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-        },
-    ],
-}
+# hop instruction
+hop_items = [
+    {"type": "string", "enum": ["fhop"]},
+    {
+        "type": "array",
+        "maxItems": 4,
+        "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
+    },
+    {
+        "type": "array",
+        "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
+    },
+]
+
+hop_schema = dict(InstructionScheme(items=hop_items))
+
+# interaction instruction
+
+int_items = [
+    {"type": "string", "enum": ["fint", "fphase"]},
+    {
+        "type": "array",
+        "maxItems": 8,
+        "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
+    },
+    {
+        "type": "array",
+        "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
+    },
+]
+int_schema = dict(InstructionScheme(items=int_items))
 
 
 def check_json_dict(json_dict: dict) -> Tuple[str, bool]:

@@ -9,168 +9,191 @@ from scipy.sparse import identity, diags, csc_matrix  # type: ignore
 from scipy import sparse  # type: ignore
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 
-from .schemes import ExperimentDict, check_with_schema, create_memory_data
+from .schemes import (
+    ExperimentDict,
+    check_with_schema,
+    create_memory_data,
+    ExperimentScheme,
+    InstructionScheme,
+)
 
 MAX_NUM_WIRES = 16
 N_MAX_SHOTS = 10 ** 3
 MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
 
-exper_schema = {
-    "type": "object",
-    "required": ["instructions", "shots", "num_wires"],
-    "properties": {
-        "instructions": {"type": "array", "items": {"type": "array"}},
-        "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
-        "num_wires": {"type": "number", "minimum": 1, "maximum": MAX_NUM_WIRES},
-        "seed": {"type": "number"},
-        "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
+properties_dict = {
+    "instructions": {"type": "array", "items": {"type": "array"}},
+    "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
+    "num_wires": {"type": "number", "minimum": 1, "maximum": MAX_NUM_WIRES},
+    "seed": {"type": "number"},
+    "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
+}
+
+exper_schema = dict(
+    ExperimentScheme(
+        required=["instructions", "shots", "num_wires"],
+        properties=properties_dict,
+    )
+)
+
+# define the instructions in the following
+
+# rlx instruction
+
+rlx_items = [
+    {"type": "string", "enum": ["rlx"]},
+    {
+        "type": "array",
+        "maxItems": 1,
+        "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
     },
-    "additionalProperties": False,
-}
+    {
+        "type": "array",
+        "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
+    },
+]
+rlx_schema = dict(InstructionScheme(items=rlx_items))
 
-rlx_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["rlx"]},
-        {
-            "type": "array",
-            "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-        },
-        {
-            "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-        },
-    ],
-}
+# rlz instruction
 
-rlz_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["rlz"]},
-        {
-            "type": "array",
-            "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-        },
-        {
-            "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-        },
-    ],
-}
+rlz_items = [
+    {"type": "string", "enum": ["rlz"]},
+    {
+        "type": "array",
+        "maxItems": 1,
+        "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
+    },
+    {
+        "type": "array",
+        "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
+    },
+]
 
-rlz2_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["rlz2"]},
-        {
-            "type": "array",
-            "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-        },
-        {
-            "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
-        },
-    ],
-}
+rlz_schema = dict(InstructionScheme(items=rlz_items))
 
-lxly_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["rlxly"]},
-        {
-            "type": "array",
-            "maxItems": MAX_NUM_WIRES,
-            "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-        },
-        {
-            "type": "array",
-            "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
-        },
-    ],
-}
+# rlz2 instruction
+rlz2_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["rlz2"]},
+            {
+                "type": "array",
+                "maxItems": 1,
+                "items": [
+                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                ],
+            },
+            {
+                "type": "array",
+                "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
+            },
+        ]
+    )
+)
 
-lzlz_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["rlzlz"]},
-        {
-            "type": "array",
-            "maxItems": MAX_NUM_WIRES,
-            "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-        },
-        {
-            "type": "array",
-            "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
-        },
-    ],
-}
+# lxly instruction
 
-load_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["load"]},
-        {
-            "type": "array",
-            "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-        },
-        {
-            "type": "array",
-            # set the upper limit for the number of atoms that can be loaded
-            # into the single qudit
-            "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_ATOMS}],
-        },
-    ],
-}
+lxly_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["rlxly"]},
+            {
+                "type": "array",
+                "maxItems": MAX_NUM_WIRES,
+                "items": [
+                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                ],
+            },
+            {
+                "type": "array",
+                "maxItems": 1,
+                "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
+            },
+        ]
+    )
+)
 
-measure_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["measure"]},
-        {
-            "type": "array",
-            "maxItems": 1,
-            "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-        },
-        {"type": "array", "maxItems": 0},
-    ],
-}
+# lzlz instruction
 
+lzlz_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["rlzlz"]},
+            {
+                "type": "array",
+                "maxItems": MAX_NUM_WIRES,
+                "items": [
+                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                ],
+            },
+            {
+                "type": "array",
+                "maxItems": 1,
+                "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
+            },
+        ],
+    )
+)
 
-barrier_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["barrier"]},
-        {
-            "type": "array",
-            "maxItems": MAX_NUM_WIRES,
-            "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-        },
-        {"type": "array", "maxItems": 0},
-    ],
-}
+# load instruction
+
+load_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["load"]},
+            {
+                "type": "array",
+                "maxItems": 1,
+                "items": [
+                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                ],
+            },
+            {
+                "type": "array",
+                # set the upper limit for the number of atoms that can be loaded
+                # into the single qudit
+                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_ATOMS}],
+            },
+        ]
+    )
+)
+
+# measure instruction
+
+measure_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["measure"]},
+            {
+                "type": "array",
+                "maxItems": 1,
+                "items": [
+                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                ],
+            },
+            {"type": "array", "maxItems": 0},
+        ]
+    )
+)
+
+# barrier instruction
+
+barrier_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["barrier"]},
+            {
+                "type": "array",
+                "maxItems": MAX_NUM_WIRES,
+                "items": [
+                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                ],
+            },
+            {"type": "array", "maxItems": 0},
+        ]
+    )
+)
 
 
 def check_json_dict(json_dict: dict) -> Tuple[str, bool]:

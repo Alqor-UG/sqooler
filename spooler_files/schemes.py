@@ -3,10 +3,35 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Tuple, TypedDict
+from typing import Tuple, TypedDict, List
+
+from pydantic import BaseModel
 
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
+
+
+class ExperimentScheme(BaseModel):
+    """
+    The schema for the experiments, which is used for validation.
+    TODO: Make the difference with ExperimentDict clear.
+    """
+
+    required: List[str]
+    properties: dict
+    type: str = "object"
+    additionalProperties: bool = False
+
+
+class InstructionScheme(BaseModel):
+    """
+    The schema for the instructions
+    """
+
+    items: list
+    type: str = "array"
+    minItems: int = 3
+    maxItems: int = 3
 
 
 class ExperimentDict(TypedDict):
