@@ -8,117 +8,120 @@ import numpy as np
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 from scipy.sparse import diags, csc_matrix  # type: ignore
 
-from .schemes import ExperimentDict, check_with_schema, create_memory_data
+from .schemes import (
+    ExperimentDict,
+    check_with_schema,
+    create_memory_data,
+    ExperimentScheme,
+    InstructionScheme,
+)
 
 MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
 
-exper_schema = {
-    "type": "object",
-    "required": ["instructions", "shots", "num_wires"],
-    "properties": {
-        "instructions": {"type": "array", "items": {"type": "array"}},
-        "shots": {"type": "number", "minimum": 0, "maximum": MAX_EXPERIMENTS},
-        "num_wires": {"type": "number", "minimum": 1, "maximum": 1},
-        "seed": {"type": "number"},
-        "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
-    },
-    "additionalProperties": False,
+properties_dict = {
+    "instructions": {"type": "array", "items": {"type": "array"}},
+    "shots": {"type": "number", "minimum": 0, "maximum": MAX_EXPERIMENTS},
+    "num_wires": {"type": "number", "minimum": 1, "maximum": 1},
+    "seed": {"type": "number"},
+    "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
 }
 
-rLx_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["rlx"]},
-        {
-            "type": "array",
-            "maxItems": 2,
-            "items": [{"type": "number", "minimum": 0, "maximum": 1}],
-        },
-        {
-            "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-        },
-    ],
-}
+exper_schema = dict(
+    ExperimentScheme(
+        required=["instructions", "shots", "num_wires"],
+        properties=properties_dict,
+    )
+)
 
-rLz_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["rlz"]},
-        {
-            "type": "array",
-            "maxItems": 2,
-            "items": [{"type": "number", "minimum": 0, "maximum": 1}],
-        },
-        {
-            "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-        },
-    ],
-}
+rLx_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["rlx"]},
+            {
+                "type": "array",
+                "maxItems": 2,
+                "items": [{"type": "number", "minimum": 0, "maximum": 1}],
+            },
+            {
+                "type": "array",
+                "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
+            },
+        ]
+    )
+)
 
-rLz2_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["rlz2"]},
-        {
-            "type": "array",
-            "maxItems": 2,
-            "items": [{"type": "number", "minimum": 0, "maximum": 1}],
-        },
-        {
-            "type": "array",
-            "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
-        },
-    ],
-}
+rLz_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["rlz"]},
+            {
+                "type": "array",
+                "maxItems": 2,
+                "items": [{"type": "number", "minimum": 0, "maximum": 1}],
+            },
+            {
+                "type": "array",
+                "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
+            },
+        ]
+    )
+)
 
-load_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["load"]},
-        {
-            "type": "array",
-            "maxItems": 2,
-            "items": [{"type": "number", "minimum": 0, "maximum": 0}],
-        },
-        {
-            "type": "array",
-            # set the upper limit for the number of atoms that can be loaded
-            # into the single qudit
-            "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_ATOMS}],
-        },
-    ],
-}
+rLz2_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["rlz2"]},
+            {
+                "type": "array",
+                "maxItems": 2,
+                "items": [{"type": "number", "minimum": 0, "maximum": 1}],
+            },
+            {
+                "type": "array",
+                "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
+            },
+        ]
+    )
+)
 
-barrier_measure_schema = {
-    "type": "array",
-    "minItems": 3,
-    "maxItems": 3,
-    "items": [
-        {"type": "string", "enum": ["measure", "barrier"]},
-        {
-            "type": "array",
-            "maxItems": 2,
-            "items": [{"type": "number", "minimum": 0, "maximum": 1}],
-        },
-        {"type": "array", "maxItems": 0},
-    ],
-}
+load_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["load"]},
+            {
+                "type": "array",
+                "maxItems": 2,
+                "items": [{"type": "number", "minimum": 0, "maximum": 0}],
+            },
+            {
+                "type": "array",
+                # set the upper limit for the number of atoms that can be loaded
+                # into the single qudit
+                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_ATOMS}],
+            },
+        ]
+    )
+)
+
+barrier_measure_schema = dict(
+    InstructionScheme(
+        items=[
+            {"type": "string", "enum": ["measure", "barrier"]},
+            {
+                "type": "array",
+                "maxItems": 2,
+                "items": [{"type": "number", "minimum": 0, "maximum": 1}],
+            },
+            {"type": "array", "maxItems": 0},
+        ]
+    )
+)
 
 
 def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
     """
-    Check if the json file has the appropiate syntax.
+    Check if the json file that comes from the database has the appropiate syntax.
     """
     ins_schema_dict = {
         "rlx": rLx_schema,
