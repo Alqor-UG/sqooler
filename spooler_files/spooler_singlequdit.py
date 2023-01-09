@@ -10,10 +10,10 @@ from scipy.sparse import diags, csc_matrix  # type: ignore
 
 from .schemes import (
     ExperimentDict,
-    check_with_schema,
     create_memory_data,
     ExperimentScheme,
     InstructionScheme,
+    Spooler,
 )
 
 MAX_EXPERIMENTS = 1000
@@ -26,13 +26,6 @@ properties_dict = {
     "seed": {"type": "number"},
     "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
 }
-
-exper_schema = dict(
-    ExperimentScheme(
-        required=["instructions", "shots", "num_wires"],
-        properties=properties_dict,
-    )
-)
 
 rLx_schema = dict(
     InstructionScheme(
@@ -118,52 +111,20 @@ barrier_measure_schema = dict(
     )
 )
 
-
-def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
-    """
-    Check if the json file that comes from the database has the appropiate syntax.
-    """
-    ins_schema_dict = {
+sq_spooler = Spooler(
+    exper_schema=ExperimentScheme(
+        required=["instructions", "shots", "num_wires"],
+        properties=properties_dict,
+    ),
+    ins_schema_dict={
         "rlx": rLx_schema,
         "rlz": rLz_schema,
         "rlz2": rLz2_schema,
         "barrier": barrier_measure_schema,
         "measure": barrier_measure_schema,
         "load": load_schema,
-    }
-    max_exps = 15
-    for expr in json_dict:
-        err_code = "Wrong experiment name or too many experiments"
-        # Fix this pylint issue whenever you have time, but be careful !
-        # pylint: disable=W0702
-        try:
-            exp_ok = (
-                expr.startswith("experiment_")
-                and expr[11:].isdigit()
-                and (int(expr[11:]) <= max_exps)
-            )
-        except:
-            exp_ok = False
-            break
-        if not exp_ok:
-            break
-        err_code, exp_ok = check_with_schema(json_dict[expr], exper_schema)
-        if not exp_ok:
-            break
-        ins_list = json_dict[expr]["instructions"]
-        for ins in ins_list:
-            # Fix this pylint issue whenever you have time, but be careful !
-            # pylint: disable=W0703
-            try:
-                err_code, exp_ok = check_with_schema(ins, ins_schema_dict[ins[0]])
-            except Exception as err:
-                err_code = "Error in instruction " + str(err)
-                exp_ok = False
-            if not exp_ok:
-                break
-        if not exp_ok:
-            break
-    return err_code.replace("\n", ".."), exp_ok
+    },
+)
 
 
 def gen_circuit(json_dict: dict) -> ExperimentDict:
@@ -282,7 +243,7 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
         "header": {},
         "results": [],
     }
-    err_msg, json_is_fine = check_json_dict(json_dict)
+    err_msg, json_is_fine = sq_spooler.check_json_dict(json_dict)
     if json_is_fine:
         for exp in json_dict:
             exp_dict = {exp: json_dict[exp]}

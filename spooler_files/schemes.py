@@ -45,6 +45,79 @@ class ExperimentDict(TypedDict):
     data: dict
 
 
+class Spooler:
+    """
+    The class for the spooler. So it is not just a scheme, but it also contains some common logic.
+    So it should most likely live in another file at some point.
+
+    Attributes:
+        exper_schema: The schema of allowed experimental inputs.
+        ins_schema_dict : A dictionary the contains all the allowed instructions for this spooler.
+
+    Args:
+        exper_schema: Sets the `exper_schema` attribute of the class
+        ins_schema_dict : Sets the `ins_schema_dict` attribute of the class
+    """
+
+    def __init__(self, exper_schema: ExperimentScheme, ins_schema_dict: dict):
+        """
+        The constructor of the class.
+        """
+        self.exper_schema = exper_schema
+        self.ins_schema_dict = ins_schema_dict
+
+    def check_json_dict(self, json_dict: dict) -> Tuple[str, bool]:
+        """
+        Check if the json file has the appropiate syntax.
+
+        Args:
+            json_dict (dict): the dictonary that we will test.
+
+        Returns:
+            bool: is the expression having the appropiate syntax ?
+        """
+
+        max_exps = 50
+        for expr in json_dict:
+            err_code = "Wrong experiment name or too many experiments"
+            # Fix this pylint issue whenever you have time, but be careful !
+            # pylint: disable=W0702
+            try:
+                exp_ok = (
+                    expr.startswith("experiment_")
+                    and expr[11:].isdigit()
+                    and (int(expr[11:]) <= max_exps)
+                )
+            except:
+                exp_ok = False
+                break
+            if not exp_ok:
+                break
+            # TODO: get rid of this weird type cast as this should be really already handled
+            # through pydantic by now
+            err_code, exp_ok = check_with_schema(
+                json_dict[expr], dict(self.exper_schema)
+            )
+            if not exp_ok:
+                break
+            ins_list = json_dict[expr]["instructions"]
+            for ins in ins_list:
+                # Fix this pylint issue whenever you have time, but be careful !
+                # pylint: disable=W0703
+                try:
+                    err_code, exp_ok = check_with_schema(
+                        ins, self.ins_schema_dict[ins[0]]
+                    )
+                except Exception as err:
+                    err_code = "Error in instruction " + str(err)
+                    exp_ok = False
+                if not exp_ok:
+                    break
+            if not exp_ok:
+                break
+        return err_code.replace("\n", ".."), exp_ok
+
+
 def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
     """
     Caller for the validate function of jsonschema

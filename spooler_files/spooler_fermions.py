@@ -8,10 +8,10 @@ from scipy.sparse.linalg import expm  # type: ignore
 
 from .schemes import (
     ExperimentDict,
-    check_with_schema,
     create_memory_data,
     ExperimentScheme,
     InstructionScheme,
+    Spooler,
 )
 
 NUM_WIRES = 8
@@ -26,16 +26,9 @@ properties_dict = {
     "wire_order": {"type": "string", "enum": ["interleaved"]},
 }
 
-exper_schema = dict(
-    ExperimentScheme(
-        required=["instructions", "shots", "num_wires", "wire_order"],
-        properties=properties_dict,
-    )
-)
-
 # define the instructions in the following
-
 # barrier instruction
+
 barr_items = [
     {"type": "string", "enum": ["barrier"]},
     {
@@ -93,59 +86,20 @@ int_items = [
 ]
 int_schema = dict(InstructionScheme(items=int_items))
 
-
-def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
-    """
-    Check if the json file has the appropiate syntax.
-
-    Args:
-        json_dict (dict): the dictonary that we will test.
-
-    Returns:
-        bool: is the expression having the appropiate syntax ?
-    """
-    ins_schema_dict = {
+f_spooler = Spooler(
+    exper_schema=ExperimentScheme(
+        required=["instructions", "shots", "num_wires", "wire_order"],
+        properties=properties_dict,
+    ),
+    ins_schema_dict={
         "load": load_measure_schema,
         "barrier": barrier_schema,
         "fhop": hop_schema,
         "fint": int_schema,
         "fphase": int_schema,
         "measure": load_measure_schema,
-    }
-
-    max_exps = 50
-    for expr in json_dict:
-        err_code = "Wrong experiment name or too many experiments"
-        # Fix this pylint issue whenever you have time, but be careful !
-        # pylint: disable=W0702
-        try:
-            exp_ok = (
-                expr.startswith("experiment_")
-                and expr[11:].isdigit()
-                and (int(expr[11:]) <= max_exps)
-            )
-        except:
-            exp_ok = False
-            break
-        if not exp_ok:
-            break
-        err_code, exp_ok = check_with_schema(json_dict[expr], exper_schema)
-        if not exp_ok:
-            break
-        ins_list = json_dict[expr]["instructions"]
-        for ins in ins_list:
-            # Fix this pylint issue whenever you have time, but be careful !
-            # pylint: disable=W0703
-            try:
-                err_code, exp_ok = check_with_schema(ins, ins_schema_dict[ins[0]])
-            except Exception as err:
-                err_code = "Error in instruction " + str(err)
-                exp_ok = False
-            if not exp_ok:
-                break
-        if not exp_ok:
-            break
-    return err_code.replace("\n", ".."), exp_ok
+    },
+)
 
 
 def nested_kronecker_product(a: list) -> np.ndarray:
@@ -294,7 +248,7 @@ def common_add_job(
         json_dict: A dictonary of all the instructions.
         status_msg_dict: the dict that will contain the status message.
     """
-    err_msg, json_is_fine = check_json_dict(json_dict)
+    err_msg, json_is_fine = f_spooler.check_json_dict(json_dict)
     if json_is_fine:
         for exp in json_dict:
             exp_dict = {exp: json_dict[exp]}

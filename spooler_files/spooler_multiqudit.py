@@ -11,16 +11,17 @@ from scipy.sparse.linalg import expm_multiply  # type: ignore
 
 from .schemes import (
     ExperimentDict,
-    check_with_schema,
     create_memory_data,
     ExperimentScheme,
     InstructionScheme,
+    Spooler,
 )
 
 MAX_NUM_WIRES = 16
 N_MAX_SHOTS = 10 ** 3
 MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
+MAX_HILBERT_SPACE_DIM = 2 ** 12
 
 properties_dict = {
     "instructions": {"type": "array", "items": {"type": "array"}},
@@ -29,13 +30,6 @@ properties_dict = {
     "seed": {"type": "number"},
     "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
 }
-
-exper_schema = dict(
-    ExperimentScheme(
-        required=["instructions", "shots", "num_wires"],
-        properties=properties_dict,
-    )
-)
 
 # define the instructions in the following
 
@@ -196,11 +190,40 @@ barrier_schema = dict(
 )
 
 
-def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
+class MultiQuditSpooler(Spooler):
     """
-    Check if the json file has the appropiate syntax.
+    The class that contains the logic of the multiqudit spooler.
     """
-    ins_schema_dict = {
+
+    def check_dimension(self, json_dict: dict) -> Tuple[str, bool]:
+        """
+        Make sure that the Hilbert space dimension is not too large.
+        """
+        dim_ok = False
+        err_code = "Wrong experiment name or too many experiments"
+        for expr in json_dict:
+            num_wires = json_dict[expr]["num_wires"]
+            dim_hilbert = 1
+            qubit_wires = num_wires
+            ins_list = json_dict[expr]["instructions"]
+            for ins in ins_list:
+                if ins[0] == "load":
+                    qubit_wires = qubit_wires - 1
+                    dim_hilbert = dim_hilbert * ins[2][0]
+            dim_hilbert = dim_hilbert * (2 ** qubit_wires)
+            dim_ok = dim_hilbert < (MAX_HILBERT_SPACE_DIM) + 1
+            if not dim_ok:
+                err_code = "Hilbert space dimension too large!"
+                break
+        return err_code.replace("\n", ".."), dim_ok
+
+
+mq_spooler = MultiQuditSpooler(
+    exper_schema=ExperimentScheme(
+        required=["instructions", "shots", "num_wires"],
+        properties=properties_dict,
+    ),
+    ins_schema_dict={
         "rlx": rlx_schema,
         "rlz": rlz_schema,
         "rlz2": rlz2_schema,
@@ -209,54 +232,8 @@ def check_json_dict(json_dict: dict) -> Tuple[str, bool]:
         "measure": measure_schema,
         "load": load_schema,
         "rlzlz": lzlz_schema,
-    }
-    max_exps = MAX_EXPERIMENTS
-    for expr in json_dict:
-        dim_ok = False
-        err_code = "Wrong experiment name or too many experiments"
-        # pylint: disable=W0703, W0702
-        # the following code is right now just weird, but I raised an issue (#16)
-        # for anyone to clean it up later.
-        try:
-            exp_ok = (
-                expr.startswith("experiment_")
-                and expr[11:].isdigit()
-                and (int(expr[11:]) <= max_exps)
-            )
-        except:
-            exp_ok = False
-            break
-        if not exp_ok:
-            break
-        err_code, exp_ok = check_with_schema(json_dict[expr], exper_schema)
-        if not exp_ok:
-            break
-        ins_list = json_dict[expr]["instructions"]
-        ## Check for schemes
-        for ins in ins_list:
-            try:
-                err_code, exp_ok = check_with_schema(ins, ins_schema_dict[ins[0]])
-            except Exception as exc:
-                err_code = "Error in instruction " + str(exc)
-                exp_ok = False
-            if not exp_ok:
-                break
-        if not exp_ok:
-            break
-        # Check for load configurations and limit the Hilbert space dimension
-        num_wires = json_dict[expr]["num_wires"]
-        dim_hilbert = 1
-        qubit_wires = num_wires
-        for ins in ins_list:
-            if ins[0] == "load":
-                qubit_wires = qubit_wires - 1
-                dim_hilbert = dim_hilbert * ins[2][0]
-        dim_hilbert = dim_hilbert * (2 ** qubit_wires)
-        dim_ok = dim_hilbert < (2 ** 12) + 1
-        if not dim_ok:
-            err_code = "Hilbert space dimension too large!"
-            break
-    return err_code.replace("\n", ".."), exp_ok and dim_ok
+    },
+)
 
 
 def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: List[int]) -> csc_matrix:
@@ -470,26 +447,39 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
         "header": {},
         "results": [],
     }
-    err_msg, json_is_fine = check_json_dict(json_dict)
-    if json_is_fine:
-        for exp in json_dict:
-            exp_dict = {exp: json_dict[exp]}
-            # Here we
-            result_dict["results"].append(gen_circuit(exp_dict))
-        print("done form")
+    err_msg, json_is_fine = mq_spooler.check_json_dict(json_dict)
 
-        status_msg_dict[
-            "detail"
-        ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
-        status_msg_dict["status"] = "DONE"
-    else:
+    if json_is_fine:
+        # check_hilbert_space_dimension
+        dim_err_msg, dim_ok = mq_spooler.check_dimension(json_dict)
+        if dim_ok:
+            for exp in json_dict:
+                exp_dict = {exp: json_dict[exp]}
+                # Here we
+                result_dict["results"].append(gen_circuit(exp_dict))
+            print("done form")
+
+            status_msg_dict[
+                "detail"
+            ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
+            status_msg_dict["status"] = "DONE"
+            return result_dict, status_msg_dict
+
         status_msg_dict["detail"] += (
-            "; Failed json sanity check. File will be deleted. Error message : "
-            + err_msg
+            "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
+            + dim_err_msg
         )
         status_msg_dict["error_message"] += (
-            "; Failed json sanity check. File will be deleted. Error message : "
-            + err_msg
+            "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
+            + dim_err_msg
         )
         status_msg_dict["status"] = "ERROR"
+        return result_dict, status_msg_dict
+    status_msg_dict["detail"] += (
+        "; Failed json sanity check. File will be deleted. Error message : " + err_msg
+    )
+    status_msg_dict["error_message"] += (
+        "; Failed json sanity check. File will be deleted. Error message : " + err_msg
+    )
+    status_msg_dict["status"] = "ERROR"
     return result_dict, status_msg_dict
