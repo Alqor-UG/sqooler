@@ -5,7 +5,7 @@ Test module for the spooler_singlequdit.py file.
 from typing import Union
 
 # pylint: disable=C0413, E0401
-from spooler_files.spooler_singlequdit import check_json_dict, gen_circuit
+from spooler_files.spooler_singlequdit import sq_spooler, gen_circuit
 
 
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
@@ -29,7 +29,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
         "header": {},
         "results": [],
     }
-    err_msg, json_is_fine = check_json_dict(json_dict)
+    err_msg, json_is_fine = sq_spooler.check_json_dict(json_dict)
     assert json_is_fine is True, "Failed JSON sanity check : " + err_msg
     if json_is_fine:
         for exp in json_dict:
