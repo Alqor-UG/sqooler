@@ -3,7 +3,7 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Tuple, TypedDict, List
+from typing import Tuple, TypedDict, List, Literal
 
 from pydantic import BaseModel
 
@@ -44,6 +44,14 @@ class ExperimentDict(TypedDict):
     success: bool
     data: dict
 
+class Experiment(BaseModel):
+    """
+    A class that defines what an experiment might be.
+    """
+    wire_order: Literal['sequential', 'interleaved']
+    shots: int
+    num_wires: int
+    instructions: List[list]
 
 class Spooler:
     """
@@ -95,6 +103,7 @@ class Spooler:
                 break
             # TODO: get rid of this weird type cast as this should be really already handled
             # through pydantic by now
+            print(json_dict[expr])
             err_code, exp_ok = check_with_schema(
                 json_dict[expr], dict(self.exper_schema)
             )

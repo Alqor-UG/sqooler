@@ -3,10 +3,12 @@ Test module for the spooler_singlequdit.py file.
 """
 
 from typing import Union
+import pytest
+from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
 from spooler_files.spooler_singlequdit import sq_spooler, gen_circuit
-
+from spooler_files.spooler_singlequdit import SingleQuditExperiment
 
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
     """
@@ -46,6 +48,35 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
 ###########################
 ###########################
 
+
+def test_pydantic_exp_validation():
+    """
+    Test that the validation of the experiment is working
+    """
+    experiment = {
+            "instructions": [
+                ["rlz", [0], [0.7]],
+                ["measure", [0], []],
+            ],
+            "num_wires": 1,
+            "shots": 3,
+    }
+    mq_exp = SingleQuditExperiment(**experiment)
+    
+    with pytest.raises(ValidationError):
+        poor_experiment = {
+        "instructions": [
+            ["load", [7], []],
+            ["load", [2], []],
+            ["measure", [2], []],
+            ["measure", [6], []],
+            ["measure", [7], []],
+        ],
+        "num_wires": 2,
+        "shots": 4,
+        "wire_order": "sequential",
+        }
+        mq_exp = SingleQuditExperiment(**poor_experiment)
 
 def test_z_gate():
     """

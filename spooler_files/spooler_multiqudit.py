@@ -2,7 +2,8 @@
 The module that contains all the necessary logic for the multiqudit.
 """
 
-from typing import List, Tuple
+from typing import List, Tuple, Literal
+from pydantic import BaseModel, conint
 
 import numpy as np
 from scipy.sparse import identity, diags, csc_matrix  # type: ignore
@@ -15,9 +16,10 @@ from .schemes import (
     ExperimentScheme,
     InstructionScheme,
     Spooler,
+    Experiment
 )
 
-MAX_NUM_WIRES = 16
+N_MAX_WIRES = 16
 N_MAX_SHOTS = 10 ** 3
 MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
@@ -26,10 +28,19 @@ MAX_HILBERT_SPACE_DIM = 2 ** 12
 properties_dict = {
     "instructions": {"type": "array", "items": {"type": "array"}},
     "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
-    "num_wires": {"type": "number", "minimum": 1, "maximum": MAX_NUM_WIRES},
+    "num_wires": {"type": "number", "minimum": 1, "maximum": N_MAX_WIRES},
     "seed": {"type": "number"},
     "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
 }
+
+class MultiQuditExperiment(BaseModel):
+    """
+    The class that defines the multi qudit experiments
+    """
+    wire_order: Literal['interleaved', "sequential"] = "sequential"
+    shots: conint(gt=0, le = N_MAX_SHOTS)
+    num_wires: conint(ge=1, le = N_MAX_WIRES)
+    instructions: List[list]
 
 # define the instructions in the following
 
@@ -40,7 +51,7 @@ rlx_items = [
     {
         "type": "array",
         "maxItems": 1,
-        "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
+        "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}],
     },
     {
         "type": "array",
@@ -56,7 +67,7 @@ rlz_items = [
     {
         "type": "array",
         "maxItems": 1,
-        "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
+        "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}],
     },
     {
         "type": "array",
@@ -75,7 +86,7 @@ rlz2_schema = dict(
                 "type": "array",
                 "maxItems": 1,
                 "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
                 ],
             },
             {
@@ -94,9 +105,9 @@ lxly_schema = dict(
             {"type": "string", "enum": ["rlxly"]},
             {
                 "type": "array",
-                "maxItems": MAX_NUM_WIRES,
+                "maxItems": N_MAX_WIRES,
                 "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
                 ],
             },
             {
@@ -116,9 +127,9 @@ lzlz_schema = dict(
             {"type": "string", "enum": ["rlzlz"]},
             {
                 "type": "array",
-                "maxItems": MAX_NUM_WIRES,
+                "maxItems": N_MAX_WIRES,
                 "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
                 ],
             },
             {
@@ -140,7 +151,7 @@ load_schema = dict(
                 "type": "array",
                 "maxItems": 1,
                 "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
                 ],
             },
             {
@@ -163,7 +174,7 @@ measure_schema = dict(
                 "type": "array",
                 "maxItems": 1,
                 "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
                 ],
             },
             {"type": "array", "maxItems": 0},
@@ -179,9 +190,9 @@ barrier_schema = dict(
             {"type": "string", "enum": ["barrier"]},
             {
                 "type": "array",
-                "maxItems": MAX_NUM_WIRES,
+                "maxItems": N_MAX_WIRES,
                 "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
+                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
                 ],
             },
             {"type": "array", "maxItems": 0},

@@ -1,7 +1,9 @@
 """
 The module that contains all the necessary logic for the fermions.
 """
-from typing import Tuple
+from typing import Tuple, Literal, List
+from pydantic import BaseModel, conint
+
 import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
@@ -12,6 +14,7 @@ from .schemes import (
     ExperimentScheme,
     InstructionScheme,
     Spooler,
+    Experiment
 )
 
 NUM_WIRES = 8
@@ -25,6 +28,15 @@ properties_dict = {
     "seed": {"type": "number"},
     "wire_order": {"type": "string", "enum": ["interleaved"]},
 }
+
+class FermionExperiment(Experiment):
+    """
+    The class that defines the fermion experiments
+    """
+    wire_order: Literal['interleaved']
+    shots: conint(gt=0, le = N_MAX_SHOTS)
+    num_wires: conint(ge=1, le = N_MAX_WIRES)
+    instructions: List[list]
 
 # define the instructions in the following
 # barrier instruction

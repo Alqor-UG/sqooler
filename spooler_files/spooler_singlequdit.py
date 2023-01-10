@@ -2,8 +2,9 @@
 The module that contains all the necessary logic for the singlequdit.
 """
 
-from typing import Tuple
+from typing import Tuple, Literal, List
 
+from pydantic import conint, BaseModel
 import numpy as np
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 from scipy.sparse import diags, csc_matrix  # type: ignore
@@ -14,18 +15,28 @@ from .schemes import (
     ExperimentScheme,
     InstructionScheme,
     Spooler,
+    Experiment
 )
 
-MAX_EXPERIMENTS = 1000
+N_MAX_SHOTS = 1000
 N_MAX_ATOMS = 500
 
 properties_dict = {
     "instructions": {"type": "array", "items": {"type": "array"}},
-    "shots": {"type": "number", "minimum": 0, "maximum": MAX_EXPERIMENTS},
+    "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
     "num_wires": {"type": "number", "minimum": 1, "maximum": 1},
     "seed": {"type": "number"},
     "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
 }
+
+class SingleQuditExperiment(Experiment):
+    """
+    The class that defines the multi qudit experiments
+    """
+    wire_order: Literal['interleaved', "sequential"] = "sequential"
+    shots: conint(gt=0, le = N_MAX_SHOTS)
+    num_wires: Literal[1]
+    instructions: List[list]
 
 rLx_schema = dict(
     InstructionScheme(
