@@ -7,6 +7,7 @@ import numpy as np
 
 import pytest
 from pydantic import ValidationError
+
 # pylint: disable=C0413, E0401
 from spooler_files.spooler_fermions import gen_circuit  # *
 from spooler_files.spooler_fermions import f_spooler, FermionExperiment
@@ -70,40 +71,21 @@ def test_pydantic_exp_validation():
         "wire_order": "interleaved",
     }
     f_exp = FermionExperiment(**experiment)
-    
+
     with pytest.raises(ValidationError):
         poor_experiment = {
-        "instructions": [
-            ["load", [7], []],
-            ["load", [2], []],
-            ["measure", [2], []],
-            ["measure", [6], []],
-            ["measure", [7], []],
-        ],
-        "num_wires": 8,
-        "shots": 4,
-        "wire_order": "sequential",
+            "instructions": [
+                ["load", [7], []],
+                ["load", [2], []],
+                ["measure", [2], []],
+                ["measure", [6], []],
+                ["measure", [7], []],
+            ],
+            "num_wires": 8,
+            "shots": 4,
+            "wire_order": "sequential",
         }
         f_exp = FermionExperiment(**poor_experiment)
-        
-def test_exp_validation():
-    """
-    Test that the validation of the experiment is working
-    """
-    experiment = {
-        "instructions": [
-            ["load", [7], []],
-            ["load", [2], []],
-            ["measure", [2], []],
-            ["measure", [6], []],
-            ["measure", [7], []],
-        ],
-        "num_wires": 8,
-        "shots": 4,
-        "wire_order": "interleaved",
-    }
-    _, exp_ok = check_with_schema(experiment, dict(f_spooler.exper_schema))
-    assert exp_ok == True
 
 
 def test_wire_order():

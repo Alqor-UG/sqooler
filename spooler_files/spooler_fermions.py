@@ -1,8 +1,8 @@
 """
 The module that contains all the necessary logic for the fermions.
 """
-from typing import Tuple, Literal, List
-from pydantic import BaseModel, conint
+from typing import Tuple, Literal, List, Optional
+from pydantic import BaseModel, conint, ValidationError
 
 import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
@@ -11,32 +11,13 @@ from scipy.sparse.linalg import expm  # type: ignore
 from .schemes import (
     ExperimentDict,
     create_memory_data,
-    ExperimentScheme,
     InstructionScheme,
     Spooler,
-    Experiment
 )
 
 NUM_WIRES = 8
 N_MAX_SHOTS = 10 ** 3
 N_MAX_WIRES = 8
-
-properties_dict = {
-    "instructions": {"type": "array", "items": {"type": "array"}},
-    "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
-    "num_wires": {"type": "number", "minimum": 1, "maximum": N_MAX_WIRES},
-    "seed": {"type": "number"},
-    "wire_order": {"type": "string", "enum": ["interleaved"]},
-}
-
-class FermionExperiment(Experiment):
-    """
-    The class that defines the fermion experiments
-    """
-    wire_order: Literal['interleaved']
-    shots: conint(gt=0, le = N_MAX_SHOTS)
-    num_wires: conint(ge=1, le = N_MAX_WIRES)
-    instructions: List[list]
 
 # define the instructions in the following
 # barrier instruction
@@ -98,11 +79,37 @@ int_items = [
 ]
 int_schema = dict(InstructionScheme(items=int_items))
 
-f_spooler = Spooler(
-    exper_schema=ExperimentScheme(
-        required=["instructions", "shots", "num_wires", "wire_order"],
-        properties=properties_dict,
-    ),
+
+class FermionExperiment(BaseModel):
+    """
+    The class that defines the fermion experiments
+    """
+
+    wire_order: Literal["interleaved"]
+    # we use the Annotated notation to make mypy happy with constrained types
+    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
+    num_wires: conint(ge=1, le=N_MAX_WIRES)  # type: ignore
+    instructions: List[list]
+    seed: Optional[int]
+
+
+class FermionSpooler(Spooler):
+    """
+    The sppoler class that handles all the circuit logic.
+    """
+
+    def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
+        """
+        Check the validity of the experiment.
+        """
+        try:
+            FermionExperiment(**exper_dict)
+            return "", True
+        except ValidationError as err:
+            return str(err), False
+
+
+f_spooler = FermionSpooler(
     ins_schema_dict={
         "load": load_measure_schema,
         "barrier": barrier_schema,

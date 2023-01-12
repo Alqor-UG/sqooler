@@ -2,8 +2,8 @@
 The module that contains all the necessary logic for the multiqudit.
 """
 
-from typing import List, Tuple, Literal
-from pydantic import BaseModel, conint
+from typing import List, Tuple, Literal, Optional
+from pydantic import BaseModel, conint, ValidationError
 
 import numpy as np
 from scipy.sparse import identity, diags, csc_matrix  # type: ignore
@@ -13,10 +13,8 @@ from scipy.sparse.linalg import expm_multiply  # type: ignore
 from .schemes import (
     ExperimentDict,
     create_memory_data,
-    ExperimentScheme,
     InstructionScheme,
     Spooler,
-    Experiment
 )
 
 N_MAX_WIRES = 16
@@ -25,25 +23,7 @@ MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
 MAX_HILBERT_SPACE_DIM = 2 ** 12
 
-properties_dict = {
-    "instructions": {"type": "array", "items": {"type": "array"}},
-    "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
-    "num_wires": {"type": "number", "minimum": 1, "maximum": N_MAX_WIRES},
-    "seed": {"type": "number"},
-    "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
-}
-
-class MultiQuditExperiment(BaseModel):
-    """
-    The class that defines the multi qudit experiments
-    """
-    wire_order: Literal['interleaved', "sequential"] = "sequential"
-    shots: conint(gt=0, le = N_MAX_SHOTS)
-    num_wires: conint(ge=1, le = N_MAX_WIRES)
-    instructions: List[list]
-
 # define the instructions in the following
-
 # rlx instruction
 
 rlx_items = [
@@ -85,9 +65,7 @@ rlz2_schema = dict(
             {
                 "type": "array",
                 "maxItems": 1,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
-                ],
+                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}],
             },
             {
                 "type": "array",
@@ -106,9 +84,7 @@ lxly_schema = dict(
             {
                 "type": "array",
                 "maxItems": N_MAX_WIRES,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
-                ],
+                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}],
             },
             {
                 "type": "array",
@@ -128,9 +104,7 @@ lzlz_schema = dict(
             {
                 "type": "array",
                 "maxItems": N_MAX_WIRES,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
-                ],
+                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}],
             },
             {
                 "type": "array",
@@ -150,9 +124,7 @@ load_schema = dict(
             {
                 "type": "array",
                 "maxItems": 1,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
-                ],
+                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}],
             },
             {
                 "type": "array",
@@ -173,9 +145,7 @@ measure_schema = dict(
             {
                 "type": "array",
                 "maxItems": 1,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
-                ],
+                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}],
             },
             {"type": "array", "maxItems": 0},
         ]
@@ -191,9 +161,7 @@ barrier_schema = dict(
             {
                 "type": "array",
                 "maxItems": N_MAX_WIRES,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}
-                ],
+                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_WIRES - 1}],
             },
             {"type": "array", "maxItems": 0},
         ]
@@ -201,10 +169,36 @@ barrier_schema = dict(
 )
 
 
+class MultiQuditExperiment(BaseModel):
+    """
+    The class that defines the multi qudit experiments
+    """
+
+    wire_order: Literal["interleaved", "sequential"] = "sequential"
+
+    # mypy keeps throwing errors here because it does not understand the type.
+    # not sure how to fix it, so we leave it as is for the moment
+    # HINT: Annotated does not work
+    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
+    num_wires: conint(ge=1, le=N_MAX_WIRES)  # type: ignore
+    instructions: List[list]
+    seed: Optional[int]
+
+
 class MultiQuditSpooler(Spooler):
     """
     The class that contains the logic of the multiqudit spooler.
     """
+
+    def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
+        """
+        Check the validity of the experiment.
+        """
+        try:
+            MultiQuditExperiment(**exper_dict)
+            return "", True
+        except ValidationError as err:
+            return str(err), False
 
     def check_dimension(self, json_dict: dict) -> Tuple[str, bool]:
         """
@@ -230,10 +224,6 @@ class MultiQuditSpooler(Spooler):
 
 
 mq_spooler = MultiQuditSpooler(
-    exper_schema=ExperimentScheme(
-        required=["instructions", "shots", "num_wires"],
-        properties=properties_dict,
-    ),
     ins_schema_dict={
         "rlx": rlx_schema,
         "rlz": rlz_schema,

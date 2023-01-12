@@ -3,7 +3,7 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Tuple, TypedDict, List, Literal
+from typing import Tuple, TypedDict, List
 
 from pydantic import BaseModel
 
@@ -44,14 +44,6 @@ class ExperimentDict(TypedDict):
     success: bool
     data: dict
 
-class Experiment(BaseModel):
-    """
-    A class that defines what an experiment might be.
-    """
-    wire_order: Literal['sequential', 'interleaved']
-    shots: int
-    num_wires: int
-    instructions: List[list]
 
 class Spooler:
     """
@@ -59,7 +51,8 @@ class Spooler:
     So it should most likely live in another file at some point.
 
     Attributes:
-        exper_schema: The schema of allowed experimental inputs.
+        n_max_wires: maximum number of wires for the spooler
+        n_max_shots: the maximum number of shots for the spooler
         ins_schema_dict : A dictionary the contains all the allowed instructions for this spooler.
 
     Args:
@@ -67,12 +60,16 @@ class Spooler:
         ins_schema_dict : Sets the `ins_schema_dict` attribute of the class
     """
 
-    def __init__(self, exper_schema: ExperimentScheme, ins_schema_dict: dict):
+    def __init__(self, ins_schema_dict: dict):
         """
         The constructor of the class.
         """
-        self.exper_schema = exper_schema
         self.ins_schema_dict = ins_schema_dict
+
+    def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
+        """
+        Check the validity of the experiment. Only possible"""
+        raise NotImplementedError("Subclasses should implement this!")
 
     def check_json_dict(self, json_dict: dict) -> Tuple[str, bool]:
         """
@@ -84,7 +81,6 @@ class Spooler:
         Returns:
             bool: is the expression having the appropiate syntax ?
         """
-
         max_exps = 50
         for expr in json_dict:
             err_code = "Wrong experiment name or too many experiments"
@@ -101,12 +97,8 @@ class Spooler:
                 break
             if not exp_ok:
                 break
-            # TODO: get rid of this weird type cast as this should be really already handled
-            # through pydantic by now
-            print(json_dict[expr])
-            err_code, exp_ok = check_with_schema(
-                json_dict[expr], dict(self.exper_schema)
-            )
+            # test the structure of the experiment
+            err_code, exp_ok = self.check_experiment(json_dict[expr])
             if not exp_ok:
                 break
             ins_list = json_dict[expr]["instructions"]

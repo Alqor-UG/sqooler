@@ -2,9 +2,9 @@
 The module that contains all the necessary logic for the singlequdit.
 """
 
-from typing import Tuple, Literal, List
+from typing import Tuple, Literal, List, Optional, Annotated
 
-from pydantic import conint, BaseModel
+from pydantic import conint, BaseModel, ValidationError
 import numpy as np
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 from scipy.sparse import diags, csc_matrix  # type: ignore
@@ -12,31 +12,12 @@ from scipy.sparse import diags, csc_matrix  # type: ignore
 from .schemes import (
     ExperimentDict,
     create_memory_data,
-    ExperimentScheme,
     InstructionScheme,
     Spooler,
-    Experiment
 )
 
 N_MAX_SHOTS = 1000
 N_MAX_ATOMS = 500
-
-properties_dict = {
-    "instructions": {"type": "array", "items": {"type": "array"}},
-    "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
-    "num_wires": {"type": "number", "minimum": 1, "maximum": 1},
-    "seed": {"type": "number"},
-    "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
-}
-
-class SingleQuditExperiment(Experiment):
-    """
-    The class that defines the multi qudit experiments
-    """
-    wire_order: Literal['interleaved', "sequential"] = "sequential"
-    shots: conint(gt=0, le = N_MAX_SHOTS)
-    num_wires: Literal[1]
-    instructions: List[list]
 
 rLx_schema = dict(
     InstructionScheme(
@@ -122,11 +103,39 @@ barrier_measure_schema = dict(
     )
 )
 
-sq_spooler = Spooler(
-    exper_schema=ExperimentScheme(
-        required=["instructions", "shots", "num_wires"],
-        properties=properties_dict,
-    ),
+
+class SingleQuditExperiment(BaseModel):
+    """
+    The class that defines the single qudit experiments
+    """
+
+    wire_order: Literal["interleaved", "sequential"] = "sequential"
+    # mypy keeps throwing errors here because it does not understand the type.
+    # not sure how to fix it, so we leave it as is for the moment
+    # HINT: Annotated does not work
+    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
+    num_wires: Literal[1]
+    instructions: List[list]
+    seed: Optional[int]
+
+
+class SingleQuditSpooler(Spooler):
+    """
+    The sppoler class that handles all the circuit logic.
+    """
+
+    def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
+        """
+        Check the validity of the experiment.
+        """
+        try:
+            SingleQuditExperiment(**exper_dict)
+            return "", True
+        except ValidationError as err:
+            return str(err), False
+
+
+sq_spooler = SingleQuditSpooler(
     ins_schema_dict={
         "rlx": rLx_schema,
         "rlz": rLz_schema,
