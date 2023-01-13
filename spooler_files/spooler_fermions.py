@@ -1,103 +1,138 @@
 """
 The module that contains all the necessary logic for the fermions.
 """
-from typing import Tuple
+from typing import Tuple, Literal, List, Optional
+from pydantic import BaseModel, conint, ValidationError, conlist, confloat
+
 import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
 
-from .schemes import (
-    ExperimentDict,
-    create_memory_data,
-    ExperimentScheme,
-    InstructionScheme,
-    Spooler,
-)
+from .schemes import ExperimentDict, create_memory_data, Spooler, gate_dict_from_list
 
 NUM_WIRES = 8
 N_MAX_SHOTS = 10 ** 3
 N_MAX_WIRES = 8
 
-properties_dict = {
-    "instructions": {"type": "array", "items": {"type": "array"}},
-    "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
-    "num_wires": {"type": "number", "minimum": 1, "maximum": N_MAX_WIRES},
-    "seed": {"type": "number"},
-    "wire_order": {"type": "string", "enum": ["interleaved"]},
-}
-
 # define the instructions in the following
-# barrier instruction
 
-barr_items = [
-    {"type": "string", "enum": ["barrier"]},
-    {
-        "type": "array",
-        "maxItems": NUM_WIRES,
-        "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
-    },
-    {"type": "array", "maxItems": 0},
-]
-barrier_schema = dict(InstructionScheme(items=barr_items))
 
-# load and measure instruction
+class BarrierInstruction(BaseModel):
+    """
+    The barrier instruction. As each instruction it requires the
 
-load_measure_items = [
-    {"type": "string", "enum": ["load", "measure"]},
-    {
-        "type": "array",
-        "maxItems": 2,
-        "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
-    },
-    {"type": "array", "maxItems": 0},
-]
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wires on which the instruction should be applied
+            so the indices should be between 0 and NUM_WIRES-1
+        params: has to be empty
+    """
 
-load_measure_schema = dict(InstructionScheme(items=load_measure_items))
+    name: Literal["barrier"]
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=0, max_items=NUM_WIRES)  # type: ignore
+    params: conlist(float, max_items=0)  # type: ignore
 
-# hop instruction
-hop_items = [
-    {"type": "string", "enum": ["fhop"]},
-    {
-        "type": "array",
-        "maxItems": 4,
-        "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
-    },
-    {
-        "type": "array",
-        "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-    },
-]
 
-hop_schema = dict(InstructionScheme(items=hop_items))
+class LoadMeasureInstruction(BaseModel):
+    """
+    The load or measure instruction.
 
-# interaction instruction
+    Attributes:
+        name: How to identify the instruction
+        wires: Exactly one wire has to be given.
+        params: Has to be empty
+    """
 
-int_items = [
-    {"type": "string", "enum": ["fint", "fphase"]},
-    {
-        "type": "array",
-        "maxItems": 8,
-        "items": [{"type": "number", "minimum": 0, "maximum": NUM_WIRES - 1}],
-    },
-    {
-        "type": "array",
-        "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-    },
-]
-int_schema = dict(InstructionScheme(items=int_items))
+    name: Literal["load", "measure"]
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=1, max_items=1)  # type: ignore
+    params: conlist(float, max_items=0)  # type: ignore
 
-f_spooler = Spooler(
-    exper_schema=ExperimentScheme(
-        required=["instructions", "shots", "num_wires", "wire_order"],
-        properties=properties_dict,
-    ),
+
+class HopInstruction(BaseModel):
+    """
+    The instruction that applies the hopping gate.
+
+    Attributes:
+        name: How to identify the instruction
+        wires: Exactly four wires have to be given.
+        params: between 0 and 2 pi
+    """
+
+    name: Literal["fhop"]
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=4, max_items=4)  # type: ignore
+    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
+
+
+class IntInstruction(BaseModel):
+    """
+    The instruction that applies the interaction gate.
+
+    Attributes:
+        name: How to identify the instruction
+        wires: Exactly one wire has to be given.
+        params: Has to be empty
+    """
+
+    name: Literal["fint", "fphase"]
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=2)  # type: ignore
+    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
+
+
+class FermionExperiment(BaseModel):
+    """
+    The class that defines the fermion experiments
+    """
+
+    wire_order: Literal["interleaved"]
+    # we use the Annotated notation to make mypy happy with constrained types
+    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
+    num_wires: conint(ge=1, le=N_MAX_WIRES)  # type: ignore
+    instructions: List[list]
+    seed: Optional[int]
+
+
+class FermionSpooler(Spooler):
+    """
+    The sppoler class that handles all the circuit logic.
+    """
+
+    def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
+        """
+        Check the validity of the experiment.
+        """
+        try:
+            FermionExperiment(**exper_dict)
+            return "", True
+        except ValidationError as err:
+            return str(err), False
+
+    def check_instructions(self, ins_list: list) -> Tuple[str, bool]:
+        """
+        Check all the instruction to make sure that they are valid.
+        """
+        err_code = ""
+        exp_ok = False
+        for ins in ins_list:
+            try:
+                gate_dict = gate_dict_from_list(ins)
+                self.ins_schema_dict[ins[0]](**gate_dict)
+                exp_ok = True
+            except ValidationError as err:
+                err_code = "Error in instruction " + str(err)
+                exp_ok = False
+            if not exp_ok:
+                break
+        return err_code, exp_ok
+
+
+f_spooler = FermionSpooler(
     ins_schema_dict={
-        "load": load_measure_schema,
-        "barrier": barrier_schema,
-        "fhop": hop_schema,
-        "fint": int_schema,
-        "fphase": int_schema,
-        "measure": load_measure_schema,
+        "load": LoadMeasureInstruction,
+        "barrier": BarrierInstruction,
+        "fhop": HopInstruction,
+        "fint": IntInstruction,
+        "fphase": IntInstruction,
+        "measure": LoadMeasureInstruction,
     },
 )
 

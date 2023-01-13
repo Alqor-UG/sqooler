@@ -2,7 +2,8 @@
 The module that contains all the necessary logic for the multiqudit.
 """
 
-from typing import List, Tuple
+from typing import List, Tuple, Literal, Optional
+from pydantic import BaseModel, conint, ValidationError, conlist, confloat
 
 import numpy as np
 from scipy.sparse import identity, diags, csc_matrix  # type: ignore
@@ -11,189 +12,165 @@ from scipy.sparse.linalg import expm_multiply  # type: ignore
 
 from .schemes import (
     ExperimentDict,
+    gate_dict_from_list,
     create_memory_data,
-    ExperimentScheme,
-    InstructionScheme,
     Spooler,
 )
 
-MAX_NUM_WIRES = 16
+N_MAX_WIRES = 16
 N_MAX_SHOTS = 10 ** 3
 MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
 MAX_HILBERT_SPACE_DIM = 2 ** 12
 
-properties_dict = {
-    "instructions": {"type": "array", "items": {"type": "array"}},
-    "shots": {"type": "number", "minimum": 0, "maximum": N_MAX_SHOTS},
-    "num_wires": {"type": "number", "minimum": 1, "maximum": MAX_NUM_WIRES},
-    "seed": {"type": "number"},
-    "wire_order": {"type": "string", "enum": ["interleaved", "sequential"]},
-}
+# define the instructions in the following
+# rlx instruction
 
 # define the instructions in the following
 
-# rlx instruction
 
-rlx_items = [
-    {"type": "string", "enum": ["rlx"]},
-    {
-        "type": "array",
-        "maxItems": 1,
-        "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-    },
-    {
-        "type": "array",
-        "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-    },
-]
-rlx_schema = dict(InstructionScheme(items=rlx_items))
+class LocalRotationInstruction(BaseModel):
+    """
+    The rlx or rlz instruction. As each instruction it requires the
 
-# rlz instruction
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
 
-rlz_items = [
-    {"type": "string", "enum": ["rlz"]},
-    {
-        "type": "array",
-        "maxItems": 1,
-        "items": [{"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}],
-    },
-    {
-        "type": "array",
-        "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-    },
-]
+    name: Literal["rlx", "rlz"]
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
+    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
-rlz_schema = dict(InstructionScheme(items=rlz_items))
 
-# rlz2 instruction
-rlz2_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["rlz2"]},
-            {
-                "type": "array",
-                "maxItems": 1,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
-                ],
-            },
-            {
-                "type": "array",
-                "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
-            },
-        ]
-    )
-)
+class LocalSqueezingInstruction(BaseModel):
+    """
+    The rlx or rlz instruction. As each instruction it requires the
 
-# lxly instruction
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
 
-lxly_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["rlxly"]},
-            {
-                "type": "array",
-                "maxItems": MAX_NUM_WIRES,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
-                ],
-            },
-            {
-                "type": "array",
-                "maxItems": 1,
-                "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
-            },
-        ]
-    )
-)
+    name: Literal["rlz2"]
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
+    params: conlist(confloat(ge=0, le=10 * 2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
-# lzlz instruction
 
-lzlz_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["rlzlz"]},
-            {
-                "type": "array",
-                "maxItems": MAX_NUM_WIRES,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
-                ],
-            },
-            {
-                "type": "array",
-                "maxItems": 1,
-                "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
-            },
-        ],
-    )
-)
+class QuditQuditInstruction(BaseModel):
+    """
+    The rlxly or rlzlz instruction. As each instruction it requires the
 
-# load instruction
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
 
-load_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["load"]},
-            {
-                "type": "array",
-                "maxItems": 1,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
-                ],
-            },
-            {
-                "type": "array",
-                # set the upper limit for the number of atoms that can be loaded
-                # into the single qudit
-                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_ATOMS}],
-            },
-        ]
-    )
-)
+    name: Literal["rlxly", "rlzlz"]
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
+    params: conlist(confloat(ge=0, le=10 * 2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
-# measure instruction
 
-measure_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["measure"]},
-            {
-                "type": "array",
-                "maxItems": 1,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
-                ],
-            },
-            {"type": "array", "maxItems": 0},
-        ]
-    )
-)
+class BarrierInstruction(BaseModel):
+    """
+    The barrier instruction. As each instruction it requires the
 
-# barrier instruction
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wires on which the instruction should be applied
+            so the indices should be between 0 and NUM_WIRES-1
+        params: has to be empty
+    """
 
-barrier_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["barrier"]},
-            {
-                "type": "array",
-                "maxItems": MAX_NUM_WIRES,
-                "items": [
-                    {"type": "number", "minimum": 0, "maximum": MAX_NUM_WIRES - 1}
-                ],
-            },
-            {"type": "array", "maxItems": 0},
-        ]
-    )
-)
+    name: Literal["barrier"]
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=0, max_items=N_MAX_WIRES)  # type: ignore
+    params: conlist(float, max_items=0)  # type: ignore
+
+
+class LoadInstruction(BaseModel):
+    """
+    The load instruction.
+
+    Attributes:
+        name: How to identify the instruction
+        wires: Exactly one wire has to be given.
+        params: The number of atoms to be loaded onto the wire.
+    """
+
+    name: Literal["load"]
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
+    params: conlist(conint(ge=1, le=N_MAX_ATOMS), min_items=1, max_items=1)  # type: ignore
+
+
+class MeasureInstruction(BaseModel):
+    """
+    The measure instruction.
+
+    Attributes:
+        name: How to identify the instruction
+        wires: Exactly one wire has to be given.
+        params: Has to be empty
+    """
+
+    name: Literal["measure"]
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
+    params: conlist(float, max_items=0)  # type: ignore
+
+
+class MultiQuditExperiment(BaseModel):
+    """
+    The class that defines the multi qudit experiments
+    """
+
+    wire_order: Literal["interleaved", "sequential"] = "sequential"
+
+    # mypy keeps throwing errors here because it does not understand the type.
+    # not sure how to fix it, so we leave it as is for the moment
+    # HINT: Annotated does not work
+    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
+    num_wires: conint(ge=1, le=N_MAX_WIRES)  # type: ignore
+    instructions: List[list]
+    seed: Optional[int]
 
 
 class MultiQuditSpooler(Spooler):
     """
     The class that contains the logic of the multiqudit spooler.
     """
+
+    def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
+        """
+        Check the validity of the experiment.
+        """
+        try:
+            MultiQuditExperiment(**exper_dict)
+            return "", True
+        except ValidationError as err:
+            return str(err), False
+
+    def check_instructions(self, ins_list: list) -> Tuple[str, bool]:
+        """
+        Check all the instruction to make sure that they are valid.
+        """
+        err_code = ""
+        exp_ok = False
+        for ins in ins_list:
+            try:
+                gate_dict = gate_dict_from_list(ins)
+                self.ins_schema_dict[ins[0]](**gate_dict)
+                exp_ok = True
+            except ValidationError as err:
+                err_code = "Error in instruction " + str(err)
+                exp_ok = False
+            if not exp_ok:
+                break
+        return err_code, exp_ok
 
     def check_dimension(self, json_dict: dict) -> Tuple[str, bool]:
         """
@@ -219,19 +196,15 @@ class MultiQuditSpooler(Spooler):
 
 
 mq_spooler = MultiQuditSpooler(
-    exper_schema=ExperimentScheme(
-        required=["instructions", "shots", "num_wires"],
-        properties=properties_dict,
-    ),
     ins_schema_dict={
-        "rlx": rlx_schema,
-        "rlz": rlz_schema,
-        "rlz2": rlz2_schema,
-        "rlxly": lxly_schema,
-        "barrier": barrier_schema,
-        "measure": measure_schema,
-        "load": load_schema,
-        "rlzlz": lzlz_schema,
+        "rlx": LocalRotationInstruction,
+        "rlz": LocalRotationInstruction,
+        "rlz2": LocalSqueezingInstruction,
+        "rlxly": QuditQuditInstruction,
+        "barrier": BarrierInstruction,
+        "measure": MeasureInstruction,
+        "load": LoadInstruction,
+        "rlzlz": QuditQuditInstruction,
     },
 )
 
