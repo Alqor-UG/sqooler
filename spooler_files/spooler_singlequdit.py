@@ -2,7 +2,7 @@
 The module that contains all the necessary logic for the singlequdit.
 """
 
-from typing import Tuple, Literal, List, Optional, Annotated
+from typing import Tuple, Literal, List, Optional
 
 from pydantic import conint, BaseModel, ValidationError
 import numpy as np

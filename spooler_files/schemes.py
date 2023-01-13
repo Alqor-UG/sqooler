@@ -68,8 +68,32 @@ class Spooler:
 
     def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
         """
-        Check the validity of the experiment. Only possible"""
+        Check the validity of the experiment.
+        This has to be implement in each subclass extra.
+
+        Args:
+            exper_dict: The dictionary that contains the logic and should
+                be verified.
+        """
         raise NotImplementedError("Subclasses should implement this!")
+
+    def check_instructions(self, ins_list: list) -> Tuple[str, bool]:
+        """
+        Check all the instruction to make sure that they are valid.
+        """
+        err_code = ""
+        exp_ok = False
+        for ins in ins_list:
+            # Fix this pylint issue whenever you have time, but be careful !
+            # pylint: disable=W0703
+            try:
+                err_code, exp_ok = check_with_schema(ins, self.ins_schema_dict[ins[0]])
+            except Exception as err:
+                err_code = "Error in instruction " + str(err)
+                exp_ok = False
+            if not exp_ok:
+                break
+        return err_code, exp_ok
 
     def check_json_dict(self, json_dict: dict) -> Tuple[str, bool]:
         """
@@ -101,19 +125,9 @@ class Spooler:
             err_code, exp_ok = self.check_experiment(json_dict[expr])
             if not exp_ok:
                 break
+            # time to check the structure of the instructions
             ins_list = json_dict[expr]["instructions"]
-            for ins in ins_list:
-                # Fix this pylint issue whenever you have time, but be careful !
-                # pylint: disable=W0703
-                try:
-                    err_code, exp_ok = check_with_schema(
-                        ins, self.ins_schema_dict[ins[0]]
-                    )
-                except Exception as err:
-                    err_code = "Error in instruction " + str(err)
-                    exp_ok = False
-                if not exp_ok:
-                    break
+            err_code, exp_ok = self.check_instructions(ins_list)
             if not exp_ok:
                 break
         return err_code.replace("\n", ".."), exp_ok

@@ -9,8 +9,15 @@ import pytest
 from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
-from spooler_files.spooler_fermions import gen_circuit  # *
-from spooler_files.spooler_fermions import f_spooler, FermionExperiment
+from spooler_files.spooler_fermions import gen_circuit, gate_dict_from_list  # *
+from spooler_files.spooler_fermions import (
+    f_spooler,
+    FermionExperiment,
+    BarrierInstruction,
+    LoadMeasureInstruction,
+    HopInstruction,
+    IntInstruction,
+)
 from spooler_files.schemes import check_with_schema
 
 
@@ -88,11 +95,170 @@ def test_pydantic_exp_validation():
         f_exp = FermionExperiment(**poor_experiment)
 
 
+def test_barrier_instruction():
+    """
+    Test that the barrier instruction is properly constrained.
+    """
+    inst_list = ["barrier", [7], []]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    BarrierInstruction(**gate_dict)
+    # test that the name is nicely fixed
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["barriers", [7], []]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = BarrierInstruction(**gate_dict)
+
+    # test that we cannot give too many wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["barrier", [0, 1, 2, 3, 4, 5, 6, 7, 8], []]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = BarrierInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["barrier", [8], []]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = BarrierInstruction(**gate_dict)
+
+    # make sure that the parameters are enforced to be empty
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["barrier", [7], [2.3]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = BarrierInstruction(**gate_dict)
+
+
+def test_load_measure_instruction():
+    """
+    Test that the barrier instruction is properly constrained.
+    """
+    inst_list = ["load", [7], []]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    LoadMeasureInstruction(**gate_dict)
+
+    inst_list = ["measure", [7], []]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    LoadMeasureInstruction(**gate_dict)
+
+    # test that the name is nicely fixed
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["loads", [7], []]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = LoadMeasureInstruction(**gate_dict)
+
+    # test that we cannot give too many wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["load", [0, 1], []]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = LoadMeasureInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["load", [8], []]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = LoadMeasureInstruction(**gate_dict)
+
+    # make sure that the parameters are enforced to be empty
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["load", [7], [2.3]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = LoadMeasureInstruction(**gate_dict)
+
+
+def test_hop_instruction():
+    """
+    Test that the hop instruction instruction is properly constrained.
+    """
+    inst_list = ["fhop", [0, 4, 1, 5], [np.pi / 2]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    HopInstruction(**gate_dict)
+
+    # test that the name is nicely fixed
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["fhops", [0, 4, 1, 5], [np.pi / 2]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = HopInstruction(**gate_dict)
+
+    # test that we cannot give too many wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["fhop", [0, 4, 2], [np.pi / 2]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = HopInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["fhop", [0, 4, 1, 8], [np.pi / 2]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = HopInstruction(**gate_dict)
+
+    # make sure that the parameters are enforced to be within the limits
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["fhop", [0, 4, 1, 5], [3 * np.pi]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = HopInstruction(**gate_dict)
+
+
+def test_interaction_instruction():
+    """
+    Test that the hop instruction instruction is properly constrained.
+    """
+    inst_list = ["fint", [0, 4], [np.pi / 2]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    IntInstruction(**gate_dict)
+
+    # test that the name is nicely fixed
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["fints", [0, 4], [np.pi / 2]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = IntInstruction(**gate_dict)
+
+    # test that we cannot give too many wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["fint", [0, 4, 3], [np.pi / 2]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = IntInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["fint", [0, 8], [np.pi / 2]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = IntInstruction(**gate_dict)
+
+    # make sure that the parameters are enforced to be within the limits
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["fint", [0, 4], [3 * np.pi]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        b_instr = HopInstruction(**gate_dict)
+
+
 def test_wire_order():
     """
     Test that the wire_order is properly working.
     """
-
     # first submit the job
     job_payload = {
         "experiment_0": {
