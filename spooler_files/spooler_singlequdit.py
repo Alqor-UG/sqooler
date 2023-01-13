@@ -33,7 +33,7 @@ class LocalRotationInstruction(BaseModel):
 
 class LocalSqueezingInstruction(BaseModel):
     """
-    The rlx or rlz instruction. As each instruction it requires the
+    The rlz2 instruction. As each instruction it requires the
 
     Attributes:
         name: The string to identify the instruction
@@ -42,7 +42,7 @@ class LocalSqueezingInstruction(BaseModel):
         params: has to be empty
     """
 
-    name: Literal["rlx", "rlz"]
+    name: Literal["rlz2"]
     wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
     params: conlist(confloat(ge=0, le=10 * 2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
