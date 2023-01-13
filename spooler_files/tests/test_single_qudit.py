@@ -77,7 +77,7 @@ def test_pydantic_exp_validation():
             "shots": 4,
             "wire_order": "sequential",
         }
-        mq_exp = SingleQuditExperiment(**poor_experiment)
+        SingleQuditExperiment(**poor_experiment)
 
     with pytest.raises(ValidationError):
         poor_experiment = {
@@ -92,7 +92,7 @@ def test_pydantic_exp_validation():
             "shots": 1e7,
             "wire_order": "sequential",
         }
-        mq_exp = SingleQuditExperiment(**poor_experiment)
+        SingleQuditExperiment(**poor_experiment)
 
 
 def test_z_gate():

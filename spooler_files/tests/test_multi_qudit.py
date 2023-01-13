@@ -70,7 +70,7 @@ def test_pydantic_exp_validation():
         "num_wires": 1,
         "shots": 3,
     }
-    mq_exp = MultiQuditExperiment(**experiment)
+    MultiQuditExperiment(**experiment)
 
     with pytest.raises(ValidationError):
         poor_experiment = {
@@ -85,7 +85,7 @@ def test_pydantic_exp_validation():
             "shots": 4,
             "wire_order": "sequential",
         }
-        mq_exp = MultiQuditExperiment(**poor_experiment)
+        MultiQuditExperiment(**poor_experiment)
 
 
 def test_local_rot_instruction():
@@ -109,25 +109,25 @@ def test_local_rot_instruction():
     with pytest.raises(ValidationError):
         poor_inst_list = ["rly", [0], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LocalRotationInstruction(**gate_dict)
+        LocalRotationInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlx", [0, 1], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LocalRotationInstruction(**gate_dict)
+        LocalRotationInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlx", [200], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LocalRotationInstruction(**gate_dict)
+        LocalRotationInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlx", [0], [3 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LocalRotationInstruction(**gate_dict)
+        LocalRotationInstruction(**gate_dict)
 
 
 def test_squeezing_instruction():
@@ -147,25 +147,25 @@ def test_squeezing_instruction():
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlz22", [0], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LocalSqueezingInstruction(**gate_dict)
+        LocalSqueezingInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlz2", [0, 1], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LocalSqueezingInstruction(**gate_dict)
+        LocalSqueezingInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlz2", [200], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LocalSqueezingInstruction(**gate_dict)
+        LocalSqueezingInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlz2", [0], [200 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LocalSqueezingInstruction(**gate_dict)
+        LocalSqueezingInstruction(**gate_dict)
 
 
 def test_qudit_qudit_instruction():
@@ -189,25 +189,25 @@ def test_qudit_qudit_instruction():
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlzls", [0, 1], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = QuditQuditInstruction(**gate_dict)
+        QuditQuditInstruction(**gate_dict)
 
     # test that we cannot give too few wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlxly", [0], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = QuditQuditInstruction(**gate_dict)
+        QuditQuditInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlxly", [0, 200], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = QuditQuditInstruction(**gate_dict)
+        QuditQuditInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlxly", [0, 1], [200 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = QuditQuditInstruction(**gate_dict)
+        QuditQuditInstruction(**gate_dict)
 
 
 def test_z_gate():

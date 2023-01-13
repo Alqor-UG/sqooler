@@ -19,6 +19,7 @@ from spooler_files.spooler_fermions import (
     IntInstruction,
 )
 
+
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
     """
     A support function that executes the job.
@@ -75,7 +76,7 @@ def test_pydantic_exp_validation():
         "shots": 4,
         "wire_order": "interleaved",
     }
-    f_exp = FermionExperiment(**experiment)
+    FermionExperiment(**experiment)
 
     with pytest.raises(ValidationError):
         poor_experiment = {
@@ -90,7 +91,7 @@ def test_pydantic_exp_validation():
             "shots": 4,
             "wire_order": "sequential",
         }
-        f_exp = FermionExperiment(**poor_experiment)
+        FermionExperiment(**poor_experiment)
 
 
 def test_barrier_instruction():
@@ -109,25 +110,25 @@ def test_barrier_instruction():
     with pytest.raises(ValidationError):
         poor_inst_list = ["barriers", [7], []]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = BarrierInstruction(**gate_dict)
+        BarrierInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["barrier", [0, 1, 2, 3, 4, 5, 6, 7, 8], []]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = BarrierInstruction(**gate_dict)
+        BarrierInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["barrier", [8], []]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = BarrierInstruction(**gate_dict)
+        BarrierInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be empty
     with pytest.raises(ValidationError):
         poor_inst_list = ["barrier", [7], [2.3]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = BarrierInstruction(**gate_dict)
+        BarrierInstruction(**gate_dict)
 
 
 def test_load_measure_instruction():
@@ -156,25 +157,25 @@ def test_load_measure_instruction():
     with pytest.raises(ValidationError):
         poor_inst_list = ["loads", [7], []]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LoadMeasureInstruction(**gate_dict)
+        LoadMeasureInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["load", [0, 1], []]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LoadMeasureInstruction(**gate_dict)
+        LoadMeasureInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["load", [8], []]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LoadMeasureInstruction(**gate_dict)
+        LoadMeasureInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be empty
     with pytest.raises(ValidationError):
         poor_inst_list = ["load", [7], [2.3]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = LoadMeasureInstruction(**gate_dict)
+        LoadMeasureInstruction(**gate_dict)
 
 
 def test_hop_instruction():
@@ -194,25 +195,25 @@ def test_hop_instruction():
     with pytest.raises(ValidationError):
         poor_inst_list = ["fhops", [0, 4, 1, 5], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = HopInstruction(**gate_dict)
+        HopInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["fhop", [0, 4, 2], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = HopInstruction(**gate_dict)
+        HopInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["fhop", [0, 4, 1, 8], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = HopInstruction(**gate_dict)
+        HopInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
         poor_inst_list = ["fhop", [0, 4, 1, 5], [3 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = HopInstruction(**gate_dict)
+        HopInstruction(**gate_dict)
 
 
 def test_interaction_instruction():
@@ -232,25 +233,25 @@ def test_interaction_instruction():
     with pytest.raises(ValidationError):
         poor_inst_list = ["fints", [0, 4], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = IntInstruction(**gate_dict)
+        IntInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["fint", [0, 4, 3], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = IntInstruction(**gate_dict)
+        IntInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["fint", [0, 8], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = IntInstruction(**gate_dict)
+        IntInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
         poor_inst_list = ["fint", [0, 4], [3 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        b_instr = HopInstruction(**gate_dict)
+        HopInstruction(**gate_dict)
 
 
 def test_wire_order():
