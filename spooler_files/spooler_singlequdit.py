@@ -4,104 +4,79 @@ The module that contains all the necessary logic for the singlequdit.
 
 from typing import Tuple, Literal, List, Optional
 
-from pydantic import conint, BaseModel, ValidationError
+from pydantic import conint, BaseModel, ValidationError, conlist, confloat
 import numpy as np
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 from scipy.sparse import diags, csc_matrix  # type: ignore
 
-from .schemes import (
-    ExperimentDict,
-    create_memory_data,
-    InstructionScheme,
-    Spooler,
-)
+from .schemes import ExperimentDict, create_memory_data, Spooler, gate_dict_from_list
 
 N_MAX_SHOTS = 1000
 N_MAX_ATOMS = 500
 
-rLx_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["rlx"]},
-            {
-                "type": "array",
-                "maxItems": 2,
-                "items": [{"type": "number", "minimum": 0, "maximum": 1}],
-            },
-            {
-                "type": "array",
-                "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-            },
-        ]
-    )
-)
 
-rLz_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["rlz"]},
-            {
-                "type": "array",
-                "maxItems": 2,
-                "items": [{"type": "number", "minimum": 0, "maximum": 1}],
-            },
-            {
-                "type": "array",
-                "items": [{"type": "number", "minimum": 0, "maximum": 2 * np.pi}],
-            },
-        ]
-    )
-)
+class LocalRotationInstruction(BaseModel):
+    """
+    The rlx or rlz instruction. As each instruction it requires the
 
-rLz2_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["rlz2"]},
-            {
-                "type": "array",
-                "maxItems": 2,
-                "items": [{"type": "number", "minimum": 0, "maximum": 1}],
-            },
-            {
-                "type": "array",
-                "items": [{"type": "number", "minimum": 0, "maximum": 10 * 2 * np.pi}],
-            },
-        ]
-    )
-)
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
 
-load_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["load"]},
-            {
-                "type": "array",
-                "maxItems": 2,
-                "items": [{"type": "number", "minimum": 0, "maximum": 0}],
-            },
-            {
-                "type": "array",
-                # set the upper limit for the number of atoms that can be loaded
-                # into the single qudit
-                "items": [{"type": "number", "minimum": 0, "maximum": N_MAX_ATOMS}],
-            },
-        ]
-    )
-)
+    name: Literal["rlx", "rlz"]
+    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
+    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
-barrier_measure_schema = dict(
-    InstructionScheme(
-        items=[
-            {"type": "string", "enum": ["measure", "barrier"]},
-            {
-                "type": "array",
-                "maxItems": 2,
-                "items": [{"type": "number", "minimum": 0, "maximum": 1}],
-            },
-            {"type": "array", "maxItems": 0},
-        ]
-    )
-)
+
+class LocalSqueezingInstruction(BaseModel):
+    """
+    The rlx or rlz instruction. As each instruction it requires the
+
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
+
+    name: Literal["rlx", "rlz"]
+    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
+    params: conlist(confloat(ge=0, le=10 * 2 * np.pi), min_items=1, max_items=1)  # type: ignore
+
+
+class LoadInstruction(BaseModel):
+    """
+    The load instruction. As each instruction it requires the
+
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
+
+    name: Literal["load"]
+    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
+    params: conlist(conint(ge=1, le=N_MAX_ATOMS), min_items=1, max_items=1)  # type: ignore
+
+
+class MeasureBarrierInstruction(BaseModel):
+    """
+    The load instruction. As each instruction it requires the
+
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
+
+    name: Literal["measure", "barrier"]
+    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
+    params: conlist(float, min_items=0, max_items=0)  # type: ignore
 
 
 class SingleQuditExperiment(BaseModel):
@@ -134,15 +109,33 @@ class SingleQuditSpooler(Spooler):
         except ValidationError as err:
             return str(err), False
 
+    def check_instructions(self, ins_list: list) -> Tuple[str, bool]:
+        """
+        Check all the instruction to make sure that they are valid.
+        """
+        err_code = ""
+        exp_ok = False
+        for ins in ins_list:
+            try:
+                gate_dict = gate_dict_from_list(ins)
+                self.ins_schema_dict[ins[0]](**gate_dict)
+                exp_ok = True
+            except ValidationError as err:
+                err_code = "Error in instruction " + str(err)
+                exp_ok = False
+            if not exp_ok:
+                break
+        return err_code, exp_ok
+
 
 sq_spooler = SingleQuditSpooler(
     ins_schema_dict={
-        "rlx": rLx_schema,
-        "rlz": rLz_schema,
-        "rlz2": rLz2_schema,
-        "barrier": barrier_measure_schema,
-        "measure": barrier_measure_schema,
-        "load": load_schema,
+        "rlx": LocalRotationInstruction,
+        "rlz": LocalRotationInstruction,
+        "rlz2": LocalSqueezingInstruction,
+        "barrier": MeasureBarrierInstruction,
+        "measure": MeasureBarrierInstruction,
+        "load": LoadInstruction,
     },
 )
 

@@ -3,35 +3,8 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Tuple, TypedDict, List
-
-from pydantic import BaseModel
-
-from jsonschema import validate
-from jsonschema.exceptions import ValidationError
-
-
-class ExperimentScheme(BaseModel):
-    """
-    The schema for the experiments, which is used for validation.
-    TODO: Make the difference with ExperimentDict clear.
-    """
-
-    required: List[str]
-    properties: dict
-    type: str = "object"
-    additionalProperties: bool = False
-
-
-class InstructionScheme(BaseModel):
-    """
-    The schema for the instructions
-    """
-
-    items: list
-    type: str = "array"
-    minItems: int = 3
-    maxItems: int = 3
+from typing import Tuple, TypedDict
+from pydantic import ValidationError
 
 
 class ExperimentDict(TypedDict):
@@ -84,11 +57,11 @@ class Spooler:
         err_code = ""
         exp_ok = False
         for ins in ins_list:
-            # Fix this pylint issue whenever you have time, but be careful !
-            # pylint: disable=W0703
             try:
-                err_code, exp_ok = check_with_schema(ins, self.ins_schema_dict[ins[0]])
-            except Exception as err:
+                gate_dict = gate_dict_from_list(ins)
+                self.ins_schema_dict[ins[0]](**gate_dict)
+                exp_ok = True
+            except ValidationError as err:
                 err_code = "Error in instruction " + str(err)
                 exp_ok = False
             if not exp_ok:
@@ -133,25 +106,11 @@ class Spooler:
         return err_code.replace("\n", ".."), exp_ok
 
 
-def check_with_schema(obj: dict, schm: dict) -> Tuple[str, bool]:
+def gate_dict_from_list(inst_list: list) -> dict:
     """
-    Caller for the validate function of jsonschema
-
-    Args:
-        obj (dict): the object that should be checked.
-        schm (dict): the schema that defines the object properties.
-
-    Returns:
-        boolean flag tellings if dictionary matches schema syntax.
-
+    Transforms a list into an appropiate dictionnary for instructions.
     """
-    # Fix this pylint issue whenever you have time, but be careful !
-    # pylint: disable=W0703
-    try:
-        validate(instance=obj, schema=schm)
-        return "", True
-    except ValidationError as err:
-        return str(err), False
+    return {"name": inst_list[0], "wires": inst_list[1], "params": inst_list[2]}
 
 
 def create_memory_data(

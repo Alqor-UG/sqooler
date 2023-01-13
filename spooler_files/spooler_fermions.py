@@ -8,25 +8,13 @@ import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
 
-from .schemes import (
-    ExperimentDict,
-    create_memory_data,
-    Spooler,
-)
+from .schemes import ExperimentDict, create_memory_data, Spooler, gate_dict_from_list
 
 NUM_WIRES = 8
 N_MAX_SHOTS = 10 ** 3
 N_MAX_WIRES = 8
 
 # define the instructions in the following
-# barrier instruction
-
-
-def gate_dict_from_list(inst_list: list) -> dict:
-    """
-    Transforms a list into an appropiate dictionnary for instructions.
-    """
-    return {"name": inst_list[0], "wires": inst_list[1], "params": inst_list[2]}
 
 
 class BarrierInstruction(BaseModel):
@@ -41,8 +29,8 @@ class BarrierInstruction(BaseModel):
     """
 
     name: Literal["barrier"]
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=0, max_items=NUM_WIRES)# type: ignore
-    params: conlist(float, max_items=0)# type: ignore
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=0, max_items=NUM_WIRES)  # type: ignore
+    params: conlist(float, max_items=0)  # type: ignore
 
 
 class LoadMeasureInstruction(BaseModel):
@@ -56,8 +44,8 @@ class LoadMeasureInstruction(BaseModel):
     """
 
     name: Literal["load", "measure"]
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=1, max_items=1)# type: ignore
-    params: conlist(float, max_items=0)# type: ignore
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=1, max_items=1)  # type: ignore
+    params: conlist(float, max_items=0)  # type: ignore
 
 
 class HopInstruction(BaseModel):
@@ -71,8 +59,8 @@ class HopInstruction(BaseModel):
     """
 
     name: Literal["fhop"]
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=4, max_items=4)# type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)# type: ignore
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=4, max_items=4)  # type: ignore
+    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
 
 
 class IntInstruction(BaseModel):
@@ -86,8 +74,8 @@ class IntInstruction(BaseModel):
     """
 
     name: Literal["fint", "fphase"]
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=2)# type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)# type: ignore
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=2)  # type: ignore
+    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
 
 
 class FermionExperiment(BaseModel):

@@ -18,8 +18,6 @@ from spooler_files.spooler_fermions import (
     HopInstruction,
     IntInstruction,
 )
-from spooler_files.schemes import check_with_schema
-
 
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
     """
