@@ -4,9 +4,19 @@ Test module for the spooler_multiqudit.py file.
 
 from typing import Union
 import numpy as np
+import pytest
+
+from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
+from spooler_files.schemes import gate_dict_from_list
 from spooler_files.spooler_multiqudit import mq_spooler, gen_circuit
+from spooler_files.spooler_multiqudit import (
+    MultiQuditExperiment,
+    LocalRotationInstruction,
+    LocalSqueezingInstruction,
+    QuditQuditInstruction,
+)
 
 
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
@@ -46,6 +56,158 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
 # __Put all tests below__#
 ###########################
 ###########################
+
+
+def test_pydantic_exp_validation():
+    """
+    Test that the validation of the experiment is working
+    """
+    experiment = {
+        "instructions": [
+            ["rlz", [0], [0.7]],
+            ["measure", [0], []],
+        ],
+        "num_wires": 1,
+        "shots": 3,
+    }
+    MultiQuditExperiment(**experiment)
+
+    with pytest.raises(ValidationError):
+        poor_experiment = {
+            "instructions": [
+                ["load", [7], []],
+                ["load", [2], []],
+                ["measure", [2], []],
+                ["measure", [6], []],
+                ["measure", [7], []],
+            ],
+            "num_wires": 400,
+            "shots": 4,
+            "wire_order": "sequential",
+        }
+        MultiQuditExperiment(**poor_experiment)
+
+
+def test_local_rot_instruction():
+    """
+    Test that the hop instruction instruction is properly constrained.
+    """
+    inst_list = ["rlx", [0], [0.7]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    LocalRotationInstruction(**gate_dict)
+
+    inst_list = ["rlz", [0], [0.7]]
+    gate_dict = gate_dict_from_list(inst_list)
+    LocalRotationInstruction(**gate_dict)
+
+    # test that the name is nicely fixed
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rly", [0], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        LocalRotationInstruction(**gate_dict)
+
+    # test that we cannot give too many wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlx", [0, 1], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        LocalRotationInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlx", [200], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        LocalRotationInstruction(**gate_dict)
+
+    # make sure that the parameters are enforced to be within the limits
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlx", [0], [3 * np.pi]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        LocalRotationInstruction(**gate_dict)
+
+
+def test_squeezing_instruction():
+    """
+    Test that the local squeezing instruction constrained.
+    """
+    inst_list = ["rlz2", [0], [0.7]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    LocalSqueezingInstruction(**gate_dict)
+
+    # test that the name is nicely fixed
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlz22", [0], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        LocalSqueezingInstruction(**gate_dict)
+
+    # test that we cannot give too many wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlz2", [0, 1], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        LocalSqueezingInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlz2", [200], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        LocalSqueezingInstruction(**gate_dict)
+
+    # make sure that the parameters are enforced to be within the limits
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlz2", [0], [200 * np.pi]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        LocalSqueezingInstruction(**gate_dict)
+
+
+def test_qudit_qudit_instruction():
+    """
+    Test that the qudit qudit instruction instruction is properly constrained.
+    """
+    inst_list = ["rlxly", [0, 1], [0.7]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    QuditQuditInstruction(**gate_dict)
+
+    inst_list = ["rlzlz", [0, 1], [0.7]]
+    gate_dict = gate_dict_from_list(inst_list)
+    QuditQuditInstruction(**gate_dict)
+
+    # test that the name is nicely fixed
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlzls", [0, 1], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        QuditQuditInstruction(**gate_dict)
+
+    # test that we cannot give too few wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlxly", [0], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        QuditQuditInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlxly", [0, 200], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        QuditQuditInstruction(**gate_dict)
+
+    # make sure that the parameters are enforced to be within the limits
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlxly", [0, 1], [200 * np.pi]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        QuditQuditInstruction(**gate_dict)
 
 
 def test_z_gate():
