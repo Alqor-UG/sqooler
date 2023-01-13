@@ -62,7 +62,7 @@ def test_pydantic_exp_validation():
         "num_wires": 1,
         "shots": 3,
     }
-    mq_exp = SingleQuditExperiment(**experiment)
+    SingleQuditExperiment(**experiment)
 
     with pytest.raises(ValidationError):
         poor_experiment = {
