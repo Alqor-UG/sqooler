@@ -8,7 +8,13 @@ import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
 
-from .schemes import ExperimentDict, create_memory_data, Spooler, gate_dict_from_list
+from .schemes import (
+    ExperimentDict,
+    create_memory_data,
+    Spooler,
+    gate_dict_from_list,
+    GateInstruction,
+)
 
 NUM_WIRES = 8
 N_MAX_SHOTS = 10 ** 3
@@ -48,7 +54,7 @@ class LoadMeasureInstruction(BaseModel):
     params: conlist(float, max_items=0)  # type: ignore
 
 
-class HopInstruction(BaseModel):
+class HopInstruction(GateInstruction):
     """
     The instruction that applies the hopping gate.
 
@@ -56,14 +62,26 @@ class HopInstruction(BaseModel):
         name: How to identify the instruction
         wires: Exactly four wires have to be given.
         params: between 0 and 2 pi
+        coupling_map: contains all the allowed configurations. Currently not used
     """
 
-    name: Literal["fhop"]
+    name: Literal["fhop"] = "fhop"
     wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=4, max_items=4)  # type: ignore
     params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
 
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "j_i"
+    description: str = "hopping of atoms to neighboring tweezers"
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [
+        [0, 1, 2, 3],
+        [2, 3, 4, 5],
+        [4, 5, 6, 7],
+        [0, 1, 2, 3, 4, 5, 6, 7],
+    ]
 
-class IntInstruction(BaseModel):
+
+class IntInstruction(GateInstruction):
     """
     The instruction that applies the interaction gate.
 
@@ -73,9 +91,38 @@ class IntInstruction(BaseModel):
         params: Has to be empty
     """
 
-    name: Literal["fint", "fphase"]
+    name: Literal["fint"] = "fint"
     wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=2)  # type: ignore
     params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
+
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "u"
+    description: str = "on-site interaction of atoms of opposite spin state"
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [[0, 1, 2, 3, 4, 5, 6, 7]]
+
+
+class PhaseInstruction(GateInstruction):
+    """
+    The instruction that applies the interaction gate.
+
+    Attributes:
+        name: How to identify the instruction
+        wires: Exactly one wire has to be given.
+        params: Has to be empty
+    """
+
+    name: Literal["fphase"] = "fphase"
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=2)  # type: ignore
+    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
+
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "mu_i"
+    description: str = (
+        "Applying a local phase to tweezers through an external potential"
+    )
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 1, 2, 3, 4, 5, 6, 7]]
 
 
 class FermionExperiment(BaseModel):
@@ -131,7 +178,7 @@ f_spooler = FermionSpooler(
         "barrier": BarrierInstruction,
         "fhop": HopInstruction,
         "fint": IntInstruction,
-        "fphase": IntInstruction,
+        "fphase": PhaseInstruction,
         "measure": LoadMeasureInstruction,
     },
 )

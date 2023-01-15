@@ -17,6 +17,7 @@ from spooler_files.spooler_fermions import (
     LoadMeasureInstruction,
     HopInstruction,
     IntInstruction,
+    PhaseInstruction,
 )
 
 
@@ -215,6 +216,21 @@ def test_hop_instruction():
         gate_dict = gate_dict_from_list(poor_inst_list)
         HopInstruction(**gate_dict)
 
+    # also look into the config dict
+    inst_config = {
+        "coupling_map": [
+            [0, 1, 2, 3],
+            [2, 3, 4, 5],
+            [4, 5, 6, 7],
+            [0, 1, 2, 3, 4, 5, 6, 7],
+        ],
+        "description": "hopping of atoms to neighboring tweezers",
+        "name": "fhop",
+        "parameters": ["j_i"],
+        "qasm_def": "{}",
+    }
+    assert inst_config == HopInstruction.config_dict()
+
 
 def test_interaction_instruction():
     """
@@ -252,6 +268,16 @@ def test_interaction_instruction():
         poor_inst_list = ["fint", [0, 4], [3 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         HopInstruction(**gate_dict)
+
+    # also look into the config dict
+    inst_config = {
+        "coupling_map": [[0, 1, 2, 3, 4, 5, 6, 7]],
+        "description": "on-site interaction of atoms of opposite spin state",
+        "name": "fint",
+        "parameters": ["u"],
+        "qasm_def": "{}",
+    }
+    assert inst_config == IntInstruction.config_dict()
 
 
 def test_wire_order():
@@ -373,6 +399,16 @@ def test_phase_gate():
     assert len(shots_array) > 0, "shots_array got messed up"
     assert shots_array[0] == "0 1", "shots_array got messed up"
 
+    # also look into the config dict
+    inst_config = {
+        "coupling_map": [[0, 1], [2, 3], [4, 5], [6, 7], [0, 1, 2, 3, 4, 5, 6, 7]],
+        "description": "Applying a local phase to tweezers through an external potential",
+        "name": "fphase",
+        "parameters": ["mu_i"],
+        "qasm_def": "{}",
+    }
+    assert inst_config == PhaseInstruction.config_dict()
+
 
 def test_seed():
     """
@@ -421,3 +457,46 @@ def test_seed():
     assert data["job_id"] == 1, "job_id got messed up"
     assert len(shots_array_1) > 0, "shots_array got messed up"
     assert shots_array_1 == shots_array_2, "seed got messed up"
+
+
+fermion_config_dict = {
+    "name": "fermions",
+    "description": "simulator of a fermionic tweezer hardware. The even wires denote the occupations of the spin-up fermions and the odd wires denote the spin-down fermions",
+    "version": "0.0.1",
+    "cold_atom_type": "fermion",
+    "gates": [
+        {
+            "coupling_map": [
+                [0, 1, 2, 3],
+                [2, 3, 4, 5],
+                [4, 5, 6, 7],
+                [0, 1, 2, 3, 4, 5, 6, 7],
+            ],
+            "description": "hopping of atoms to neighboring tweezers",
+            "name": "fhop",
+            "parameters": ["j_i"],
+            "qasm_def": "{}",
+        },
+        {
+            "coupling_map": [[0, 1, 2, 3, 4, 5, 6, 7]],
+            "description": "on-site interaction of atoms of opposite spin state",
+            "name": "fint",
+            "parameters": ["u"],
+            "qasm_def": "{}",
+        },
+        {
+            "coupling_map": [[0, 1], [2, 3], [4, 5], [6, 7], [0, 1, 2, 3, 4, 5, 6, 7]],
+            "description": "Applying a local phase to tweezers through an external potential",
+            "name": "fphase",
+            "parameters": ["mu_i"],
+            "qasm_def": "{}",
+        },
+    ],
+    "max_experiments": 1000,
+    "max_shots": 1000000,
+    "simulator": True,
+    "supported_instructions": ["load", "measure", "barrier", "fhop", "fint", "fphase"],
+    "num_wires": 8,
+    "wire_order": "interleaved",
+    "num_species": 2,
+}
