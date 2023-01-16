@@ -28,6 +28,7 @@ class GateInstruction(BaseModel):
     parameters: str
     description: str
     coupling_map: List
+    qasm_def: str = "{}"
 
     @classmethod
     def config_dict(cls) -> Dict:
@@ -39,7 +40,7 @@ class GateInstruction(BaseModel):
             "description": cls.__fields__["description"].default,
             "name": cls.__fields__["name"].default,
             "parameters": [cls.__fields__["parameters"].default],
-            "qasm_def": "{}",
+            "qasm_def": cls.__fields__["qasm_def"].default,
         }
 
 

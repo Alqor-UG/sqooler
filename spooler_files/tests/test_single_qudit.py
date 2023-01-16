@@ -16,9 +16,10 @@ from spooler_files.spooler_singlequdit import (
 from spooler_files.spooler_singlequdit import (
     SingleQuditExperiment,
     LoadInstruction,
-    LocalRotationInstruction,
     MeasureBarrierInstruction,
     LocalSqueezingInstruction,
+    RlzInstruction,
+    RlxInstruction,
 )
 
 
@@ -105,6 +106,15 @@ def test_pydantic_exp_validation():
         }
         SingleQuditExperiment(**poor_experiment)
 
+    inst_config = {
+        "name": "rlx",
+        "parameters": ["omega"],
+        "qasm_def": "gate lrx(omega) {}",
+        "coupling_map": [[0], [1], [2], [3], [4]],
+        "description": "Evolution under Lx",
+    }
+    assert inst_config == RlxInstruction.config_dict()
+
 
 def test_load_instruction():
     """
@@ -155,35 +165,35 @@ def test_local_rot_instruction():
         "wires": inst_list[1],
         "params": inst_list[2],
     }
-    LocalRotationInstruction(**gate_dict)
+    RlxInstruction(**gate_dict)
 
     inst_list = ["rlz", [0], [np.pi / 2]]
     gate_dict = gate_dict_from_list(inst_list)
-    LocalRotationInstruction(**gate_dict)
+    RlzInstruction(**gate_dict)
 
     # test that the name is nicely fixed
     with pytest.raises(ValidationError):
         poor_inst_list = ["rly", [0], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        LocalRotationInstruction(**gate_dict)
+        RlxInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlx", [0, 1], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        LocalRotationInstruction(**gate_dict)
+        RlxInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlx", [1], [np.pi / 2]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        LocalRotationInstruction(**gate_dict)
+        RlxInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlx", [0], [4 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        LocalRotationInstruction(**gate_dict)
+        RlxInstruction(**gate_dict)
 
 
 def test_squeezing_instruction():
@@ -222,6 +232,16 @@ def test_squeezing_instruction():
         poor_inst_list = ["rlz2", [0], [400 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         LocalSqueezingInstruction(**gate_dict)
+
+    # test the config
+    inst_config = {
+        "name": "rlz2",
+        "parameters": ["chi"],
+        "qasm_def": "gate rlz2(chi) {}",
+        "coupling_map": [[0], [1], [2], [3], [4]],
+        "description": "Evolution under lz2",
+    }
+    assert inst_config == LocalSqueezingInstruction.config_dict()
 
 
 def test_measure_instruction():
@@ -321,3 +341,51 @@ def test_z_gate():
     shots_array = data["results"][0]["data"]["memory"]
     assert data["job_id"] == 1, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
+
+    # test the config
+    inst_config = {
+        "name": "rlz",
+        "parameters": ["delta"],
+        "qasm_def": "gate rlz(delta) {}",
+        "coupling_map": [[0], [1], [2], [3], [4]],
+        "description": "Evolution under the Z gate",
+    }
+    assert inst_config == RlzInstruction.config_dict()
+
+
+sq_config_dict = {
+    "name": "singlequdit",
+    "description": "Setup of a cold atomic gas experiment with a single qudit.",
+    "version": "0.0.2",
+    "cold_atom_type": "spin",
+    "gates": [
+        {
+            "name": "rlz",
+            "parameters": ["delta"],
+            "qasm_def": "gate rlz(delta) {}",
+            "coupling_map": [[0], [1], [2], [3], [4]],
+            "description": "Evolution under the Z gate",
+        },
+        {
+            "name": "rlz2",
+            "parameters": ["chi"],
+            "qasm_def": "gate rlz2(chi) {}",
+            "coupling_map": [[0], [1], [2], [3], [4]],
+            "description": "Evolution under lz2",
+        },
+        {
+            "name": "rlx",
+            "parameters": ["omega"],
+            "qasm_def": "gate lrx(omega) {}",
+            "coupling_map": [[0], [1], [2], [3], [4]],
+            "description": "Evolution under Lx",
+        },
+    ],
+    "max_experiments": 1000,
+    "max_shots": 1000000,
+    "simulator": True,
+    "supported_instructions": ["rlx", "rlz", "rlz2", "measure", "barrier", "load"],
+    "num_wires": 1,
+    "wire_order": "interleaved",
+    "num_species": 1,
+}

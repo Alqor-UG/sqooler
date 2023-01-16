@@ -461,7 +461,9 @@ def test_seed():
 
 fermion_config_dict = {
     "name": "fermions",
-    "description": "simulator of a fermionic tweezer hardware. The even wires denote the occupations of the spin-up fermions and the odd wires denote the spin-down fermions",
+    "description": "simulator of a fermionic tweezer hardware. \
+        The even wires denote the occupations of the spin-up fermions \
+        and the odd wires denote the spin-down fermions",
     "version": "0.0.1",
     "cold_atom_type": "fermion",
     "gates": [
