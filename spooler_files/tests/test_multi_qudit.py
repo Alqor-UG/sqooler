@@ -17,7 +17,7 @@ from spooler_files.spooler_multiqudit import (
     RlxInstruction,
     RlzInstruction,
     RlxlyInstruction,
-    RlzlzInstruction
+    RlzlzInstruction,
 )
 
 

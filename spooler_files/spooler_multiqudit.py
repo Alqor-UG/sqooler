@@ -121,6 +121,7 @@ class RlxlyInstruction(GateInstruction):
     coupling_map: List = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]]
     qasm_def = "gate rlylx(J) {}"
 
+
 class RlzlzInstruction(GateInstruction):
     """
     The rlzlz instruction. As each instruction it requires the
@@ -142,6 +143,7 @@ class RlzlzInstruction(GateInstruction):
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]]
     qasm_def = "gate rlzlz(J) {}"
+
 
 class BarrierInstruction(BaseModel):
     """
@@ -273,6 +275,7 @@ mq_spooler = MultiQuditSpooler(
         "load": LoadInstruction,
     },
 )
+
 
 def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: List[int]) -> csc_matrix:
     """
