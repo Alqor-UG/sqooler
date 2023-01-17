@@ -15,6 +15,7 @@ from .schemes import (
     gate_dict_from_list,
     create_memory_data,
     Spooler,
+    GateInstruction,
 )
 
 N_MAX_WIRES = 16
@@ -29,9 +30,9 @@ MAX_HILBERT_SPACE_DIM = 2 ** 12
 # define the instructions in the following
 
 
-class LocalRotationInstruction(BaseModel):
+class RlxInstruction(GateInstruction):
     """
-    The rlx or rlz instruction. As each instruction it requires the
+    The rlz instruction. As each instruction it requires the
 
     Attributes:
         name: The string to identify the instruction
@@ -40,14 +41,21 @@ class LocalRotationInstruction(BaseModel):
         params: has to be empty
     """
 
-    name: Literal["rlx", "rlz"]
+    name: Literal["rlx"] = "rlx"
     wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
     params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "omega"
+    description: str = "Evolution under Lx"
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [[0], [1], [2], [3], [4]]
+    qasm_def = "gate lrx(omega) {}"
 
-class LocalSqueezingInstruction(BaseModel):
+
+class RlzInstruction(GateInstruction):
     """
-    The rlx or rlz instruction. As each instruction it requires the
+    The rlz instruction. As each instruction it requires the
 
     Attributes:
         name: The string to identify the instruction
@@ -56,12 +64,42 @@ class LocalSqueezingInstruction(BaseModel):
         params: has to be empty
     """
 
-    name: Literal["rlz2"]
+    name: Literal["rlz"] = "rlz"
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
+    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "delta"
+    description: str = "Evolution under the Z gate"
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [[0], [1], [2], [3], [4]]
+    qasm_def = "gate rlz(delta) {}"
+
+
+class LocalSqueezingInstruction(GateInstruction):
+    """
+    The rlz2 instruction. As each instruction it requires the
+
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
+
+    name: Literal["rlz2"] = "rlz2"
     wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
     params: conlist(confloat(ge=0, le=10 * 2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "chi"
+    description: str = "Evolution under lz2"
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [[0], [1], [2], [3], [4]]
+    qasm_def = "gate rlz2(chi) {}"
 
-class QuditQuditInstruction(BaseModel):
+
+class RlxlyInstruction(GateInstruction):
     """
     The rlxly or rlzlz instruction. As each instruction it requires the
 
@@ -72,10 +110,38 @@ class QuditQuditInstruction(BaseModel):
         params: has to be empty
     """
 
-    name: Literal["rlxly", "rlzlz"]
+    name: Literal["rlxly"] = "rlxly"
     wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
     params: conlist(confloat(ge=0, le=10 * 2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "J"
+    description: str = "Entanglement between neighboring gates with an xy interaction"
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]]
+    qasm_def = "gate rlylx(J) {}"
+
+class RlzlzInstruction(GateInstruction):
+    """
+    The rlzlz instruction. As each instruction it requires the
+
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: has to be empty
+    """
+
+    name: Literal["rlzlz"] = "rlzlz"
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
+    params: conlist(confloat(ge=0, le=10 * 2 * np.pi), min_items=1, max_items=1)  # type: ignore
+
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "J"
+    description: str = "Entanglement between neighboring gates with a zz interaction"
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]]
+    qasm_def = "gate rlzlz(J) {}"
 
 class BarrierInstruction(BaseModel):
     """
@@ -197,17 +263,16 @@ class MultiQuditSpooler(Spooler):
 
 mq_spooler = MultiQuditSpooler(
     ins_schema_dict={
-        "rlx": LocalRotationInstruction,
-        "rlz": LocalRotationInstruction,
+        "rlx": RlxInstruction,
+        "rlz": RlzInstruction,
         "rlz2": LocalSqueezingInstruction,
-        "rlxly": QuditQuditInstruction,
+        "rlxly": RlxlyInstruction,
+        "rlzlz": RlzlzInstruction,
         "barrier": BarrierInstruction,
         "measure": MeasureInstruction,
         "load": LoadInstruction,
-        "rlzlz": QuditQuditInstruction,
     },
 )
-
 
 def op_at_wire(op: csc_matrix, pos: int, dim_per_wire: List[int]) -> csc_matrix:
     """
