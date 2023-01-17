@@ -3,8 +3,8 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Tuple, TypedDict
-from pydantic import ValidationError
+from typing import Tuple, TypedDict, List, Dict
+from pydantic import ValidationError, BaseModel
 
 
 class ExperimentDict(TypedDict):
@@ -16,6 +16,32 @@ class ExperimentDict(TypedDict):
     shots: int
     success: bool
     data: dict
+
+
+class GateInstruction(BaseModel):
+    """
+    The basic class for all the gate intructions of a backend.
+    Any gate has to have the following attributes.
+    """
+
+    name: str
+    parameters: str
+    description: str
+    coupling_map: List
+    qasm_def: str = "{}"
+
+    @classmethod
+    def config_dict(cls) -> Dict:
+        """
+        Give back the properties of the instruction such as needed for the server.
+        """
+        return {
+            "coupling_map": cls.__fields__["coupling_map"].default,
+            "description": cls.__fields__["description"].default,
+            "name": cls.__fields__["name"].default,
+            "parameters": [cls.__fields__["parameters"].default],
+            "qasm_def": cls.__fields__["qasm_def"].default,
+        }
 
 
 class Spooler:
