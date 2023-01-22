@@ -278,7 +278,7 @@ mq_spooler = MultiQuditSpooler(
     name="synqs_multiqudit_simulator",
     description="Setup of a cold atomic gas experiment with a multiple qudits.",
     n_max_experiments=MAX_EXPERIMENTS,
-    n_max_shots=N_MAX_SHOTS
+    n_max_shots=N_MAX_SHOTS,
 )
 
 

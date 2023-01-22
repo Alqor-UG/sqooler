@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from pydantic import ValidationError
+import pprint
 
 # pylint: disable=C0413, E0401
 from spooler_files.schemes import gate_dict_from_list
@@ -390,6 +391,13 @@ def test_spooler_config():
         "cold_atom_type": "spin",
         "gates": [
             {
+                "name": "rlx",
+                "parameters": ["omega"],
+                "qasm_def": "gate lrx(omega) {}",
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under Lx",
+            },
+            {
                 "name": "rlz",
                 "parameters": ["delta"],
                 "qasm_def": "gate rlz(delta) {}",
@@ -401,14 +409,7 @@ def test_spooler_config():
                 "parameters": ["chi"],
                 "qasm_def": "gate rlz2(chi) {}",
                 "coupling_map": [[0], [1], [2], [3], [4]],
-                "description": "Evolution under Lz2",
-            },
-            {
-                "name": "rlx",
-                "parameters": ["omega"],
-                "qasm_def": "gate lrx(omega) {}",
-                "coupling_map": [[0], [1], [2], [3], [4]],
-                "description": "Evolution under Lx",
+                "description": "Evolution under lz2",
             },
             {
                 "name": "rlxly",
@@ -416,6 +417,13 @@ def test_spooler_config():
                 "qasm_def": "gate rlylx(J) {}",
                 "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
                 "description": "Entanglement between neighboring gates with an xy interaction",
+            },
+            {
+                "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
+                "description": "Entanglement between neighboring gates with a zz interaction",
+                "name": "rlzlz",
+                "parameters": ["J"],
+                "qasm_def": "gate rlzlz(J) {}",
             },
         ],
         "max_experiments": 1000,

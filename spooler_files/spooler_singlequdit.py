@@ -183,7 +183,7 @@ sq_spooler = SingleQuditSpooler(
     n_wires=1,
     name="synqs_singlequdit_simulator",
     version="0.0.2",
-    description="Setup of a cold atomic gas experiment with a single qudit."
+    description="Setup of a cold atomic gas experiment with a single qudit.",
 )
 
 

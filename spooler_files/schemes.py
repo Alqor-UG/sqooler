@@ -29,6 +29,7 @@ class GateInstruction(BaseModel):
     description: str
     coupling_map: List
     qasm_def: str = "{}"
+    is_gate: bool = True
 
     @classmethod
     def config_dict(cls) -> Dict:
@@ -70,7 +71,7 @@ class Spooler:
         cold_atom_type: str = "spin",
         n_max_experiments: int = 15,
         wire_order: str = "interleaved",
-        num_species: int = 1
+        num_species: int = 1,
     ):
         """
         The constructor of the class.
@@ -101,41 +102,16 @@ class Spooler:
         """
         Sends back the configuration dictionary of the spooler.
         """
+        gate_list = []
+        for ins_name, ins_obj in self.ins_schema_dict.items():
+            if "is_gate" in ins_obj.__fields__:
+                gate_list.append(ins_obj.config_dict())
         return {
             "name": self.name,
             "description": self.description,
             "version": self.version,
             "cold_atom_type": self.cold_atom_type,
-            "gates": [
-                {
-                    "name": "rlz",
-                    "parameters": ["delta"],
-                    "qasm_def": "gate rlz(delta) {}",
-                    "coupling_map": [[0], [1], [2], [3], [4]],
-                    "description": "Evolution under the Z gate",
-                },
-                {
-                    "name": "rlz2",
-                    "parameters": ["chi"],
-                    "qasm_def": "gate rlz2(chi) {}",
-                    "coupling_map": [[0], [1], [2], [3], [4]],
-                    "description": "Evolution under Lz2",
-                },
-                {
-                    "name": "rlx",
-                    "parameters": ["omega"],
-                    "qasm_def": "gate lrx(omega) {}",
-                    "coupling_map": [[0], [1], [2], [3], [4]],
-                    "description": "Evolution under Lx",
-                },
-                {
-                    "name": "rlxly",
-                    "parameters": ["J"],
-                    "qasm_def": "gate rlylx(J) {}",
-                    "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
-                    "description": "Entanglement between neighboring gates with an xy interaction",
-                },
-            ],
+            "gates": gate_list,
             "max_experiments": self.n_max_experiments,
             "max_shots": self.n_max_shots,
             "simulator": True,
@@ -150,9 +126,8 @@ class Spooler:
             ],
             "num_wires": self.n_wires,
             "wire_order": self.wire_order,
-            "num_species": self.num_species
+            "num_species": self.num_species,
         }
-
 
     def check_instructions(self, ins_list: list) -> Tuple[str, bool]:
         """

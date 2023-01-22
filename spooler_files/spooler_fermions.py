@@ -181,11 +181,11 @@ f_spooler = FermionSpooler(
         "fphase": PhaseInstruction,
         "measure": LoadMeasureInstruction,
     },
-    n_wires = N_MAX_WIRES,
+    n_wires=N_MAX_WIRES,
     name="synqs_fermionic_tweezer_simulator",
     description="simulator of a fermionic tweezer hardware. \
         The even wires denote the occupations of the spin-up fermions \
-        and the odd wires denote the spin-down fermions"
+        and the odd wires denote the spin-down fermions",
 )
 
 
