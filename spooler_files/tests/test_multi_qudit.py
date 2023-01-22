@@ -13,6 +13,7 @@ from spooler_files.schemes import gate_dict_from_list
 from spooler_files.spooler_multiqudit import mq_spooler, gen_circuit
 from spooler_files.spooler_multiqudit import (
     MultiQuditExperiment,
+    MultiQuditSpooler,
     LocalSqueezingInstruction,
     RlxInstruction,
     RlzInstruction,
@@ -377,54 +378,61 @@ def test_rlxly_gate():
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
-mq_config_dict = {
-    "name": "multiqudit",
-    "description": "Setup of a cold atomic gas experiment with a multiple qudits.",
-    "version": "0.0.1",
-    "cold_atom_type": "spin",
-    "gates": [
-        {
-            "name": "rlz",
-            "parameters": ["delta"],
-            "qasm_def": "gate rlz(delta) {}",
-            "coupling_map": [[0], [1], [2], [3], [4]],
-            "description": "Evolution under the Z gate",
-        },
-        {
-            "name": "rlz2",
-            "parameters": ["chi"],
-            "qasm_def": "gate rlz2(chi) {}",
-            "coupling_map": [[0], [1], [2], [3], [4]],
-            "description": "Evolution under Lz2",
-        },
-        {
-            "name": "rlx",
-            "parameters": ["omega"],
-            "qasm_def": "gate lrx(omega) {}",
-            "coupling_map": [[0], [1], [2], [3], [4]],
-            "description": "Evolution under Lx",
-        },
-        {
-            "name": "rlxly",
-            "parameters": ["J"],
-            "qasm_def": "gate rlylx(J) {}",
-            "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
-            "description": "Entanglement between neighboring gates with an xy interaction",
-        },
-    ],
-    "max_experiments": 1000,
-    "max_shots": 1000000,
-    "simulator": True,
-    "supported_instructions": [
-        "rlx",
-        "rlz",
-        "rlz2",
-        "rlxly",
-        "barrier",
-        "measure",
-        "load",
-    ],
-    "num_wires": 4,
-    "wire_order": "interleaved",
-    "num_species": 1,
-}
+def test_spooler_config():
+    """
+    Test that the back-end is properly configured and we can indeed provide those parameters as we would like.
+    """
+
+    mq_config_dict = {
+        "name": "synqs_multiqudit_simulator",
+        "description": "Setup of a cold atomic gas experiment with a multiple qudits.",
+        "version": "0.0.1",
+        "cold_atom_type": "spin",
+        "gates": [
+            {
+                "name": "rlz",
+                "parameters": ["delta"],
+                "qasm_def": "gate rlz(delta) {}",
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under the Z gate",
+            },
+            {
+                "name": "rlz2",
+                "parameters": ["chi"],
+                "qasm_def": "gate rlz2(chi) {}",
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under Lz2",
+            },
+            {
+                "name": "rlx",
+                "parameters": ["omega"],
+                "qasm_def": "gate lrx(omega) {}",
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under Lx",
+            },
+            {
+                "name": "rlxly",
+                "parameters": ["J"],
+                "qasm_def": "gate rlylx(J) {}",
+                "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
+                "description": "Entanglement between neighboring gates with an xy interaction",
+            },
+        ],
+        "max_experiments": 1000,
+        "max_shots": 1e6,
+        "simulator": True,
+        "supported_instructions": [
+            "rlx",
+            "rlz",
+            "rlz2",
+            "rlxly",
+            "barrier",
+            "measure",
+            "load",
+        ],
+        "num_wires": 4,
+        "wire_order": "interleaved",
+        "num_species": 1,
+    }
+    spooler_config_dict = mq_spooler.get_configuration()
+    assert spooler_config_dict == mq_config_dict
