@@ -14,7 +14,6 @@ from spooler_files.schemes import gate_dict_from_list
 from spooler_files.spooler_multiqudit import mq_spooler, gen_circuit
 from spooler_files.spooler_multiqudit import (
     MultiQuditExperiment,
-    MultiQuditSpooler,
     LocalSqueezingInstruction,
     RlxInstruction,
     RlzInstruction,
@@ -434,6 +433,7 @@ def test_spooler_config():
             "rlz",
             "rlz2",
             "rlxly",
+            "rlzlz",
             "barrier",
             "measure",
             "load",

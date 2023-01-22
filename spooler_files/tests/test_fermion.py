@@ -4,7 +4,7 @@ Test module for the spooler_fermion.py file.
 
 from typing import Union
 import numpy as np
-
+import pprint
 import pytest
 from pydantic import ValidationError
 
@@ -459,46 +459,67 @@ def test_seed():
     assert shots_array_1 == shots_array_2, "seed got messed up"
 
 
-fermion_config_dict = {
-    "name": "fermions",
-    "description": "simulator of a fermionic tweezer hardware. \
-        The even wires denote the occupations of the spin-up fermions \
-        and the odd wires denote the spin-down fermions",
-    "version": "0.0.1",
-    "cold_atom_type": "fermion",
-    "gates": [
-        {
-            "coupling_map": [
-                [0, 1, 2, 3],
-                [2, 3, 4, 5],
-                [4, 5, 6, 7],
-                [0, 1, 2, 3, 4, 5, 6, 7],
-            ],
-            "description": "hopping of atoms to neighboring tweezers",
-            "name": "fhop",
-            "parameters": ["j_i"],
-            "qasm_def": "{}",
-        },
-        {
-            "coupling_map": [[0, 1, 2, 3, 4, 5, 6, 7]],
-            "description": "on-site interaction of atoms of opposite spin state",
-            "name": "fint",
-            "parameters": ["u"],
-            "qasm_def": "{}",
-        },
-        {
-            "coupling_map": [[0, 1], [2, 3], [4, 5], [6, 7], [0, 1, 2, 3, 4, 5, 6, 7]],
-            "description": "Applying a local phase to tweezers through an external potential",
-            "name": "fphase",
-            "parameters": ["mu_i"],
-            "qasm_def": "{}",
-        },
-    ],
-    "max_experiments": 1000,
-    "max_shots": 1000000,
-    "simulator": True,
-    "supported_instructions": ["load", "measure", "barrier", "fhop", "fint", "fphase"],
-    "num_wires": 8,
-    "wire_order": "interleaved",
-    "num_species": 2,
-}
+def test_spooler_config():
+    """
+    Test that the back-end is properly configured and we can indeed provide those parameters as we would like.
+    """
+    fermion_config_dict = {
+        "name": "synqs_fermionic_tweezer_simulator",
+        "description": (
+            "simulator of a fermionic tweezer hardware. "
+            "The even wires denote the occupations of the spin-up fermions"
+            " and the odd wires denote the spin-down fermions"
+        ),
+        "version": "0.0.1",
+        "cold_atom_type": "fermion",
+        "gates": [
+            {
+                "coupling_map": [
+                    [0, 1, 2, 3],
+                    [2, 3, 4, 5],
+                    [4, 5, 6, 7],
+                    [0, 1, 2, 3, 4, 5, 6, 7],
+                ],
+                "description": "hopping of atoms to neighboring tweezers",
+                "name": "fhop",
+                "parameters": ["j_i"],
+                "qasm_def": "{}",
+            },
+            {
+                "coupling_map": [[0, 1, 2, 3, 4, 5, 6, 7]],
+                "description": "on-site interaction of atoms of opposite spin state",
+                "name": "fint",
+                "parameters": ["u"],
+                "qasm_def": "{}",
+            },
+            {
+                "coupling_map": [
+                    [0, 1],
+                    [2, 3],
+                    [4, 5],
+                    [6, 7],
+                    [0, 1, 2, 3, 4, 5, 6, 7],
+                ],
+                "description": "Applying a local phase to tweezers through an external potential",
+                "name": "fphase",
+                "parameters": ["mu_i"],
+                "qasm_def": "{}",
+            },
+        ],
+        "max_experiments": 1000,
+        "max_shots": 1000000,
+        "simulator": True,
+        "supported_instructions": [
+            "load",
+            "barrier",
+            "fhop",
+            "fint",
+            "fphase",
+            "measure",
+        ],
+        "num_wires": 8,
+        "wire_order": "interleaved",
+        "num_species": 2,
+    }
+    spooler_config_dict = f_spooler.get_configuration()
+    assert spooler_config_dict == fermion_config_dict
