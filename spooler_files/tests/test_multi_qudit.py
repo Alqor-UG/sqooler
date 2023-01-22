@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 
 from pydantic import ValidationError
-import pprint
 
 # pylint: disable=C0413, E0401
 from spooler_files.schemes import gate_dict_from_list
@@ -380,7 +379,8 @@ def test_rlxly_gate():
 
 def test_spooler_config():
     """
-    Test that the back-end is properly configured and we can indeed provide those parameters as we would like.
+    Test that the back-end is properly configured and we can indeed provide those parameters
+     as we would like.
     """
 
     mq_config_dict = {

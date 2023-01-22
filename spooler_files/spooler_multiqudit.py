@@ -19,7 +19,7 @@ from .schemes import (
 )
 
 N_MAX_WIRES = 4
-N_MAX_SHOTS = 1e6
+N_MAX_SHOTS = int(1e6)
 MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
 MAX_HILBERT_SPACE_DIM = 2 ** 12

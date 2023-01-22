@@ -17,8 +17,9 @@ from .schemes import (
     GateInstruction,
 )
 
-N_MAX_SHOTS = 1000
+N_MAX_SHOTS = 1000000
 N_MAX_ATOMS = 500
+MAX_EXPERIMENTS = 1000
 
 
 class RlxInstruction(GateInstruction):
@@ -184,6 +185,8 @@ sq_spooler = SingleQuditSpooler(
     name="synqs_singlequdit_simulator",
     version="0.0.2",
     description="Setup of a cold atomic gas experiment with a single qudit.",
+    n_max_experiments=MAX_EXPERIMENTS,
+    n_max_shots=N_MAX_SHOTS,
 )
 
 

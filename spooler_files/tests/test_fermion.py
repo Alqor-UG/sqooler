@@ -4,7 +4,7 @@ Test module for the spooler_fermion.py file.
 
 from typing import Union
 import numpy as np
-import pprint
+
 import pytest
 from pydantic import ValidationError
 
@@ -461,7 +461,8 @@ def test_seed():
 
 def test_spooler_config():
     """
-    Test that the back-end is properly configured and we can indeed provide those parameters as we would like.
+    Test that the back-end is properly configured and we can indeed provide those parameters
+     as we would like.
     """
     fermion_config_dict = {
         "name": "synqs_fermionic_tweezer_simulator",

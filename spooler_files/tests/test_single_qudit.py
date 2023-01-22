@@ -353,39 +353,46 @@ def test_z_gate():
     assert inst_config == RlzInstruction.config_dict()
 
 
-sq_config_dict = {
-    "name": "singlequdit",
-    "description": "Setup of a cold atomic gas experiment with a single qudit.",
-    "version": "0.0.2",
-    "cold_atom_type": "spin",
-    "gates": [
-        {
-            "name": "rlz",
-            "parameters": ["delta"],
-            "qasm_def": "gate rlz(delta) {}",
-            "coupling_map": [[0], [1], [2], [3], [4]],
-            "description": "Evolution under the Z gate",
-        },
-        {
-            "name": "rlz2",
-            "parameters": ["chi"],
-            "qasm_def": "gate rlz2(chi) {}",
-            "coupling_map": [[0], [1], [2], [3], [4]],
-            "description": "Evolution under lz2",
-        },
-        {
-            "name": "rlx",
-            "parameters": ["omega"],
-            "qasm_def": "gate lrx(omega) {}",
-            "coupling_map": [[0], [1], [2], [3], [4]],
-            "description": "Evolution under Lx",
-        },
-    ],
-    "max_experiments": 1000,
-    "max_shots": 1000000,
-    "simulator": True,
-    "supported_instructions": ["rlx", "rlz", "rlz2", "measure", "barrier", "load"],
-    "num_wires": 1,
-    "wire_order": "interleaved",
-    "num_species": 1,
-}
+def test_spooler_config():
+    """
+    Test that the back-end is properly configured and we can indeed provide those parameters
+     as we would like.
+    """
+    sq_config_dict = {
+        "name": "synqs_singlequdit_simulator",
+        "description": "Setup of a cold atomic gas experiment with a single qudit.",
+        "version": "0.0.2",
+        "cold_atom_type": "spin",
+        "gates": [
+            {
+                "name": "rlx",
+                "parameters": ["omega"],
+                "qasm_def": "gate lrx(omega) {}",
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under Lx",
+            },
+            {
+                "name": "rlz",
+                "parameters": ["delta"],
+                "qasm_def": "gate rlz(delta) {}",
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under the Z gate",
+            },
+            {
+                "name": "rlz2",
+                "parameters": ["chi"],
+                "qasm_def": "gate rlz2(chi) {}",
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under lz2",
+            },
+        ],
+        "max_experiments": 1000,
+        "max_shots": 1000000,
+        "simulator": True,
+        "supported_instructions": ["rlx", "rlz", "rlz2", "barrier", "measure", "load"],
+        "num_wires": 1,
+        "wire_order": "interleaved",
+        "num_species": 1,
+    }
+    spooler_config_dict = sq_spooler.get_configuration()
+    assert spooler_config_dict == sq_config_dict

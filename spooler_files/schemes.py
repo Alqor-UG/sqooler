@@ -103,7 +103,7 @@ class Spooler:
         Sends back the configuration dictionary of the spooler.
         """
         gate_list = []
-        for ins_name, ins_obj in self.ins_schema_dict.items():
+        for _, ins_obj in self.ins_schema_dict.items():
             if "is_gate" in ins_obj.__fields__:
                 gate_list.append(ins_obj.config_dict())
         return {
