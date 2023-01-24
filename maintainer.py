@@ -11,6 +11,7 @@ import regex as re
 
 from utils import drpbx
 
+
 def new_files_exist() -> bool:
     """
     Check if new files have come from GitHub.

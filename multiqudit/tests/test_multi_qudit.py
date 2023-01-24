@@ -21,6 +21,7 @@ from multiqudit.spooler_multiqudit import (
     RlzlzInstruction,
 )
 
+
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
     """
     A support function that executes the job.
