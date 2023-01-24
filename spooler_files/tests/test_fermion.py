@@ -301,10 +301,9 @@ def test_wire_order():
     }
 
     job_id = 1
-    try:
+
+    with pytest.raises(AssertionError):
         dummy = run_json_circuit(job_payload, job_id)
-    except AssertionError as ass_err:
-        print("Sucessfully triggered AssertionError", str(ass_err))
 
 
 def test_load_gate():
@@ -367,6 +366,58 @@ def test_hop_gate():
     assert data["job_id"] == 1, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
     assert shots_array[0] == "0 1 0 1", "shots_array got messed up"
+
+
+def test_number_experiments():
+    """
+    Make sure that we cannot submit too many experiments.
+    """
+
+    # first test the system that is fine.
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["load", [0], []],
+                ["load", [4], []],
+                ["fhop", [0, 4, 1, 5], [np.pi / 2]],
+                ["measure", [0], []],
+                ["measure", [1], []],
+                ["measure", [4], []],
+                ["measure", [5], []],
+            ],
+            "num_wires": 8,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+    job_id = 1
+    data = run_json_circuit(job_payload, job_id)
+
+    shots_array = data["results"][0]["data"]["memory"]
+    assert len(shots_array) > 0, "shots_array got messed up"
+    inst_dict = {
+        "instructions": [
+            ["load", [0], []],
+            ["load", [4], []],
+            ["fhop", [0, 4, 1, 5], [np.pi / 2]],
+            ["measure", [0], []],
+            ["measure", [1], []],
+            ["measure", [4], []],
+            ["measure", [5], []],
+        ],
+        "num_wires": 8,
+        "shots": 4,
+        "wire_order": "interleaved",
+    }
+
+    # and now run too many experiments
+    n_exp = 2000
+    job_payload = {}
+    for ii in range(n_exp):
+        job_payload[f"experiment_{ii}"] = inst_dict
+    job_id = 1
+    with pytest.raises(AssertionError):
+        data = run_json_circuit(job_payload, job_id)
 
 
 def test_phase_gate():

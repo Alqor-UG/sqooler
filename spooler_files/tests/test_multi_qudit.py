@@ -444,3 +444,53 @@ def test_spooler_config():
     }
     spooler_config_dict = mq_spooler.get_configuration()
     assert spooler_config_dict == mq_config_dict
+
+
+def test_number_experiments():
+    """
+    Make sure that we cannot submit too many experiments.
+    """
+
+    # first test the system that is fine.
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["load", [0], [1.0]],
+                ["load", [1], [1.0]],
+                ["rlx", [0], [np.pi]],
+                ["rlxly", [0, 1], [np.pi / 2]],
+                ["measure", [0], []],
+                ["measure", [1], []],
+            ],
+            "num_wires": 2,
+            "shots": 150,
+            "wire_order": "sequential",
+        }
+    }
+    job_id = 1
+    data = run_json_circuit(job_payload, job_id)
+
+    shots_array = data["results"][0]["data"]["memory"]
+    assert len(shots_array) > 0, "shots_array got messed up"
+    inst_dict = {
+        "instructions": [
+            ["load", [0], [1.0]],
+            ["load", [1], [1.0]],
+            ["rlx", [0], [np.pi]],
+            ["rlxly", [0, 1], [np.pi / 2]],
+            ["measure", [0], []],
+            ["measure", [1], []],
+        ],
+        "num_wires": 2,
+        "shots": 150,
+        "wire_order": "sequential",
+    }
+
+    # and now run too many experiments
+    n_exp = 2000
+    job_payload = {}
+    for ii in range(n_exp):
+        job_payload[f"experiment_{ii}"] = inst_dict
+    job_id = 1
+    with pytest.raises(AssertionError):
+        data = run_json_circuit(job_payload, job_id)

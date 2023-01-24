@@ -149,7 +149,6 @@ class Spooler:
         Returns:
             bool: is the expression having the appropiate syntax ?
         """
-        max_exps = 50
         for expr in json_dict:
             err_code = "Wrong experiment name or too many experiments"
             # Fix this pylint issue whenever you have time, but be careful !
@@ -158,7 +157,7 @@ class Spooler:
                 exp_ok = (
                     expr.startswith("experiment_")
                     and expr[11:].isdigit()
-                    and (int(expr[11:]) <= max_exps)
+                    and (int(expr[11:]) <= self.n_max_experiments)
                 )
             except:
                 exp_ok = False
