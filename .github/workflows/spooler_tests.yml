@@ -51,12 +51,17 @@ jobs:
         pip install -r requirements.txt
     - name: Run pylint
       run: |
-        pylint spooler_files
-        pylint spooler_files/tests
+        pylint utils
+        pylint fermions
+        pylint multiqudit
+        pylint singlequdit
     - name: Run black
       run: |
         black --check .
     - name: Run mypy
       run: |
-        mypy --disallow-untyped-defs -p spooler_files
+        mypy --disallow-untyped-defs -p utils
+        mypy --disallow-untyped-defs -p singlequdit
+        mypy --disallow-untyped-defs -p multiqudit
+        mypy --disallow-untyped-defs -p fermions
         mypy --disallow-untyped-defs maintainer.py 

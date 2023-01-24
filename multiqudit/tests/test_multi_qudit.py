@@ -1,25 +1,24 @@
 """
-Test module for the spooler_singlequdit.py file.
+Test module for the spooler_multiqudit.py file.
 """
 
 from typing import Union
-import pytest
-from pydantic import ValidationError
 import numpy as np
+import pytest
+
+from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
-from spooler_files.spooler_singlequdit import (
-    sq_spooler,
+from utils.schemes import gate_dict_from_list
+from multiqudit.spooler_multiqudit import (
+    mq_spooler,
     gen_circuit,
-    gate_dict_from_list,
-)
-from spooler_files.spooler_singlequdit import (
-    SingleQuditExperiment,
-    LoadInstruction,
-    MeasureBarrierInstruction,
+    MultiQuditExperiment,
     LocalSqueezingInstruction,
-    RlzInstruction,
     RlxInstruction,
+    RlzInstruction,
+    RlxlyInstruction,
+    RlzlzInstruction,
 )
 
 
@@ -35,7 +34,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
         the results dict
     """
     result_dict = {
-        "backend_name": "synqs_single_qudit_simulator",
+        "backend_name": "synqs_multi_qudit_simulator",
         "backend_version": "0.0.1",
         "job_id": job_id,
         "qobj_id": None,
@@ -44,7 +43,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
         "header": {},
         "results": [],
     }
-    err_msg, json_is_fine = sq_spooler.check_json_dict(json_dict)
+    err_msg, json_is_fine = mq_spooler.check_json_dict(json_dict)
     assert json_is_fine is True, "Failed JSON sanity check : " + err_msg
     if json_is_fine:
         for exp in json_dict:
@@ -74,7 +73,7 @@ def test_pydantic_exp_validation():
         "num_wires": 1,
         "shots": 3,
     }
-    SingleQuditExperiment(**experiment)
+    MultiQuditExperiment(**experiment)
 
     with pytest.raises(ValidationError):
         poor_experiment = {
@@ -85,26 +84,53 @@ def test_pydantic_exp_validation():
                 ["measure", [6], []],
                 ["measure", [7], []],
             ],
-            "num_wires": 2,
+            "num_wires": 400,
             "shots": 4,
             "wire_order": "sequential",
         }
-        SingleQuditExperiment(**poor_experiment)
+        MultiQuditExperiment(**poor_experiment)
 
+
+def test_local_rot_instruction():
+    """
+    Test that the hop instruction instruction is properly constrained.
+    """
+    inst_list = ["rlx", [0], [0.7]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    RlxInstruction(**gate_dict)
+
+    inst_list = ["rlz", [0], [0.7]]
+    gate_dict = gate_dict_from_list(inst_list)
+    RlzInstruction(**gate_dict)
+
+    # test that the name is nicely fixed
     with pytest.raises(ValidationError):
-        poor_experiment = {
-            "instructions": [
-                ["load", [7], []],
-                ["load", [2], []],
-                ["measure", [2], []],
-                ["measure", [6], []],
-                ["measure", [7], []],
-            ],
-            "num_wires": 1,
-            "shots": 1e7,
-            "wire_order": "sequential",
-        }
-        SingleQuditExperiment(**poor_experiment)
+        poor_inst_list = ["rly", [0], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        RlxInstruction(**gate_dict)
+
+    # test that we cannot give too many wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlx", [0, 1], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        RlxInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlx", [200], [0.7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        RlxInstruction(**gate_dict)
+
+    # make sure that the parameters are enforced to be within the limits
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["rlx", [0], [3 * np.pi]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        RlxInstruction(**gate_dict)
 
     inst_config = {
         "name": "rlx",
@@ -116,91 +142,11 @@ def test_pydantic_exp_validation():
     assert inst_config == RlxInstruction.config_dict()
 
 
-def test_load_instruction():
-    """
-    Test that the load instruction instruction is properly constrained.
-    """
-    inst_list = ["load", [0], [200.0]]
-    gate_dict = gate_dict_from_list(inst_list)
-    assert gate_dict == {
-        "name": inst_list[0],
-        "wires": inst_list[1],
-        "params": inst_list[2],
-    }
-    LoadInstruction(**gate_dict)
-
-    # test that the name is nicely fixed
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["loads", [0], [200.0]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        LoadInstruction(**gate_dict)
-
-    # test that we cannot give too many wires
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["load", [0, 1], [200.0]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        LoadInstruction(**gate_dict)
-
-    # make sure that the wires cannot be above the limit
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["load", [1], [200.0]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        LoadInstruction(**gate_dict)
-
-    # make sure that the parameters are enforced to be within the limits
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["load", [0], [7e9]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        LoadInstruction(**gate_dict)
-
-
-def test_local_rot_instruction():
-    """
-    Test that the rotation instruction is properly constrained.
-    """
-    inst_list = ["rlx", [0], [np.pi / 2]]
-    gate_dict = gate_dict_from_list(inst_list)
-    assert gate_dict == {
-        "name": inst_list[0],
-        "wires": inst_list[1],
-        "params": inst_list[2],
-    }
-    RlxInstruction(**gate_dict)
-
-    inst_list = ["rlz", [0], [np.pi / 2]]
-    gate_dict = gate_dict_from_list(inst_list)
-    RlzInstruction(**gate_dict)
-
-    # test that the name is nicely fixed
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["rly", [0], [np.pi / 2]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        RlxInstruction(**gate_dict)
-
-    # test that we cannot give too many wires
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["rlx", [0, 1], [np.pi / 2]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        RlxInstruction(**gate_dict)
-
-    # make sure that the wires cannot be above the limit
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["rlx", [1], [np.pi / 2]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        RlxInstruction(**gate_dict)
-
-    # make sure that the parameters are enforced to be within the limits
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["rlx", [0], [4 * np.pi]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        RlxInstruction(**gate_dict)
-
-
 def test_squeezing_instruction():
     """
-    Test that the rotation instruction is properly constrained.
+    Test that the local squeezing instruction constrained.
     """
-    inst_list = ["rlz2", [0], [np.pi / 2]]
+    inst_list = ["rlz2", [0], [0.7]]
     gate_dict = gate_dict_from_list(inst_list)
     assert gate_dict == {
         "name": inst_list[0],
@@ -211,25 +157,25 @@ def test_squeezing_instruction():
 
     # test that the name is nicely fixed
     with pytest.raises(ValidationError):
-        poor_inst_list = ["rlz", [0], [np.pi / 2]]
+        poor_inst_list = ["rlz22", [0], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         LocalSqueezingInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
-        poor_inst_list = ["rlz2", [0, 1], [np.pi / 2]]
+        poor_inst_list = ["rlz2", [0, 1], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         LocalSqueezingInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
-        poor_inst_list = ["rlz2", [1], [np.pi / 2]]
+        poor_inst_list = ["rlz2", [200], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         LocalSqueezingInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
-        poor_inst_list = ["rlz2", [0], [400 * np.pi]]
+        poor_inst_list = ["rlz2", [0], [200 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         LocalSqueezingInstruction(**gate_dict)
 
@@ -244,69 +190,64 @@ def test_squeezing_instruction():
     assert inst_config == LocalSqueezingInstruction.config_dict()
 
 
-def test_measure_instruction():
+def test_qudit_qudit_instruction():
     """
-    Test that the rotation instruction is properly constrained.
+    Test that the qudit qudit instruction instruction is properly constrained.
     """
-    inst_list = ["measure", [0], []]
+    inst_list = ["rlxly", [0, 1], [0.7]]
     gate_dict = gate_dict_from_list(inst_list)
     assert gate_dict == {
         "name": inst_list[0],
         "wires": inst_list[1],
         "params": inst_list[2],
     }
-    MeasureBarrierInstruction(**gate_dict)
+    RlxlyInstruction(**gate_dict)
+
+    inst_list = ["rlzlz", [0, 1], [0.7]]
+    gate_dict = gate_dict_from_list(inst_list)
+    RlzlzInstruction(**gate_dict)
 
     # test that the name is nicely fixed
     with pytest.raises(ValidationError):
-        poor_inst_list = ["measures", [0], []]
+        poor_inst_list = ["rlzls", [0, 1], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        MeasureBarrierInstruction(**gate_dict)
+        RlxlyInstruction(**gate_dict)
 
-    # test that we cannot give too many wires
+    # test that we cannot give too few wires
     with pytest.raises(ValidationError):
-        poor_inst_list = ["measure", [0, 1], []]
+        poor_inst_list = ["rlxly", [0], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        MeasureBarrierInstruction(**gate_dict)
+        RlxlyInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
-        poor_inst_list = ["measure", [1], []]
+        poor_inst_list = ["rlxly", [0, 200], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        MeasureBarrierInstruction(**gate_dict)
+        RlxlyInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
-        poor_inst_list = ["measure", [0], [np.pi]]
+        poor_inst_list = ["rlxly", [0, 1], [200 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        MeasureBarrierInstruction(**gate_dict)
+        RlxlyInstruction(**gate_dict)
 
-
-def test_check_json_dict():
-    """
-    See if the check of the json dict works out properly.
-    """
-    job_payload = {
-        "experiment_0": {
-            "instructions": [
-                ["rlz", [0], [0.7]],
-                ["measure", [0], []],
-            ],
-            "num_wires": 1,
-            "shots": 3,
-            "wire_order": "sequential",
-        },
-        "experiment_1": {
-            "instructions": [
-                ["rlz", [0], [0.7]],
-                ["measure", [0], []],
-            ],
-            "num_wires": 1,
-            "shots": 3,
-        },
+    inst_config = {
+        "name": "rlxly",
+        "parameters": ["J"],
+        "qasm_def": "gate rlylx(J) {}",
+        "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
+        "description": "Entanglement between neighboring gates with an xy interaction",
     }
-    _, json_is_fine = sq_spooler.check_json_dict(job_payload)
-    assert json_is_fine
+    assert inst_config == RlxlyInstruction.config_dict()
+
+    inst_config = {
+        "name": "rlzlz",
+        "parameters": ["J"],
+        "qasm_def": "gate rlzlz(J) {}",
+        "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
+        "description": "Entanglement between neighboring gates with a zz interaction",
+    }
+    assert inst_config == RlzlzInstruction.config_dict()
 
 
 def test_z_gate():
@@ -323,7 +264,6 @@ def test_z_gate():
             ],
             "num_wires": 1,
             "shots": 3,
-            "wire_order": "sequential",
         },
         "experiment_1": {
             "instructions": [
@@ -353,15 +293,101 @@ def test_z_gate():
     assert inst_config == RlzInstruction.config_dict()
 
 
+def test_barrier_gate():
+    """
+    Test that the barrier can be properly applied.
+    """
+
+    # first submit the job
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["barrier", [0, 1], []],
+                ["measure", [0], []],
+            ],
+            "num_wires": 2,
+            "shots": 3,
+            "wire_order": "sequential",
+        }
+    }
+
+    job_id = 1
+    data = run_json_circuit(job_payload, job_id)
+
+    shots_array = data["results"][0]["data"]["memory"]
+    assert data["job_id"] == 1, "job_id got messed up"
+    assert len(shots_array) > 0, "shots_array got messed up"
+
+
+def test_rlxly_gate():
+    """
+    Test that the barrier can be properly applied.
+    """
+
+    # first submit the job
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["load", [0], [10.0]],
+                ["load", [1], [1.0]],
+                ["rlx", [0], [1.5707963267948966]],
+                ["barrier", [0, 1], []],
+                ["rlz2", [0], [0.0]],
+                ["rlz", [1], [0.0]],
+                ["rlxly", [0, 1], [0.0]],
+                ["barrier", [0, 1], []],
+                ["measure", [0], []],
+                ["measure", [1], []],
+            ],
+            "num_wires": 2,
+            "shots": 150,
+            "wire_order": "sequential",
+        }
+    }
+
+    job_id = 1
+    data = run_json_circuit(job_payload, job_id)
+
+    shots_array = data["results"][0]["data"]["memory"]
+    assert data["job_id"] == 1, "job_id got messed up"
+    assert len(shots_array) > 0, "shots_array got messed up"
+
+    # also spins of same length
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["load", [0], [1.0]],
+                ["load", [1], [1.0]],
+                ["rlx", [0], [np.pi]],
+                ["rlxly", [0, 1], [np.pi / 2]],
+                ["measure", [0], []],
+                ["measure", [1], []],
+            ],
+            "num_wires": 2,
+            "shots": 150,
+            "wire_order": "sequential",
+        }
+    }
+
+    job_id = 2
+    data = run_json_circuit(job_payload, job_id)
+
+    shots_array = data["results"][0]["data"]["memory"]
+    assert shots_array[0] == "0 1", "job_id got messed up"
+    assert data["job_id"] == 2, "job_id got messed up"
+    assert len(shots_array) > 0, "shots_array got messed up"
+
+
 def test_spooler_config():
     """
     Test that the back-end is properly configured and we can indeed provide those parameters
      as we would like.
     """
-    sq_config_dict = {
-        "name": "synqs_singlequdit_simulator",
-        "description": "Setup of a cold atomic gas experiment with a single qudit.",
-        "version": "0.0.2",
+
+    mq_config_dict = {
+        "name": "synqs_multiqudit_simulator",
+        "description": "Setup of a cold atomic gas experiment with a multiple qudits.",
+        "version": "0.0.1",
         "cold_atom_type": "spin",
         "gates": [
             {
@@ -385,17 +411,40 @@ def test_spooler_config():
                 "coupling_map": [[0], [1], [2], [3], [4]],
                 "description": "Evolution under lz2",
             },
+            {
+                "name": "rlxly",
+                "parameters": ["J"],
+                "qasm_def": "gate rlylx(J) {}",
+                "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
+                "description": "Entanglement between neighboring gates with an xy interaction",
+            },
+            {
+                "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
+                "description": "Entanglement between neighboring gates with a zz interaction",
+                "name": "rlzlz",
+                "parameters": ["J"],
+                "qasm_def": "gate rlzlz(J) {}",
+            },
         ],
         "max_experiments": 1000,
-        "max_shots": 1000000,
+        "max_shots": 1e6,
         "simulator": True,
-        "supported_instructions": ["rlx", "rlz", "rlz2", "barrier", "measure", "load"],
-        "num_wires": 1,
+        "supported_instructions": [
+            "rlx",
+            "rlz",
+            "rlz2",
+            "rlxly",
+            "rlzlz",
+            "barrier",
+            "measure",
+            "load",
+        ],
+        "num_wires": 4,
         "wire_order": "interleaved",
         "num_species": 1,
     }
-    spooler_config_dict = sq_spooler.get_configuration()
-    assert spooler_config_dict == sq_config_dict
+    spooler_config_dict = mq_spooler.get_configuration()
+    assert spooler_config_dict == mq_config_dict
 
 
 def test_number_experiments():
@@ -404,22 +453,39 @@ def test_number_experiments():
     """
 
     # first test the system that is fine.
-
-    inst_dict = {
-        "instructions": [
-            ["rlz", [0], [0.7]],
-            ["measure", [0], []],
-        ],
-        "num_wires": 1,
-        "shots": 3,
-        "wire_order": "sequential",
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["load", [0], [1.0]],
+                ["load", [1], [1.0]],
+                ["rlx", [0], [np.pi]],
+                ["rlxly", [0, 1], [np.pi / 2]],
+                ["measure", [0], []],
+                ["measure", [1], []],
+            ],
+            "num_wires": 2,
+            "shots": 150,
+            "wire_order": "sequential",
+        }
     }
-    job_payload = {"experiment_0": inst_dict}
     job_id = 1
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
     assert len(shots_array) > 0, "shots_array got messed up"
+    inst_dict = {
+        "instructions": [
+            ["load", [0], [1.0]],
+            ["load", [1], [1.0]],
+            ["rlx", [0], [np.pi]],
+            ["rlxly", [0, 1], [np.pi / 2]],
+            ["measure", [0], []],
+            ["measure", [1], []],
+        ],
+        "num_wires": 2,
+        "shots": 150,
+        "wire_order": "sequential",
+    }
 
     # and now run too many experiments
     n_exp = 2000
