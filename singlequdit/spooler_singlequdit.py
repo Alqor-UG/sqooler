@@ -9,7 +9,7 @@ import numpy as np
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 from scipy.sparse import diags, csc_matrix  # type: ignore
 
-from .schemes import (
+from utils.schemes import (
     ExperimentDict,
     create_memory_data,
     Spooler,

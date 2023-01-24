@@ -8,7 +8,7 @@ import numpy as np
 from scipy.sparse.linalg import expm  # type: ignore
 
 
-from .schemes import (
+from utils.schemes import (
     ExperimentDict,
     create_memory_data,
     Spooler,

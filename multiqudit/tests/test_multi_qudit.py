@@ -9,9 +9,10 @@ import pytest
 from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
-from spooler_files.schemes import gate_dict_from_list
-from spooler_files.spooler_multiqudit import mq_spooler, gen_circuit
-from spooler_files.spooler_multiqudit import (
+from utils.schemes import gate_dict_from_list
+from multiqudit.spooler_multiqudit import (
+    mq_spooler,
+    gen_circuit,
     MultiQuditExperiment,
     LocalSqueezingInstruction,
     RlxInstruction,
@@ -19,7 +20,6 @@ from spooler_files.spooler_multiqudit import (
     RlxlyInstruction,
     RlzlzInstruction,
 )
-
 
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
     """

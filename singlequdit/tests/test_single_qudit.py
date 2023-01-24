@@ -8,12 +8,10 @@ from pydantic import ValidationError
 import numpy as np
 
 # pylint: disable=C0413, E0401
-from spooler_files.spooler_singlequdit import (
+from singlequdit.spooler_singlequdit import (
     sq_spooler,
     gen_circuit,
     gate_dict_from_list,
-)
-from spooler_files.spooler_singlequdit import (
     SingleQuditExperiment,
     LoadInstruction,
     MeasureBarrierInstruction,

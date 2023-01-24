@@ -10,7 +10,7 @@ from scipy.sparse import identity, diags, csc_matrix  # type: ignore
 from scipy import sparse  # type: ignore
 from scipy.sparse.linalg import expm_multiply  # type: ignore
 
-from .schemes import (
+from utils.schemes import (
     ExperimentDict,
     gate_dict_from_list,
     create_memory_data,
