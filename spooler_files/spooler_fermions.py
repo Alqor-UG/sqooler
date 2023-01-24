@@ -17,7 +17,8 @@ from .schemes import (
 )
 
 NUM_WIRES = 8
-N_MAX_SHOTS = 10 ** 3
+N_MAX_SHOTS = 10 ** 6
+MAX_EXPERIMENTS = 1000
 N_MAX_WIRES = 8
 
 # define the instructions in the following
@@ -181,6 +182,17 @@ f_spooler = FermionSpooler(
         "fphase": PhaseInstruction,
         "measure": LoadMeasureInstruction,
     },
+    n_wires=N_MAX_WIRES,
+    name="synqs_fermionic_tweezer_simulator",
+    description=(
+        "simulator of a fermionic tweezer hardware. "
+        "The even wires denote the occupations of the spin-up fermions"
+        " and the odd wires denote the spin-down fermions"
+    ),
+    n_max_shots=N_MAX_SHOTS,
+    n_max_experiments=MAX_EXPERIMENTS,
+    cold_atom_type="fermion",
+    num_species=2,
 )
 
 

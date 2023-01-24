@@ -18,8 +18,8 @@ from .schemes import (
     GateInstruction,
 )
 
-N_MAX_WIRES = 16
-N_MAX_SHOTS = 10 ** 3
+N_MAX_WIRES = 4
+N_MAX_SHOTS = int(1e6)
 MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
 MAX_HILBERT_SPACE_DIM = 2 ** 12
@@ -274,6 +274,11 @@ mq_spooler = MultiQuditSpooler(
         "measure": MeasureInstruction,
         "load": LoadInstruction,
     },
+    n_wires=N_MAX_WIRES,
+    name="synqs_multiqudit_simulator",
+    description="Setup of a cold atomic gas experiment with a multiple qudits.",
+    n_max_experiments=MAX_EXPERIMENTS,
+    n_max_shots=N_MAX_SHOTS,
 )
 
 
@@ -479,8 +484,8 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
     job_id = status_msg_dict["job_id"]
 
     result_dict = {
-        "backend_name": "synqs_multi_qudit_simulator",
-        "backend_version": "0.0.1",
+        "backend_name": mq_spooler.name,
+        "backend_version": mq_spooler.version,
         "job_id": job_id,
         "qobj_id": None,
         "success": True,

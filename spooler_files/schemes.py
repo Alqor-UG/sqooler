@@ -29,6 +29,7 @@ class GateInstruction(BaseModel):
     description: str
     coupling_map: List
     qasm_def: str = "{}"
+    is_gate: bool = True
 
     @classmethod
     def config_dict(cls) -> Dict:
@@ -59,11 +60,32 @@ class Spooler:
         ins_schema_dict : Sets the `ins_schema_dict` attribute of the class
     """
 
-    def __init__(self, ins_schema_dict: dict):
+    def __init__(
+        self,
+        ins_schema_dict: dict,
+        n_wires: int,
+        name: str,
+        description: str = "",
+        n_max_shots: int = 1000,
+        version: str = "0.0.1",
+        cold_atom_type: str = "spin",
+        n_max_experiments: int = 15,
+        wire_order: str = "interleaved",
+        num_species: int = 1,
+    ):
         """
         The constructor of the class.
         """
         self.ins_schema_dict = ins_schema_dict
+        self.n_max_shots = n_max_shots
+        self.name = name
+        self.n_wires = n_wires
+        self.description = description
+        self.version = version
+        self.cold_atom_type = cold_atom_type
+        self.n_max_experiments = n_max_experiments
+        self.wire_order = wire_order
+        self.num_species = num_species
 
     def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
         """
@@ -75,6 +97,29 @@ class Spooler:
                 be verified.
         """
         raise NotImplementedError("Subclasses should implement this!")
+
+    def get_configuration(self) -> dict:
+        """
+        Sends back the configuration dictionary of the spooler.
+        """
+        gate_list = []
+        for _, ins_obj in self.ins_schema_dict.items():
+            if "is_gate" in ins_obj.__fields__:
+                gate_list.append(ins_obj.config_dict())
+        return {
+            "name": self.name,
+            "description": self.description,
+            "version": self.version,
+            "cold_atom_type": self.cold_atom_type,
+            "gates": gate_list,
+            "max_experiments": self.n_max_experiments,
+            "max_shots": self.n_max_shots,
+            "simulator": True,
+            "supported_instructions": list(self.ins_schema_dict.keys()),
+            "num_wires": self.n_wires,
+            "wire_order": self.wire_order,
+            "num_species": self.num_species,
+        }
 
     def check_instructions(self, ins_list: list) -> Tuple[str, bool]:
         """

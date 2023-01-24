@@ -17,8 +17,9 @@ from .schemes import (
     GateInstruction,
 )
 
-N_MAX_SHOTS = 1000
+N_MAX_SHOTS = 1000000
 N_MAX_ATOMS = 500
+MAX_EXPERIMENTS = 1000
 
 
 class RlxInstruction(GateInstruction):
@@ -180,6 +181,12 @@ sq_spooler = SingleQuditSpooler(
         "measure": MeasureBarrierInstruction,
         "load": LoadInstruction,
     },
+    n_wires=1,
+    name="synqs_singlequdit_simulator",
+    version="0.0.2",
+    description="Setup of a cold atomic gas experiment with a single qudit.",
+    n_max_experiments=MAX_EXPERIMENTS,
+    n_max_shots=N_MAX_SHOTS,
 )
 
 
@@ -290,8 +297,8 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
     job_id = status_msg_dict["job_id"]
 
     result_dict = {
-        "backend_name": "synqs_single_qudit_simulator",
-        "backend_version": "0.0.2",
+        "backend_name": sq_spooler.name,
+        "backend_version": sq_spooler.version,
         "job_id": job_id,
         "qobj_id": None,
         "success": True,
