@@ -11,6 +11,12 @@ import regex as re
 
 from utils import drpbx
 
+from singlequdit.spooler_singlequdit import sq_spooler
+from multiqudit.spooler_multiqudit import mq_spooler
+from fermions.spooler_fermions import f_spooler
+
+backends = {"singlequdit": sq_spooler, "multiqudit": mq_spooler, "fermions": f_spooler}
+
 
 def new_files_exist() -> bool:
     """
@@ -34,12 +40,28 @@ def new_files_exist() -> bool:
     return new_files
 
 
+def update_backends() -> None:
+    """
+    Update the backends on the storage.
+    """
+    for requested_backend, spooler in backends.items():
+        # the path and name
+        dbx_path = "/Backend_files/Config/" + requested_backend + "/config.json"
+
+        # the content
+        backend_config_dict = spooler.get_configuration()
+
+        result_binary = json.dumps(backend_config_dict).encode("utf-8")
+        # upload the content
+        drpbx.upload(result_binary, dbx_path)
+
+
 def main() -> None:
     """
     Function for processing jobs continuously.
     """
     # TODO: This should be pull in automatically from the back-end config at some point.
-    backends_list = ["fermions", "singlequdit", "multiqudit"]
+    backends_list = list(backends.keys())
 
     # loop which is looking for the jobs
     while True:
@@ -95,4 +117,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    print("Update")
+    update_backends()
+    print("Now run as usual.")
     main()
