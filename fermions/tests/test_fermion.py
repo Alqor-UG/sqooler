@@ -252,11 +252,15 @@ def test_interaction_instruction():
         gate_dict = gate_dict_from_list(poor_inst_list)
         IntInstruction(**gate_dict)
 
-    # test that we cannot give too many wires
-    with pytest.raises(ValidationError):
-        poor_inst_list = ["fint", [0, 4, 3], [np.pi / 2]]
-        gate_dict = gate_dict_from_list(poor_inst_list)
-        IntInstruction(**gate_dict)
+    # test that we can give all wires
+    inst_list = ["fint", [0, 1, 2, 3, 4, 5, 6, 7], [0.030069529684359445]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    IntInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
