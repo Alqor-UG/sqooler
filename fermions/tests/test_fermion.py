@@ -284,6 +284,7 @@ def test_interaction_instruction():
     }
     assert inst_config == IntInstruction.config_dict()
 
+
 def test_wire_order():
     """
     Test that the wire_order is properly working.
