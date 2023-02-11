@@ -93,7 +93,7 @@ class IntInstruction(GateInstruction):
     """
 
     name: Literal["fint"] = "fint"
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=2)  # type: ignore
+    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=NUM_WIRES)  # type: ignore
     params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
