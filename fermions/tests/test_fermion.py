@@ -34,7 +34,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
         the results dict
     """
     result_dict = {
-        "backend_name": "synqs_fermionic_tweezer_simulator",
+        "backend_name": "alqor_fermionic_tweezer_simulator",
         "backend_version": "0.0.1",
         "job_id": job_id,
         "qobj_id": None,
@@ -521,7 +521,7 @@ def test_spooler_config():
      as we would like.
     """
     fermion_config_dict = {
-        "name": "synqs_fermionic_tweezer_simulator",
+        "name": "alqor_fermionic_tweezer_simulator",
         "description": (
             "simulator of a fermionic tweezer hardware. "
             "The even wires denote the occupations of the spin-up fermions"

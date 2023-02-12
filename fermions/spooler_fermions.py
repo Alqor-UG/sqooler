@@ -183,7 +183,7 @@ f_spooler = FermionSpooler(
         "measure": LoadMeasureInstruction,
     },
     n_wires=N_MAX_WIRES,
-    name="synqs_fermionic_tweezer_simulator",
+    name="alqor_fermionic_tweezer_simulator",
     description=(
         "simulator of a fermionic tweezer hardware. "
         "The even wires denote the occupations of the spin-up fermions"
@@ -379,8 +379,8 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
     job_id = status_msg_dict["job_id"]
 
     result_dict = {
-        "backend_name": "synqs_fermionic_tweezer_simulator",
-        "backend_version": "0.0.1",
+        "backend_name": "alqor_fermionic_tweezer_simulator",
+        "backend_version": "0.0.2",
         "job_id": job_id,
         "qobj_id": None,
         "success": True,

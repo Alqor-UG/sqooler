@@ -34,7 +34,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
         the results dict
     """
     result_dict = {
-        "backend_name": "synqs_multi_qudit_simulator",
+        "backend_name": "alqor_multi_qudit_simulator",
         "backend_version": "0.0.1",
         "job_id": job_id,
         "qobj_id": None,
@@ -385,7 +385,7 @@ def test_spooler_config():
     """
 
     mq_config_dict = {
-        "name": "synqs_multiqudit_simulator",
+        "name": "alqor_multiqudit_simulator",
         "description": "Setup of a cold atomic gas experiment with a multiple qudits.",
         "version": "0.0.1",
         "cold_atom_type": "spin",
