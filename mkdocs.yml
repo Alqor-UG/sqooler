@@ -1,0 +1,28 @@
+site_name: Sqooler
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - toc.follow
+
+nav:
+  - Introduction: "index.md"
+  - "utils.md"
+  - "fermions.md"
+  - "singlequdit.md"
+  - "multiqudit.md"
+
+
+plugins:
+- search
+- mkdocstrings
+
+markdown_extensions:
+  - toc
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
