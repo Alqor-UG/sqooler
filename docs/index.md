@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 # Welcome to Sqooler
 
 This is a collection of cold atom simulators that you can access through the `qiskit-cold-atom` and the `qlued` interface:

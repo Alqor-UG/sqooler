@@ -1,0 +1,37 @@
+site_name: Sqooler
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.footer
+    - toc.follow
+
+  custom_dir: docs/overrides
+
+nav:
+  - Introduction: "index.md"
+  - "utils.md"
+  - "Simulators":
+    - "fermions.md"
+    - "singlequdit.md"
+    - "multiqudit.md"
+
+repo_url: https://github.com/alqor-ug/sqooler
+edit_uri: edit/main/docs/
+
+plugins:
+- search
+- mkdocstrings
+
+markdown_extensions:
+  - toc
+  - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
