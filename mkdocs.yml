@@ -9,6 +9,8 @@ theme:
     - navigation.footer
     - toc.follow
 
+  custom_dir: docs/overrides
+
 nav:
   - Introduction: "index.md"
   - "utils.md"
@@ -27,6 +29,9 @@ plugins:
 markdown_extensions:
   - toc
   - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg

@@ -1,3 +1,7 @@
+---
+comments: true
+---
+
 # Multi qudit
 
 This simulates the operation of a number of connected qudits. Below you can find the API of the simulator.
