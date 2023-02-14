@@ -18,10 +18,8 @@ The simplest way to use the package is to deploy it to `heroku`. This directly s
 
 
 ## Getting started locally
-
-!!! note
     
-    This part of the documentiation needs a lot of love. Feel free to help us making it more understandable.
+> :warning: This part of the documentiation needs a lot of love. Feel free to help us making it more understandable.
 
 If you would like to write some new simulator, extend it etc, you will need to deploy the code locally. Then you will need to:
 
