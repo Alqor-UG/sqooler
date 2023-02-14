@@ -6,15 +6,19 @@ theme:
     - navigation.instant
     - navigation.tracking
     - navigation.expand
+    - navigation.footer
     - toc.follow
 
 nav:
   - Introduction: "index.md"
   - "utils.md"
-  - "fermions.md"
-  - "singlequdit.md"
-  - "multiqudit.md"
+  - "Simulators":
+    - "fermions.md"
+    - "singlequdit.md"
+    - "multiqudit.md"
 
+repo_url: https://github.com/alqor-ug/sqooler
+edit_uri: edit/main/docs/
 
 plugins:
 - search
