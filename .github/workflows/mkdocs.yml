@@ -18,5 +18,6 @@ jobs:
       run: |
         pip install mkdocs-material
         pip install mkdocstrings
+        pip install mkdocstrings[python]
     - name: Run mkdocs
       run: mkdocs gh-deploy --force
