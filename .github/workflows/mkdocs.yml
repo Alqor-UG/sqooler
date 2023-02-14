@@ -1,6 +1,5 @@
 name: mkdocs 
 
-
 on:
   push:
     branches:
@@ -11,9 +10,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.x
-      - run: pip install mkdocs-material 
-      - run: mkdocs gh-deploy --force
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.x
+    - name: Install requirements
+      run: |
+        pip install mkdocs-material
+        pip install mkdocstrings
+    - name: Run mkdocs
+      run: mkdocs gh-deploy --force
