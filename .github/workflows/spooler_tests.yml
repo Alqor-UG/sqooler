@@ -55,6 +55,7 @@ jobs:
         pylint fermions
         pylint multiqudit
         pylint singlequdit
+        pylint rydberg
     - name: Run black
       run: |
         black --check .
@@ -64,4 +65,5 @@ jobs:
         mypy --disallow-untyped-defs -p singlequdit
         mypy --disallow-untyped-defs -p multiqudit
         mypy --disallow-untyped-defs -p fermions
+        mypy --disallow-untyped-defs -p rydberg
         mypy --disallow-untyped-defs maintainer.py 

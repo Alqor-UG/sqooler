@@ -14,8 +14,14 @@ from utils import drpbx
 from singlequdit.spooler_singlequdit import sq_spooler
 from multiqudit.spooler_multiqudit import mq_spooler
 from fermions.spooler_fermions import f_spooler
+from rydberg.spooler_rydberg import ryd_spooler
 
-backends = {"singlequdit": sq_spooler, "multiqudit": mq_spooler, "fermions": f_spooler}
+backends = {
+    "singlequdit": sq_spooler,
+    "multiqudit": mq_spooler,
+    "fermions": f_spooler,
+    "rydber": ryd_spooler,
+}
 
 
 def new_files_exist() -> bool:
@@ -65,7 +71,7 @@ def main() -> None:
 
     # loop which is looking for the jobs
     while True:
-        time.sleep(1)
+        time.sleep(0.2)
         new_files = new_files_exist()
         if new_files:
             raise ValueError(
