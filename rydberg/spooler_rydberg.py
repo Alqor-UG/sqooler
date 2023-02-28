@@ -45,7 +45,7 @@ class RXInstruction(GateInstruction):
     description: str = "Evolution under RX"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate lrx(omega) {}"
+    qasm_def = "gate rx(omega) {}"
 
 
 class RZInstruction(GateInstruction):
@@ -68,7 +68,7 @@ class RZInstruction(GateInstruction):
     description: str = "Evolution under the RZ gate"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate rlz(delta) {}"
+    qasm_def = "gate rz(delta) {}"
 
 
 class CBlockInstruction(GateInstruction):
@@ -83,7 +83,7 @@ class CBlockInstruction(GateInstruction):
     """
 
     name: Literal["cblock"] = "cblock"
-    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
     params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
@@ -91,23 +91,38 @@ class CBlockInstruction(GateInstruction):
     description: str = "Apply the Rydberg blockade over the whole array"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1, 2, 3, 4]]
-    qasm_def = "gate rlz(delta) {}"
+    qasm_def = "gate cblock(delta) {}"
 
 
-class MeasureBarrierInstruction(BaseModel):
+class BarrierInstruction(BaseModel):
     """
-    The load instruction. As each instruction it requires the
+    The barrier instruction. As each instruction it requires the
 
     Attributes:
         name: The string to identify the instruction
-        wires: The wire on which the instruction should be applied
-            so the indices should be between 0 and N_MAX_WIRES-1
+        wires: The wires on which the instruction should be applied
+            so the indices should be between 0 and NUM_WIRES-1
         params: has to be empty
     """
 
-    name: Literal["measure", "barrier"]
-    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
-    params: conlist(float, min_items=0, max_items=0)  # type: ignore
+    name: Literal["barrier"]
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=0, max_items=N_MAX_WIRES)  # type: ignore
+    params: conlist(float, max_items=0)  # type: ignore
+
+
+class MeasureInstruction(BaseModel):
+    """
+    The measure instruction.
+
+    Attributes:
+        name: How to identify the instruction
+        wires: Exactly one wire has to be given.
+        params: Has to be empty
+    """
+
+    name: Literal["measure"]
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
+    params: conlist(float, max_items=0)  # type: ignore
 
 
 class RydbergExperiment(BaseModel):
@@ -120,7 +135,7 @@ class RydbergExperiment(BaseModel):
     # not sure how to fix it, so we leave it as is for the moment
     # HINT: Annotated does not work
     shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
-    num_wires: Literal[1]
+    num_wires: conint(ge=1, le=N_MAX_WIRES)  # type: ignore
     instructions: List[list]
     seed: Optional[int]
 
@@ -164,8 +179,8 @@ ryd_spooler = RydbergSpooler(
         "rx": RXInstruction,
         "rz": RZInstruction,
         "cblock": CBlockInstruction,
-        "barrier": MeasureBarrierInstruction,
-        "measure": MeasureBarrierInstruction,
+        "barrier": BarrierInstruction,
+        "measure": MeasureInstruction,
     },
     n_wires=N_MAX_WIRES,
     name="alqor_rydberg_simulator",
@@ -270,6 +285,7 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
 
     lz = csc_matrix(diags([qudit_range], [0]))
     nocc = csc_matrix(diags([qudit_range + 1 / 2], [0]))
+
     for i1 in np.arange(0, n_wires):
         # let's put together spin matrices
         lx_list.append(op_at_wire(lx, i1, list(dim_per_wire)))
@@ -278,8 +294,12 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
         nocc_list.append(op_at_wire(nocc, i1, list(dim_per_wire)))
 
     int_matrix = csc_matrix((dim_hilbert, dim_hilbert))
-    for i1 in np.arange(0, n_wires - 1):
-        for i2 in np.arange(i1, n_wires - 1):
+    print(n_wires)
+    for i1 in np.arange(0, n_wires):
+        print(f"i1 = {i1}")
+        for i2 in np.arange(i1 + 1, n_wires):
+            print(f"i2 = {i2}")
+            print(f"distance = {i1-i2}")
             int_matrix = (
                 int_matrix + nocc_list[i1].dot(nocc_list[i2]) / np.abs(i1 - i2) ** 6
             )
@@ -308,9 +328,11 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
             position = inst[1][0]
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * lz_list[position], psi)
-        if inst[0] == "clblock":
+        if inst[0] == "cblock":
             # apply gate on all qubits
             theta = inst[2][0]
+            print("block it")
+            print(theta)
             psi = expm_multiply(-1j * theta * int_matrix, psi)
         if inst[0] == "measure":
             measurement_indices.append(inst[1][0])
