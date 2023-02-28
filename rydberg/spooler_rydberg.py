@@ -127,7 +127,8 @@ class MeasureInstruction(BaseModel):
 
 class RydbergExperiment(BaseModel):
     """
-    The class that defines the Rydberg experiments. Each of those `RydbergExperiment`s is executed on a `RydbergSpooler`
+    The class that defines the Rydberg experiments. Each of those
+    `RydbergExperiment`s is executed on a `RydbergSpooler`.
     """
 
     wire_order: Literal["interleaved", "sequential"] = "sequential"
