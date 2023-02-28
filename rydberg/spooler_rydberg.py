@@ -233,7 +233,6 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
         np.random.seed(json_dict[next(iter(json_dict))]["seed"])
 
     dim_per_wire = 2 * spin_per_wire + np.ones(n_wires)
-    print(dim_per_wire)
     dim_per_wire = dim_per_wire.astype(int)
     dim_hilbert = np.prod(dim_per_wire)
 
@@ -284,7 +283,8 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
     )
 
     lz = csc_matrix(diags([qudit_range], [0]))
-    nocc = csc_matrix(diags([qudit_range + 1 / 2], [0]))
+    # nocc = csc_matrix(diags([qudit_range + 1 / 2], [0]))
+    nocc = csc_matrix(diags([-qudit_range + 1 / 2], [0]))
 
     for i1 in np.arange(0, n_wires):
         # let's put together spin matrices
@@ -294,12 +294,8 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
         nocc_list.append(op_at_wire(nocc, i1, list(dim_per_wire)))
 
     int_matrix = csc_matrix((dim_hilbert, dim_hilbert))
-    print(n_wires)
     for i1 in np.arange(0, n_wires):
-        print(f"i1 = {i1}")
         for i2 in np.arange(i1 + 1, n_wires):
-            print(f"i2 = {i2}")
-            print(f"distance = {i1-i2}")
             int_matrix = (
                 int_matrix + nocc_list[i1].dot(nocc_list[i2]) / np.abs(i1 - i2) ** 6
             )
@@ -331,8 +327,6 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
         if inst[0] == "cblock":
             # apply gate on all qubits
             theta = inst[2][0]
-            print("block it")
-            print(theta)
             psi = expm_multiply(-1j * theta * int_matrix, psi)
         if inst[0] == "measure":
             measurement_indices.append(inst[1][0])

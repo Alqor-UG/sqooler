@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from pydantic import ValidationError
+from pprint import pprint
 
 # pylint: disable=C0413, E0401
 from utils.schemes import gate_dict_from_list
@@ -235,13 +236,12 @@ def test_blockade_instruction():
     assert inst_config == CBlockInstruction.config_dict()
 
     # also spins of same length
-    print("Test the blockade")
     job_payload = {
         "experiment_0": {
             "instructions": [
                 ["rx", [0], [np.pi / 2]],
                 ["rx", [1], [np.pi / 2]],
-                ["cblock", [0, 1], [np.pi]],
+                ["cblock", [0, 1], [2 * np.pi]],
                 ["rx", [0], [np.pi / 2]],
                 ["rx", [1], [np.pi / 2]],
                 ["measure", [0], []],
@@ -257,8 +257,7 @@ def test_blockade_instruction():
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    print(shots_array)
-    assert shots_array[0] == "0 0", "job_id got messed up"
+    assert shots_array[0] == "1 1", "job_id got messed up"
     assert data["job_id"] == 2, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
@@ -368,45 +367,31 @@ def test_spooler_config():
     """
 
     mq_config_dict = {
-        "name": "alqor_multiqudit_simulator",
-        "description": "Setup of a cold atomic gas experiment with a multiple qudits.",
+        "name": "alqor_rydberg_simulator",
+        "description": "A chain of qubits realized through Rydberg atoms.",
         "version": "0.0.1",
         "cold_atom_type": "spin",
         "gates": [
             {
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under RX",
                 "name": "rx",
                 "parameters": ["omega"],
-                "qasm_def": "gate lrx(omega) {}",
-                "coupling_map": [[0], [1], [2], [3], [4]],
-                "description": "Evolution under Lx",
+                "qasm_def": "gate rx(omega) {}",
             },
             {
+                "coupling_map": [[0], [1], [2], [3], [4]],
+                "description": "Evolution under the RZ gate",
                 "name": "rz",
                 "parameters": ["delta"],
-                "qasm_def": "gate rlz(delta) {}",
-                "coupling_map": [[0], [1], [2], [3], [4]],
-                "description": "Evolution under the Z gate",
+                "qasm_def": "gate rz(delta) {}",
             },
             {
-                "name": "rlz2",
-                "parameters": ["chi"],
-                "qasm_def": "gate rlz2(chi) {}",
-                "coupling_map": [[0], [1], [2], [3], [4]],
-                "description": "Evolution under lz2",
-            },
-            {
-                "name": "rlxly",
-                "parameters": ["J"],
-                "qasm_def": "gate rlylx(J) {}",
-                "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
-                "description": "Entanglement between neighboring gates with an xy interaction",
-            },
-            {
-                "coupling_map": [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]],
-                "description": "Entanglement between neighboring gates with a zz interaction",
-                "name": "rlzlz",
-                "parameters": ["J"],
-                "qasm_def": "gate rlzlz(J) {}",
+                "coupling_map": [[0, 1, 2, 3, 4]],
+                "description": "Apply the Rydberg blockade over the whole array",
+                "name": "cblock",
+                "parameters": ["delta"],
+                "qasm_def": "gate cblock(delta) {}",
             },
         ],
         "max_experiments": 1000,
@@ -419,7 +404,7 @@ def test_spooler_config():
             "barrier",
             "measure",
         ],
-        "num_wires": 4,
+        "num_wires": 5,
         "wire_order": "interleaved",
         "num_species": 1,
     }
