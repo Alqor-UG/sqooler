@@ -16,7 +16,12 @@ from multiqudit.spooler_multiqudit import mq_spooler
 from fermions.spooler_fermions import f_spooler
 from rydberg.spooler_rydberg import ryd_spooler
 
-backends = {"singlequdit": sq_spooler, "multiqudit": mq_spooler, "fermions": f_spooler, "rydber": ryd_spooler}
+backends = {
+    "singlequdit": sq_spooler,
+    "multiqudit": mq_spooler,
+    "fermions": f_spooler,
+    "rydber": ryd_spooler,
+}
 
 
 def new_files_exist() -> bool:
