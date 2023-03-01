@@ -141,9 +141,16 @@ def update_in_database(result_dict: dict, status_msg_dict: dict, job_id: str) ->
 def get_file_queue(storage_path: str) -> List[str]:
     """
     Get a list of files
+
+    Args:
+        storage_path: Where are we looking for the files.
+
+    Returns:
+        A list of files that was found.
     """
 
     # Create an instance of a Dropbox class, which can make requests to the API.
+    file_list = []
     with dropbox.Dropbox(
         app_key=APP_KEY,
         app_secret=APP_SECRET,
@@ -161,10 +168,10 @@ def get_file_queue(storage_path: str) -> List[str]:
             response = dbx.files_list_folder(path=storage_path)
             file_list = response.entries
             file_list = [item.name for item in file_list]
-
+        except ApiError:
+            print(f"Could not obtain job queue for {storage_path}")
         except Exception as err:
             print(err)
-            sys.exit()
     return file_list
 
 
@@ -179,10 +186,10 @@ def get_next_job_in_queue(backend_name: str) -> dict:
         the path towards the job
     """
     job_json_dir = "/Backend_files/Queued_Jobs/" + backend_name + "/"
+    job_dict = {"job_id": 0, "job_json_path": "None"}
     job_list = get_file_queue(job_json_dir)
     # if there is a job, we should move it
-    job_dict = {"job_id": 0, "job_json_path": "None"}
-    if len(job_list):
+    if job_list:
         job_json_name = job_list[0]
         job_dict["job_id"] = job_json_name[4:-5]
         job_json_start_path = job_json_dir + job_json_name

@@ -20,7 +20,7 @@ backends = {
     "singlequdit": sq_spooler,
     "multiqudit": mq_spooler,
     "fermions": f_spooler,
-    # "rydberg": ryd_spooler,
+    "rydberg": ryd_spooler,
 }
 
 
