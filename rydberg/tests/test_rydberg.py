@@ -307,7 +307,7 @@ def test_ufull_instruction():
     job_payload = {
         "experiment_0": {
             "instructions": [
-                ["ufull", [0,1], [np.pi, 0 ,0]],
+                ["ufull", [0, 1], [np.pi, 0, 0]],
                 ["measure", [0], []],
                 ["measure", [1], []],
             ],

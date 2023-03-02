@@ -355,16 +355,16 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
             psi = expm_multiply(-1j * theta * int_matrix, psi)
         if inst[0] == "ufull":
             omega, delta, phi = inst[2]
-            Ufull = csc_matrix((dim_hilbert, dim_hilbert))
+            u_full = csc_matrix((dim_hilbert, dim_hilbert))
             # first the RX
             for lxi in lx_list:
-                Ufull = Ufull + omega * lxi
+                u_full = u_full + omega * lxi
             # next the RZ
             for lzi in lz_list:
-                Ufull = Ufull + delta * lzi
+                u_full = u_full + delta * lzi
             # end the blockade
-            Ufull = Ufull + phi * int_matrix
-            psi = expm_multiply(-1j * Ufull, psi)
+            u_full = u_full + phi * int_matrix
+            psi = expm_multiply(-1j * u_full, psi)
         if inst[0] == "measure":
             measurement_indices.append(inst[1][0])
     if measurement_indices:
