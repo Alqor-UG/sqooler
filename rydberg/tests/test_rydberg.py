@@ -18,6 +18,7 @@ from rydberg.spooler_rydberg import (
     RXInstruction,
     RZInstruction,
     CBlockInstruction,
+    UfullInstruction,
 )
 
 
@@ -228,8 +229,8 @@ def test_blockade_instruction():
 
     inst_config = {
         "name": "cblock",
-        "parameters": ["delta"],
-        "qasm_def": "gate cblock(delta) {}",
+        "parameters": ["phi"],
+        "qasm_def": "gate cblock(phi) {}",
         "coupling_map": [[0, 1, 2, 3, 4]],
         "description": "Apply the Rydberg blockade over the whole array",
     }
@@ -244,6 +245,69 @@ def test_blockade_instruction():
                 ["cblock", [0, 1], [2 * np.pi]],
                 ["rx", [0], [np.pi / 2]],
                 ["rx", [1], [np.pi / 2]],
+                ["measure", [0], []],
+                ["measure", [1], []],
+            ],
+            "num_wires": 2,
+            "shots": 150,
+            "wire_order": "sequential",
+        }
+    }
+
+    job_id = 2
+    data = run_json_circuit(job_payload, job_id)
+
+    shots_array = data["results"][0]["data"]["memory"]
+    assert shots_array[0] == "1 1", "job_id got messed up"
+    assert data["job_id"] == 2, "job_id got messed up"
+    assert len(shots_array) > 0, "shots_array got messed up"
+
+
+def test_ufull_instruction():
+    """
+    Test that the Ufull  instruction is properly working.
+    """
+    inst_list = ["ufull", [0, 1, 2, 3, 4], [0.7, 1, 3]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict == {
+        "name": inst_list[0],
+        "wires": inst_list[1],
+        "params": inst_list[2],
+    }
+    UfullInstruction(**gate_dict)
+
+    # test that the name is nicely fixed
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["ufulll", [0, 1, 2, 3, 4], [0.7, 1, 3]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        UfullInstruction(**gate_dict)
+
+    # test that we cannot give too few wires
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["ufull", [0], [0.7, 1, 3]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        UfullInstruction(**gate_dict)
+
+    # make sure that the wires cannot be above the limit
+    with pytest.raises(ValidationError):
+        poor_inst_list = ["ufull", [0, 1, 2, 3, 7], [0.7, 1, 3e7]]
+        gate_dict = gate_dict_from_list(poor_inst_list)
+        UfullInstruction(**gate_dict)
+
+    inst_config = {
+        "name": "ufull",
+        "parameters": ["omega, delta, phi"],
+        "qasm_def": "gate ufull(omega, delta, phi) {}",
+        "coupling_map": [[0, 1, 2, 3, 4]],
+        "description": "Apply the Rydberg and Rabi coupling over the whole array.",
+    }
+    assert inst_config == UfullInstruction.config_dict()
+
+    # also spins of same length
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["ufull", [0, 1], [np.pi, 0, 0]],
                 ["measure", [0], []],
                 ["measure", [1], []],
             ],
@@ -390,8 +454,16 @@ def test_spooler_config():
                 "coupling_map": [[0, 1, 2, 3, 4]],
                 "description": "Apply the Rydberg blockade over the whole array",
                 "name": "cblock",
-                "parameters": ["delta"],
-                "qasm_def": "gate cblock(delta) {}",
+                "parameters": ["phi"],
+                "qasm_def": "gate cblock(phi) {}",
+            },
+            {
+                "coupling_map": [[0, 1, 2, 3, 4]],
+                "description": "Apply the Rydberg and Rabi coupling over the whole "
+                "array.",
+                "name": "ufull",
+                "parameters": ["omega, delta, phi"],
+                "qasm_def": "gate ufull(omega, delta, phi) {}",
             },
         ],
         "max_experiments": 1000,
@@ -401,6 +473,7 @@ def test_spooler_config():
             "rx",
             "rz",
             "cblock",
+            "ufull",
             "barrier",
             "measure",
         ],
@@ -409,6 +482,7 @@ def test_spooler_config():
         "num_species": 1,
     }
     spooler_config_dict = ryd_spooler.get_configuration()
+    pprint(spooler_config_dict)
     assert spooler_config_dict == mq_config_dict
 
 

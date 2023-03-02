@@ -87,11 +87,34 @@ class CBlockInstruction(GateInstruction):
     params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
-    parameters: str = "delta"
+    parameters: str = "phi"
     description: str = "Apply the Rydberg blockade over the whole array"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1, 2, 3, 4]]
-    qasm_def = "gate cblock(delta) {}"
+    qasm_def = "gate cblock(phi) {}"
+
+
+class UfullInstruction(GateInstruction):
+    """
+    The time evolution under the global Hamiltonian. It does not allow for any local control.
+
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: Define the paramert for `RX`, `RZ`and `CBlock` in this order
+    """
+
+    name: Literal["ufull"] = "ufull"
+    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
+    params: conlist(confloat(ge=0, le=5e6 * np.pi), min_items=3, max_items=3)  # type: ignore
+
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "omega, delta, phi"
+    description: str = "Apply the Rydberg and Rabi coupling over the whole array."
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: List = [[0, 1, 2, 3, 4]]
+    qasm_def = "gate ufull(omega, delta, phi) {}"
 
 
 class BarrierInstruction(BaseModel):
@@ -180,6 +203,7 @@ ryd_spooler = RydbergSpooler(
         "rx": RXInstruction,
         "rz": RZInstruction,
         "cblock": CBlockInstruction,
+        "ufull": UfullInstruction,
         "barrier": BarrierInstruction,
         "measure": MeasureInstruction,
     },
@@ -329,6 +353,18 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
             # apply gate on all qubits
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * int_matrix, psi)
+        if inst[0] == "ufull":
+            omega, delta, phi = inst[2]
+            u_full = csc_matrix((dim_hilbert, dim_hilbert))
+            # first the RX
+            for lxi in lx_list:
+                u_full = u_full + omega * lxi
+            # next the RZ
+            for lzi in lz_list:
+                u_full = u_full + delta * lzi
+            # end the blockade
+            u_full = u_full + phi * int_matrix
+            psi = expm_multiply(-1j * u_full, psi)
         if inst[0] == "measure":
             measurement_indices.append(inst[1][0])
     if measurement_indices:
