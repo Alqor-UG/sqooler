@@ -15,6 +15,7 @@ nav:
   - Introduction: "index.md"
   - "utils.md"
   - "Simulators":
+    - "rydberg.md"
     - "fermions.md"
     - "singlequdit.md"
     - "multiqudit.md"
