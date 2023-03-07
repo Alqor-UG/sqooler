@@ -27,7 +27,7 @@ MAX_EXPERIMENTS = 1000
 
 class RXInstruction(GateInstruction):
     """
-    The rx instruction. As each instruction it requires the
+    The rx instruction. As each instruction it requires the following attributes
 
     Attributes:
         name: The string to identify the instruction
