@@ -1,0 +1,2527 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../rydberg/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Utils - Sqooler</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#utils" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Sqooler" class="md-header__button md-logo" aria-label="Sqooler" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Sqooler
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Utils
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alqor-ug/sqooler" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Sqooler" class="md-nav__button md-logo" aria-label="Sqooler" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Sqooler
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alqor-ug/sqooler" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Utils
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Utils
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#drpbx" class="md-nav__link">
+    Drpbx
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx" class="md-nav__link">
+    utils.drpbx
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.get_file_content" class="md-nav__link">
+    get_file_content()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.get_file_queue" class="md-nav__link">
+    get_file_queue()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.get_next_job_in_queue" class="md-nav__link">
+    get_next_job_in_queue()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.move_file" class="md-nav__link">
+    move_file()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.update_in_database" class="md-nav__link">
+    update_in_database()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.upload" class="md-nav__link">
+    upload()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schemes" class="md-nav__link">
+    Schemes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes" class="md-nav__link">
+    utils.schemes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.ExperimentDict" class="md-nav__link">
+    ExperimentDict
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.GateInstruction" class="md-nav__link">
+    GateInstruction
+  </a>
+  
+    <nav class="md-nav" aria-label="GateInstruction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.GateInstruction.config_dict" class="md-nav__link">
+    config_dict()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler" class="md-nav__link">
+    Spooler
+  </a>
+  
+    <nav class="md-nav" aria-label="Spooler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.check_experiment" class="md-nav__link">
+    check_experiment()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.check_instructions" class="md-nav__link">
+    check_instructions()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.check_json_dict" class="md-nav__link">
+    check_json_dict()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.get_configuration" class="md-nav__link">
+    get_configuration()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.create_memory_data" class="md-nav__link">
+    create_memory_data()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.gate_dict_from_list" class="md-nav__link">
+    gate_dict_from_list()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+        
+      
+      <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Simulators
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Simulators
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rydberg/" class="md-nav__link">
+        Rydberg
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fermions/" class="md-nav__link">
+        Fermionic tweezer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../singlequdit/" class="md-nav__link">
+        Single qudit
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multiqudit/" class="md-nav__link">
+        Multi qudit
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#drpbx" class="md-nav__link">
+    Drpbx
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx" class="md-nav__link">
+    utils.drpbx
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.get_file_content" class="md-nav__link">
+    get_file_content()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.get_file_queue" class="md-nav__link">
+    get_file_queue()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.get_next_job_in_queue" class="md-nav__link">
+    get_next_job_in_queue()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.move_file" class="md-nav__link">
+    move_file()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.update_in_database" class="md-nav__link">
+    update_in_database()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.drpbx.upload" class="md-nav__link">
+    upload()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schemes" class="md-nav__link">
+    Schemes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes" class="md-nav__link">
+    utils.schemes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.ExperimentDict" class="md-nav__link">
+    ExperimentDict
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.GateInstruction" class="md-nav__link">
+    GateInstruction
+  </a>
+  
+    <nav class="md-nav" aria-label="GateInstruction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.GateInstruction.config_dict" class="md-nav__link">
+    config_dict()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler" class="md-nav__link">
+    Spooler
+  </a>
+  
+    <nav class="md-nav" aria-label="Spooler">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.__init__" class="md-nav__link">
+    __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.check_experiment" class="md-nav__link">
+    check_experiment()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.check_instructions" class="md-nav__link">
+    check_instructions()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.check_json_dict" class="md-nav__link">
+    check_json_dict()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.get_configuration" class="md-nav__link">
+    get_configuration()
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.create_memory_data" class="md-nav__link">
+    create_memory_data()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utils.schemes.gate_dict_from_list" class="md-nav__link">
+    gate_dict_from_list()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="utils">Utils</h1>
+<p>This is the module that contains all the basic logic to read the json files that come from <code>qlued</code>. It also allows for validation etc. So if you are not a developer that tries to extend the core behavior of the <code>sqooler</code> it is unlikely that you should modify this part of the code. However, it is instructive to have a look below to understand the  modules that are provided for the creation of a simulator.</p>
+<p>Below you can find the API of the <code>utils</code>.</p>
+<h2 id="drpbx">Drpbx</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+<a id="utils.drpbx"></a>
+  <div class="doc doc-contents first">
+  
+      <p>The module that contains all the necessary logic for the accessing the database.</p>
+<p>This is mostly based on Dropbox for the moment. So it is closely related to the StorageProvider
+in <code>qlued</code>.</p>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="utils.drpbx.get_file_content" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_file_content</span><span class="p">(</span><span class="n">dbx_path</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Get the file content from the dropbox.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/drpbx.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_content</span><span class="p">(</span><span class="n">dbx_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the file content from the dropbox.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create an instance of a Dropbox class, which can make requests to the API.</span>
+    <span class="k">with</span> <span class="n">dropbox</span><span class="o">.</span><span class="n">Dropbox</span><span class="p">(</span>
+        <span class="n">app_key</span><span class="o">=</span><span class="n">APP_KEY</span><span class="p">,</span>
+        <span class="n">app_secret</span><span class="o">=</span><span class="n">APP_SECRET</span><span class="p">,</span>
+        <span class="n">oauth2_refresh_token</span><span class="o">=</span><span class="n">REFRESH_TOKEN</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">dbx</span><span class="p">:</span>
+        <span class="c1"># Check that the access token is valid</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dbx</span><span class="o">.</span><span class="n">users_get_current_account</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">AuthError</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Invalid access token.&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">res</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_download</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">dbx_path</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">content</span>
+            <span class="c1"># print(data)</span>
+        <span class="k">except</span> <span class="n">ApiError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">data</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="utils.drpbx.get_file_queue" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_file_queue</span><span class="p">(</span><span class="n">storage_path</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Get a list of files</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>storage_path</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td><p>Where are we looking for the files.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><span title="typing.List">List</span>[str]</code>
+          </td>
+          <td><p>A list of files that was found.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/drpbx.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get a list of files</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        storage_path: Where are we looking for the files.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of files that was found.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create an instance of a Dropbox class, which can make requests to the API.</span>
+    <span class="n">file_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="n">dropbox</span><span class="o">.</span><span class="n">Dropbox</span><span class="p">(</span>
+        <span class="n">app_key</span><span class="o">=</span><span class="n">APP_KEY</span><span class="p">,</span>
+        <span class="n">app_secret</span><span class="o">=</span><span class="n">APP_SECRET</span><span class="p">,</span>
+        <span class="n">oauth2_refresh_token</span><span class="o">=</span><span class="n">REFRESH_TOKEN</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">dbx</span><span class="p">:</span>
+        <span class="c1"># Check that the access token is valid</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dbx</span><span class="o">.</span><span class="n">users_get_current_account</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">AuthError</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Invalid access token.&quot;</span><span class="p">)</span>
+        <span class="c1"># We should really handle these exceptions cleaner, but this seems a bit</span>
+        <span class="c1"># complicated right now</span>
+        <span class="c1"># pylint: disable=W0703</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_list_folder</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">storage_path</span><span class="p">)</span>
+            <span class="n">file_list</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">entries</span>
+            <span class="n">file_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">]</span>
+        <span class="k">except</span> <span class="n">ApiError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not obtain job queue for </span><span class="si">{</span><span class="n">storage_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">file_list</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="utils.drpbx.get_next_job_in_queue" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_next_job_in_queue</span><span class="p">(</span><span class="n">backend_name</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>A function that obtains the next job in the queue.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>backend_name</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td><p>The name of the backend</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>dict</code>
+          </td>
+          <td><p>the path towards the job</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/drpbx.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A function that obtains the next job in the queue.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        backend_name (str): The name of the backend</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        the path towards the job</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">job_json_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Queued_Jobs/&quot;</span> <span class="o">+</span> <span class="n">backend_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+    <span class="n">job_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;job_json_path&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">}</span>
+    <span class="n">job_list</span> <span class="o">=</span> <span class="n">get_file_queue</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">)</span>
+    <span class="c1"># if there is a job, we should move it</span>
+    <span class="k">if</span> <span class="n">job_list</span><span class="p">:</span>
+        <span class="n">job_json_name</span> <span class="o">=</span> <span class="n">job_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">job_dict</span><span class="p">[</span><span class="s2">&quot;job_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_json_name</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+        <span class="n">job_json_start_path</span> <span class="o">=</span> <span class="n">job_json_dir</span> <span class="o">+</span> <span class="n">job_json_name</span>
+        <span class="n">job_json_final_path</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Running_Jobs/&quot;</span> <span class="o">+</span> <span class="n">job_json_name</span>
+        <span class="n">move_file</span><span class="p">(</span><span class="n">start_path</span><span class="o">=</span><span class="n">job_json_start_path</span><span class="p">,</span> <span class="n">final_path</span><span class="o">=</span><span class="n">job_json_final_path</span><span class="p">)</span>
+        <span class="n">job_dict</span><span class="p">[</span><span class="s2">&quot;job_json_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">job_json_final_path</span>
+    <span class="k">return</span> <span class="n">job_dict</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="utils.drpbx.move_file" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">move_file</span><span class="p">(</span><span class="n">start_path</span><span class="p">,</span> <span class="n">final_path</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Move the file from start_path to final_path.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/drpbx.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">move_file</span><span class="p">(</span><span class="n">start_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">final_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Move the file from start_path to final_path.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create an instance of a Dropbox class, which can make requests to the API.</span>
+    <span class="k">with</span> <span class="n">dropbox</span><span class="o">.</span><span class="n">Dropbox</span><span class="p">(</span>
+        <span class="n">app_key</span><span class="o">=</span><span class="n">APP_KEY</span><span class="p">,</span>
+        <span class="n">app_secret</span><span class="o">=</span><span class="n">APP_SECRET</span><span class="p">,</span>
+        <span class="n">oauth2_refresh_token</span><span class="o">=</span><span class="n">REFRESH_TOKEN</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">dbx</span><span class="p">:</span>
+        <span class="c1"># Check that the access token is valid</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dbx</span><span class="o">.</span><span class="n">users_get_current_account</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">AuthError</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Invalid access token.&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_move_v2</span><span class="p">(</span><span class="n">start_path</span><span class="p">,</span> <span class="n">final_path</span><span class="p">)</span>
+            <span class="c1"># print(_)</span>
+        <span class="k">except</span> <span class="n">ApiError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="utils.drpbx.update_in_database" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">update_in_database</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Upload the status and result to the dropbox.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/drpbx.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span><span class="n">result_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Upload the status and result to the dropbox.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">extracted_username</span> <span class="o">=</span> <span class="n">job_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">requested_backend</span> <span class="o">=</span> <span class="n">job_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">status_json_dir</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;/Backend_files/Status/&quot;</span> <span class="o">+</span> <span class="n">requested_backend</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">extracted_username</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+    <span class="p">)</span>
+    <span class="n">status_json_name</span> <span class="o">=</span> <span class="s2">&quot;status-&quot;</span> <span class="o">+</span> <span class="n">job_id</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span>
+    <span class="n">status_json_path</span> <span class="o">=</span> <span class="n">status_json_dir</span> <span class="o">+</span> <span class="n">status_json_name</span>
+
+    <span class="n">job_json_name</span> <span class="o">=</span> <span class="s2">&quot;job-&quot;</span> <span class="o">+</span> <span class="n">job_id</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span>
+    <span class="n">job_json_start_path</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Running_Jobs/&quot;</span> <span class="o">+</span> <span class="n">job_json_name</span>
+
+    <span class="k">if</span> <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;DONE&quot;</span><span class="p">:</span>
+        <span class="n">result_json_dir</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;/Backend_files/Result/&quot;</span>
+            <span class="o">+</span> <span class="n">requested_backend</span>
+            <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+            <span class="o">+</span> <span class="n">extracted_username</span>
+            <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="p">)</span>
+        <span class="n">result_json_name</span> <span class="o">=</span> <span class="s2">&quot;result-&quot;</span> <span class="o">+</span> <span class="n">job_id</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span>
+        <span class="n">result_json_path</span> <span class="o">=</span> <span class="n">result_json_dir</span> <span class="o">+</span> <span class="n">result_json_name</span>
+        <span class="n">result_binary</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">result_dict</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+        <span class="n">upload</span><span class="p">(</span><span class="n">dump_str</span><span class="o">=</span><span class="n">result_binary</span><span class="p">,</span> <span class="n">dbx_path</span><span class="o">=</span><span class="n">result_json_path</span><span class="p">)</span>
+        <span class="n">finished_json_dir</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;/Backend_files/Finished_Jobs/&quot;</span>
+            <span class="o">+</span> <span class="n">requested_backend</span>
+            <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+            <span class="o">+</span> <span class="n">extracted_username</span>
+            <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="p">)</span>
+        <span class="n">job_json_final_path</span> <span class="o">=</span> <span class="n">finished_json_dir</span> <span class="o">+</span> <span class="n">job_json_name</span>
+        <span class="n">move_file</span><span class="p">(</span><span class="n">start_path</span><span class="o">=</span><span class="n">job_json_start_path</span><span class="p">,</span> <span class="n">final_path</span><span class="o">=</span><span class="n">job_json_final_path</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">:</span>
+        <span class="n">deleted_json_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Deleted_Jobs/&quot;</span>
+        <span class="n">job_json_final_path</span> <span class="o">=</span> <span class="n">deleted_json_dir</span> <span class="o">+</span> <span class="n">job_json_name</span>
+        <span class="n">move_file</span><span class="p">(</span><span class="n">start_path</span><span class="o">=</span><span class="n">job_json_start_path</span><span class="p">,</span> <span class="n">final_path</span><span class="o">=</span><span class="n">job_json_final_path</span><span class="p">)</span>
+
+    <span class="n">status_binary</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">status_msg_dict</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">upload</span><span class="p">(</span><span class="n">dump_str</span><span class="o">=</span><span class="n">status_binary</span><span class="p">,</span> <span class="n">dbx_path</span><span class="o">=</span><span class="n">status_json_path</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="utils.drpbx.upload" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">upload</span><span class="p">(</span><span class="n">dump_str</span><span class="p">,</span> <span class="n">dbx_path</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Upload the file identified to the dropbox.</p>
+<p>dump_str: the content that should be written into the file</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/drpbx.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="n">dump_str</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">dbx_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Upload the file identified to the dropbox.</span>
+
+<span class="sd">    dump_str: the content that should be written into the file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create an instance of a Dropbox class, which can make requests to the API.</span>
+    <span class="k">with</span> <span class="n">dropbox</span><span class="o">.</span><span class="n">Dropbox</span><span class="p">(</span>
+        <span class="n">app_key</span><span class="o">=</span><span class="n">APP_KEY</span><span class="p">,</span>
+        <span class="n">app_secret</span><span class="o">=</span><span class="n">APP_SECRET</span><span class="p">,</span>
+        <span class="n">oauth2_refresh_token</span><span class="o">=</span><span class="n">REFRESH_TOKEN</span><span class="p">,</span>
+    <span class="p">)</span> <span class="k">as</span> <span class="n">dbx</span><span class="p">:</span>
+        <span class="c1"># Check that the access token is valid</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dbx</span><span class="o">.</span><span class="n">users_get_current_account</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">AuthError</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Invalid access token.&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dbx</span><span class="o">.</span><span class="n">files_upload</span><span class="p">(</span><span class="n">dump_str</span><span class="p">,</span> <span class="n">dbx_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">WriteMode</span><span class="p">(</span><span class="s2">&quot;overwrite&quot;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">ApiError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div><h2 id="schemes">Schemes</h2>
+
+
+<div class="doc doc-object doc-module">
+
+
+<a id="utils.schemes"></a>
+  <div class="doc doc-contents first">
+  
+      <p>The module that contains common logic for schemes, validation etc.
+There is no obvious need, why this code should be touch in a new back-end.</p>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="utils.schemes.ExperimentDict" class="doc doc-heading">
+        <code>ExperimentDict</code>
+
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="typing.TypedDict">TypedDict</span></code></p>
+
+  
+      <p>A class that defines the structure of the experiments.</p>
+
+
+        <details class="quote">
+          <summary>Source code in <code>utils/schemes.py</code></summary>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ExperimentDict</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class that defines the structure of the experiments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">header</span><span class="p">:</span> <span class="nb">dict</span>
+    <span class="n">shots</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">success</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span>
+</code></pre></div></td></tr></table></div>
+        </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="utils.schemes.GateInstruction" class="doc doc-heading">
+        <code>GateInstruction</code>
+
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+  
+      <p>The basic class for all the gate intructions of a backend.
+Any gate has to have the following attributes.</p>
+
+
+        <details class="quote">
+          <summary>Source code in <code>utils/schemes.py</code></summary>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">GateInstruction</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The basic class for all the gate intructions of a backend.</span>
+<span class="sd">    Any gate has to have the following attributes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">coupling_map</span><span class="p">:</span> <span class="n">List</span>
+    <span class="n">qasm_def</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span>
+    <span class="n">is_gate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">config_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Give back the properties of the instruction such as needed for the server.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;coupling_map&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;coupling_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+            <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">],</span>
+            <span class="s2">&quot;qasm_def&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;qasm_def&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+        <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+        </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="utils.schemes.GateInstruction.config_dict" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">config_dict</span><span class="p">()</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Give back the properties of the instruction such as needed for the server.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/schemes.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">config_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Give back the properties of the instruction such as needed for the server.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;coupling_map&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;coupling_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+        <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">],</span>
+        <span class="s2">&quot;qasm_def&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fields__</span><span class="p">[</span><span class="s2">&quot;qasm_def&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
+    <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="utils.schemes.Spooler" class="doc doc-heading">
+        <code>Spooler</code>
+
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+
+  
+      <p>The class for the spooler. So it is not just a scheme, but it also contains some common logic.
+So it should most likely live in another file at some point.</p>
+
+  <p><strong>Attributes:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>n_max_wires</code></td>
+          <td>
+          </td>
+          <td><p>maximum number of wires for the spooler</p></td>
+        </tr>
+        <tr>
+          <td><code>n_max_shots</code></td>
+          <td>
+          </td>
+          <td><p>the maximum number of shots for the spooler</p></td>
+        </tr>
+        <tr>
+          <td><code>ins_schema_dict</code></td>
+          <td>
+          </td>
+          <td><p>A dictionary the contains all the allowed instructions for this spooler.</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>exper_schema</code></td>
+          <td>
+          </td>
+          <td><p>Sets the <code>exper_schema</code> attribute of the class</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>ins_schema_dict</code></td>
+          <td>
+          </td>
+          <td><p>Sets the <code>ins_schema_dict</code> attribute of the class</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <details class="quote">
+          <summary>Source code in <code>utils/schemes.py</code></summary>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The class for the spooler. So it is not just a scheme, but it also contains some common logic.</span>
+<span class="sd">    So it should most likely live in another file at some point.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        n_max_wires: maximum number of wires for the spooler</span>
+<span class="sd">        n_max_shots: the maximum number of shots for the spooler</span>
+<span class="sd">        ins_schema_dict : A dictionary the contains all the allowed instructions for this spooler.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        exper_schema: Sets the `exper_schema` attribute of the class</span>
+<span class="sd">        ins_schema_dict : Sets the `ins_schema_dict` attribute of the class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ins_schema_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">n_wires</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">n_max_shots</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.1&quot;</span><span class="p">,</span>
+        <span class="n">cold_atom_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;spin&quot;</span><span class="p">,</span>
+        <span class="n">n_max_experiments</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+        <span class="n">wire_order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;interleaved&quot;</span><span class="p">,</span>
+        <span class="n">num_species</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The constructor of the class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span> <span class="o">=</span> <span class="n">ins_schema_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_max_shots</span> <span class="o">=</span> <span class="n">n_max_shots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_wires</span> <span class="o">=</span> <span class="n">n_wires</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cold_atom_type</span> <span class="o">=</span> <span class="n">cold_atom_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_max_experiments</span> <span class="o">=</span> <span class="n">n_max_experiments</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wire_order</span> <span class="o">=</span> <span class="n">wire_order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_species</span> <span class="o">=</span> <span class="n">num_species</span>
+
+    <span class="k">def</span> <span class="nf">check_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exper_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the validity of the experiment.</span>
+<span class="sd">        This has to be implement in each subclass extra.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            exper_dict: The dictionary that contains the logic and should</span>
+<span class="sd">                be verified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this!&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sends back the configuration dictionary of the spooler.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gate_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ins_obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s2">&quot;is_gate&quot;</span> <span class="ow">in</span> <span class="n">ins_obj</span><span class="o">.</span><span class="n">__fields__</span><span class="p">:</span>
+                <span class="n">gate_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ins_obj</span><span class="o">.</span><span class="n">config_dict</span><span class="p">())</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+            <span class="s2">&quot;cold_atom_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cold_atom_type</span><span class="p">,</span>
+            <span class="s2">&quot;gates&quot;</span><span class="p">:</span> <span class="n">gate_list</span><span class="p">,</span>
+            <span class="s2">&quot;max_experiments&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_max_experiments</span><span class="p">,</span>
+            <span class="s2">&quot;max_shots&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_max_shots</span><span class="p">,</span>
+            <span class="s2">&quot;simulator&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;supported_instructions&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+            <span class="s2">&quot;num_wires&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_wires</span><span class="p">,</span>
+            <span class="s2">&quot;wire_order&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">wire_order</span><span class="p">,</span>
+            <span class="s2">&quot;num_species&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_species</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">check_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check all the instruction to make sure that they are valid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">ins</span> <span class="ow">in</span> <span class="n">ins_list</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">gate_dict</span> <span class="o">=</span> <span class="n">gate_dict_from_list</span><span class="p">(</span><span class="n">ins</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="p">[</span><span class="n">ins</span><span class="p">[</span><span class="mi">0</span><span class="p">]](</span><span class="o">**</span><span class="n">gate_dict</span><span class="p">)</span>
+                <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;Error in instruction &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+                <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span>
+
+    <span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the json file has the appropiate syntax.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            json_dict (dict): the dictonary that we will test.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: is the expression having the appropiate syntax ?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">json_dict</span><span class="p">:</span>
+            <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;Wrong experiment name or too many experiments&quot;</span>
+            <span class="c1"># Fix this pylint issue whenever you have time, but be careful !</span>
+            <span class="c1"># pylint: disable=W0702</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">exp_ok</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">expr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;experiment_&quot;</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="mi">11</span><span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+                    <span class="ow">and</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="mi">11</span><span class="p">:])</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_max_experiments</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="c1"># test the structure of the experiment</span>
+            <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_experiment</span><span class="p">(</span><span class="n">json_dict</span><span class="p">[</span><span class="n">expr</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="c1"># time to check the structure of the instructions</span>
+            <span class="n">ins_list</span> <span class="o">=</span> <span class="n">json_dict</span><span class="p">[</span><span class="n">expr</span><span class="p">][</span><span class="s2">&quot;instructions&quot;</span><span class="p">]</span>
+            <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_instructions</span><span class="p">(</span><span class="n">ins_list</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">err_code</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">),</span> <span class="n">exp_ok</span>
+</code></pre></div></td></tr></table></div>
+        </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="utils.schemes.Spooler.__init__" class="doc doc-heading">
+<code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">ins_schema_dict</span><span class="p">,</span> <span class="n">n_wires</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">n_max_shots</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s1">&#39;0.0.1&#39;</span><span class="p">,</span> <span class="n">cold_atom_type</span><span class="o">=</span><span class="s1">&#39;spin&#39;</span><span class="p">,</span> <span class="n">n_max_experiments</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">wire_order</span><span class="o">=</span><span class="s1">&#39;interleaved&#39;</span><span class="p">,</span> <span class="n">num_species</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The constructor of the class.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/schemes.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">ins_schema_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">n_wires</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">n_max_shots</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.1&quot;</span><span class="p">,</span>
+    <span class="n">cold_atom_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;spin&quot;</span><span class="p">,</span>
+    <span class="n">n_max_experiments</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+    <span class="n">wire_order</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;interleaved&quot;</span><span class="p">,</span>
+    <span class="n">num_species</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The constructor of the class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span> <span class="o">=</span> <span class="n">ins_schema_dict</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n_max_shots</span> <span class="o">=</span> <span class="n">n_max_shots</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n_wires</span> <span class="o">=</span> <span class="n">n_wires</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cold_atom_type</span> <span class="o">=</span> <span class="n">cold_atom_type</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n_max_experiments</span> <span class="o">=</span> <span class="n">n_max_experiments</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">wire_order</span> <span class="o">=</span> <span class="n">wire_order</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">num_species</span> <span class="o">=</span> <span class="n">num_species</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="utils.schemes.Spooler.check_experiment" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">check_experiment</span><span class="p">(</span><span class="n">exper_dict</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Check the validity of the experiment.
+This has to be implement in each subclass extra.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>exper_dict</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td><p>The dictionary that contains the logic and should
+be verified.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/schemes.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">90</span>
+<span class="normal">91</span>
+<span class="normal">92</span>
+<span class="normal">93</span>
+<span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span>
+<span class="normal">97</span>
+<span class="normal">98</span>
+<span class="normal">99</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exper_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the validity of the experiment.</span>
+<span class="sd">    This has to be implement in each subclass extra.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        exper_dict: The dictionary that contains the logic and should</span>
+<span class="sd">            be verified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this!&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="utils.schemes.Spooler.check_instructions" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">check_instructions</span><span class="p">(</span><span class="n">ins_list</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Check all the instruction to make sure that they are valid.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/schemes.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check all the instruction to make sure that they are valid.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">ins</span> <span class="ow">in</span> <span class="n">ins_list</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">gate_dict</span> <span class="o">=</span> <span class="n">gate_dict_from_list</span><span class="p">(</span><span class="n">ins</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="p">[</span><span class="n">ins</span><span class="p">[</span><span class="mi">0</span><span class="p">]](</span><span class="o">**</span><span class="n">gate_dict</span><span class="p">)</span>
+            <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;Error in instruction &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="utils.schemes.Spooler.check_json_dict" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">check_json_dict</span><span class="p">(</span><span class="n">json_dict</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Check if the json file has the appropiate syntax.</p>
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>json_dict</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td><p>the dictonary that we will test.</p></td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>bool</code></td>          <td>
+                <code><span title="typing.Tuple">Tuple</span>[str, bool]</code>
+          </td>
+          <td><p>is the expression having the appropiate syntax ?</p></td>
+        </tr>
+    </tbody>
+  </table>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/schemes.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the json file has the appropiate syntax.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        json_dict (dict): the dictonary that we will test.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: is the expression having the appropiate syntax ?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">expr</span> <span class="ow">in</span> <span class="n">json_dict</span><span class="p">:</span>
+        <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;Wrong experiment name or too many experiments&quot;</span>
+        <span class="c1"># Fix this pylint issue whenever you have time, but be careful !</span>
+        <span class="c1"># pylint: disable=W0702</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">exp_ok</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">expr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;experiment_&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">expr</span><span class="p">[</span><span class="mi">11</span><span class="p">:]</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">expr</span><span class="p">[</span><span class="mi">11</span><span class="p">:])</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_max_experiments</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="c1"># test the structure of the experiment</span>
+        <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_experiment</span><span class="p">(</span><span class="n">json_dict</span><span class="p">[</span><span class="n">expr</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="c1"># time to check the structure of the instructions</span>
+        <span class="n">ins_list</span> <span class="o">=</span> <span class="n">json_dict</span><span class="p">[</span><span class="n">expr</span><span class="p">][</span><span class="s2">&quot;instructions&quot;</span><span class="p">]</span>
+        <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_instructions</span><span class="p">(</span><span class="n">ins_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">err_code</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">),</span> <span class="n">exp_ok</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="utils.schemes.Spooler.get_configuration" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">get_configuration</span><span class="p">()</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Sends back the configuration dictionary of the spooler.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/schemes.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sends back the configuration dictionary of the spooler.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gate_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ins_obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s2">&quot;is_gate&quot;</span> <span class="ow">in</span> <span class="n">ins_obj</span><span class="o">.</span><span class="n">__fields__</span><span class="p">:</span>
+            <span class="n">gate_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ins_obj</span><span class="o">.</span><span class="n">config_dict</span><span class="p">())</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+        <span class="s2">&quot;cold_atom_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cold_atom_type</span><span class="p">,</span>
+        <span class="s2">&quot;gates&quot;</span><span class="p">:</span> <span class="n">gate_list</span><span class="p">,</span>
+        <span class="s2">&quot;max_experiments&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_max_experiments</span><span class="p">,</span>
+        <span class="s2">&quot;max_shots&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_max_shots</span><span class="p">,</span>
+        <span class="s2">&quot;simulator&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;supported_instructions&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+        <span class="s2">&quot;num_wires&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_wires</span><span class="p">,</span>
+        <span class="s2">&quot;wire_order&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">wire_order</span><span class="p">,</span>
+        <span class="s2">&quot;num_species&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_species</span><span class="p">,</span>
+    <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="utils.schemes.create_memory_data" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">create_memory_data</span><span class="p">(</span><span class="n">shots_array</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">,</span> <span class="n">n_shots</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The function to create memory key in results dictionary
+with proprer formatting.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/schemes.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
+    <span class="n">shots_array</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_shots</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperimentDict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The function to create memory key in results dictionary</span>
+<span class="sd">    with proprer formatting.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">exp_sub_dict</span><span class="p">:</span> <span class="n">ExperimentDict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;experiment_0&quot;</span><span class="p">,</span> <span class="s2">&quot;extra metadata&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">},</span>
+        <span class="s2">&quot;shots&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;memory&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="n">exp_sub_dict</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp_name</span>
+    <span class="n">exp_sub_dict</span><span class="p">[</span><span class="s2">&quot;shots&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_shots</span>
+    <span class="n">memory_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">shot</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">shot</span> <span class="ow">in</span> <span class="n">shots_array</span>
+    <span class="p">]</span>
+    <span class="n">exp_sub_dict</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;memory&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">memory_list</span>
+    <span class="k">return</span> <span class="n">exp_sub_dict</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="utils.schemes.gate_dict_from_list" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Transforms a list into an appropiate dictionnary for instructions.</p>
+
+      <details class="quote">
+        <summary>Source code in <code>utils/schemes.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms a list into an appropiate dictionnary for instructions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;wires&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+  <h2 id="__comments">Comments</h2>
+  <script src="https://giscus.app/client.js"
+        data-repo="alqor-ug/sqooler"
+        data-repo-id="R_kgDOIsFD9A"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOIsFD9M4CTajH"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+  <!-- Synchronize Giscus theme with palette -->
+  <script>
+    var giscus = document.querySelector("script[src*=giscus]")
+
+    /* Set palette on initial load */
+    var palette = __md_get("__palette")
+    if (palette && typeof palette.color === "object") {
+      var theme = palette.color.scheme === "slate" ? "dark" : "light"
+      giscus.setAttribute("data-theme", theme) 
+
+
+    }
+
+    /* Register event handlers after documented loaded */
+    document.addEventListener("DOMContentLoaded", function() {
+      var ref = document.querySelector("[data-md-component=palette]")
+      ref.addEventListener("change", function() {
+        var palette = __md_get("__palette")
+        if (palette && typeof palette.color === "object") {
+          var theme = palette.color.scheme === "slate" ? "dark" : "light"
+
+          /* Instruct Giscus to change theme */
+          var frame = document.querySelector(".giscus-frame")
+          frame.contentWindow.postMessage(
+            { giscus: { setConfig: { theme } } },
+            "https://giscus.app"
+          )
+        }
+      })
+    })
+  </script>
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: Introduction" rel="prev">
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <div class="md-ellipsis">
+                <span class="md-footer__direction">
+                  Previous
+                </span>
+                Introduction
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../rydberg/" class="md-footer__link md-footer__link--next" aria-label="Next: Rydberg" rel="next">
+            <div class="md-footer__title">
+              <div class="md-ellipsis">
+                <span class="md-footer__direction">
+                  Next
+                </span>
+                Rydberg
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.footer", "toc.follow"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+    
+  </body>
+</html>
