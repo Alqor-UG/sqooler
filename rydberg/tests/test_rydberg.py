@@ -17,8 +17,8 @@ from rydberg.spooler_rydberg import (
     RydbergExperiment,
     RXInstruction,
     RZInstruction,
-    CBlockInstruction,
-    UfullInstruction,
+    RydbergBlockInstruction,
+    RydbergFullInstruction,
 )
 
 
@@ -190,51 +190,51 @@ def test_blockade_instruction():
     """
     Test that the Rydberg blockade instruction is properly constrained.
     """
-    inst_list = ["cblock", [0, 1], [0.7]]
+    inst_list = ["rydberg_block", [0, 1], [0.7]]
     gate_dict = gate_dict_from_list(inst_list)
     assert gate_dict == {
         "name": inst_list[0],
         "wires": inst_list[1],
         "params": inst_list[2],
     }
-    CBlockInstruction(**gate_dict)
+    RydbergBlockInstruction(**gate_dict)
 
-    inst_list = ["cblock", [0, 1], [0.7]]
+    inst_list = ["rydberg_block", [0, 1], [0.7]]
     gate_dict = gate_dict_from_list(inst_list)
-    CBlockInstruction(**gate_dict)
+    RydbergBlockInstruction(**gate_dict)
 
     # test that the name is nicely fixed
     with pytest.raises(ValidationError):
         poor_inst_list = ["rlzls", [0, 1], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        CBlockInstruction(**gate_dict)
+        RydbergBlockInstruction(**gate_dict)
 
     # test that we cannot give too few wires
     with pytest.raises(ValidationError):
-        poor_inst_list = ["cblock", [0], [0.7]]
+        poor_inst_list = ["rydberg_block", [0], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        CBlockInstruction(**gate_dict)
+        RydbergBlockInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
-        poor_inst_list = ["cblock", [0, 200], [0.7]]
+        poor_inst_list = ["rydberg_block", [0, 200], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        CBlockInstruction(**gate_dict)
+        RydbergBlockInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
-        poor_inst_list = ["cblock", [0, 1], [200 * np.pi]]
+        poor_inst_list = ["rydberg_block", [0, 1], [200 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        CBlockInstruction(**gate_dict)
+        RydbergBlockInstruction(**gate_dict)
 
     inst_config = {
-        "name": "cblock",
+        "name": "rydberg_block",
         "parameters": ["phi"],
-        "qasm_def": "gate cblock(phi) {}",
+        "qasm_def": "gate rydberg_block(phi) {}",
         "coupling_map": [[0, 1, 2, 3, 4]],
         "description": "Apply the Rydberg blockade over the whole array",
     }
-    assert inst_config == CBlockInstruction.config_dict()
+    assert inst_config == RydbergBlockInstruction.config_dict()
 
     # also spins of same length
     job_payload = {
@@ -242,7 +242,7 @@ def test_blockade_instruction():
             "instructions": [
                 ["rx", [0], [np.pi / 2]],
                 ["rx", [1], [np.pi / 2]],
-                ["cblock", [0, 1], [2 * np.pi]],
+                ["rydberg_block", [0, 1], [2 * np.pi]],
                 ["rx", [0], [np.pi / 2]],
                 ["rx", [1], [np.pi / 2]],
                 ["measure", [0], []],
@@ -265,7 +265,7 @@ def test_blockade_instruction():
 
 def test_ufull_instruction():
     """
-    Test that the Ufull  instruction is properly working.
+    Test that the RydbergFull  instruction is properly working.
     """
     inst_list = ["ufull", [0, 1, 2, 3, 4], [0.7, 1, 3]]
     gate_dict = gate_dict_from_list(inst_list)
@@ -274,25 +274,25 @@ def test_ufull_instruction():
         "wires": inst_list[1],
         "params": inst_list[2],
     }
-    UfullInstruction(**gate_dict)
+    RydbergFullInstruction(**gate_dict)
 
     # test that the name is nicely fixed
     with pytest.raises(ValidationError):
         poor_inst_list = ["ufulll", [0, 1, 2, 3, 4], [0.7, 1, 3]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        UfullInstruction(**gate_dict)
+        RydbergFullInstruction(**gate_dict)
 
     # test that we cannot give too few wires
     with pytest.raises(ValidationError):
         poor_inst_list = ["ufull", [0], [0.7, 1, 3]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        UfullInstruction(**gate_dict)
+        RydbergFullInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
         poor_inst_list = ["ufull", [0, 1, 2, 3, 7], [0.7, 1, 3e7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        UfullInstruction(**gate_dict)
+        RydbergFullInstruction(**gate_dict)
 
     inst_config = {
         "name": "ufull",
@@ -301,7 +301,7 @@ def test_ufull_instruction():
         "coupling_map": [[0, 1, 2, 3, 4]],
         "description": "Apply the Rydberg and Rabi coupling over the whole array.",
     }
-    assert inst_config == UfullInstruction.config_dict()
+    assert inst_config == RydbergFullInstruction.config_dict()
 
     # also spins of same length
     job_payload = {
@@ -453,9 +453,9 @@ def test_spooler_config():
             {
                 "coupling_map": [[0, 1, 2, 3, 4]],
                 "description": "Apply the Rydberg blockade over the whole array",
-                "name": "cblock",
+                "name": "rydberg_block",
                 "parameters": ["phi"],
-                "qasm_def": "gate cblock(phi) {}",
+                "qasm_def": "gate rydberg_block(phi) {}",
             },
             {
                 "coupling_map": [[0, 1, 2, 3, 4]],
@@ -472,7 +472,7 @@ def test_spooler_config():
         "supported_instructions": [
             "rx",
             "rz",
-            "cblock",
+            "rydberg_block",
             "ufull",
             "barrier",
             "measure",
@@ -496,7 +496,7 @@ def test_number_experiments():
         "experiment_0": {
             "instructions": [
                 ["rx", [0], [np.pi]],
-                ["cblock", [0, 1], [np.pi / 2]],
+                ["rydberg_block", [0, 1], [np.pi / 2]],
                 ["measure", [0], []],
                 ["measure", [1], []],
             ],
@@ -513,7 +513,7 @@ def test_number_experiments():
     inst_dict = {
         "instructions": [
             ["rx", [0], [np.pi]],
-            ["cblock", [0, 1], [np.pi / 2]],
+            ["rydberg_block", [0, 1], [np.pi / 2]],
             ["measure", [0], []],
             ["measure", [1], []],
         ],

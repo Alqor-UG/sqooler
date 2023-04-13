@@ -19,6 +19,7 @@ APP_KEY = config("APP_KEY")
 REFRESH_TOKEN = config("REFRESH_TOKEN")
 APP_SECRET = config("APP_SECRET")
 
+
 # Uploads contents of dump_str to Dropbox
 def upload(dump_str: bytes, dbx_path: str) -> None:
     """
