@@ -209,7 +209,7 @@ ryd_spooler = RydbergSpooler(
     },
     n_wires=N_MAX_WIRES,
     name="alqor_rydberg_simulator",
-    version="0.0.1",
+    version="0.0.2",
     description="A chain of qubits realized through Rydberg atoms.",
     n_max_experiments=MAX_EXPERIMENTS,
     n_max_shots=N_MAX_SHOTS,

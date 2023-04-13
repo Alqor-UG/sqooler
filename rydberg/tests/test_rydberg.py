@@ -433,7 +433,7 @@ def test_spooler_config():
     mq_config_dict = {
         "name": "alqor_rydberg_simulator",
         "description": "A chain of qubits realized through Rydberg atoms.",
-        "version": "0.0.1",
+        "version": "0.0.2",
         "cold_atom_type": "spin",
         "gates": [
             {
