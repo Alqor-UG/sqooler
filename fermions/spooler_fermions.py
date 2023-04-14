@@ -17,7 +17,7 @@ from utils.schemes import (
 )
 
 NUM_WIRES = 8
-N_MAX_SHOTS = 10 ** 6
+N_MAX_SHOTS = 10**6
 MAX_EXPERIMENTS = 1000
 N_MAX_WIRES = 8
 

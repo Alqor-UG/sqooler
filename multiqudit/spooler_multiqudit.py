@@ -22,7 +22,7 @@ N_MAX_WIRES = 4
 N_MAX_SHOTS = int(1e6)
 MAX_EXPERIMENTS = 1000
 N_MAX_ATOMS = 500
-MAX_HILBERT_SPACE_DIM = 2 ** 12
+MAX_HILBERT_SPACE_DIM = 2**12
 
 # define the instructions in the following
 # rlx instruction
@@ -255,7 +255,7 @@ class MultiQuditSpooler(Spooler):
                 if ins[0] == "load":
                     qubit_wires = qubit_wires - 1
                     dim_hilbert = dim_hilbert * ins[2][0]
-            dim_hilbert = dim_hilbert * (2 ** qubit_wires)
+            dim_hilbert = dim_hilbert * (2**qubit_wires)
             dim_ok = dim_hilbert < (MAX_HILBERT_SPACE_DIM) + 1
             if not dim_ok:
                 err_code = "Hilbert space dimension too large!"

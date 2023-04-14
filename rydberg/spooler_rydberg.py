@@ -71,7 +71,7 @@ class RZInstruction(GateInstruction):
     qasm_def = "gate rz(delta) {}"
 
 
-class CBlockInstruction(GateInstruction):
+class RydbergBlockInstruction(GateInstruction):
     """
     The Rydberg blockade instruction. As each instruction it requires the
 
@@ -82,7 +82,7 @@ class CBlockInstruction(GateInstruction):
         params: has to be empty
     """
 
-    name: Literal["cblock"] = "cblock"
+    name: Literal["rydberg_block"] = "rydberg_block"
     wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
     params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
@@ -91,10 +91,10 @@ class CBlockInstruction(GateInstruction):
     description: str = "Apply the Rydberg blockade over the whole array"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1, 2, 3, 4]]
-    qasm_def = "gate cblock(phi) {}"
+    qasm_def = "gate rydberg_block(phi) {}"
 
 
-class UfullInstruction(GateInstruction):
+class RydbergFullInstruction(GateInstruction):
     """
     The time evolution under the global Hamiltonian. It does not allow for any local control.
 
@@ -102,10 +102,10 @@ class UfullInstruction(GateInstruction):
         name: The string to identify the instruction
         wires: The wire on which the instruction should be applied
             so the indices should be between 0 and N_MAX_WIRES-1
-        params: Define the paramert for `RX`, `RZ`and `CBlock` in this order
+        params: Define the paramert for `RX`, `RZ`and `RydbergBlock` in this order
     """
 
-    name: Literal["ufull"] = "ufull"
+    name: Literal["rydberg_full"] = "rydberg_full"
     wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
     params: conlist(confloat(ge=0, le=5e6 * np.pi), min_items=3, max_items=3)  # type: ignore
 
@@ -114,7 +114,7 @@ class UfullInstruction(GateInstruction):
     description: str = "Apply the Rydberg and Rabi coupling over the whole array."
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1, 2, 3, 4]]
-    qasm_def = "gate ufull(omega, delta, phi) {}"
+    qasm_def = "gate rydberg_full(omega, delta, phi) {}"
 
 
 class BarrierInstruction(BaseModel):
@@ -202,14 +202,14 @@ ryd_spooler = RydbergSpooler(
     ins_schema_dict={
         "rx": RXInstruction,
         "rz": RZInstruction,
-        "cblock": CBlockInstruction,
-        "ufull": UfullInstruction,
+        "rydberg_block": RydbergBlockInstruction,
+        "rydberg_full": RydbergFullInstruction,
         "barrier": BarrierInstruction,
         "measure": MeasureInstruction,
     },
     n_wires=N_MAX_WIRES,
     name="alqor_rydberg_simulator",
-    version="0.0.1",
+    version="0.0.2",
     description="A chain of qubits realized through Rydberg atoms.",
     n_max_experiments=MAX_EXPERIMENTS,
     n_max_shots=N_MAX_SHOTS,
@@ -349,11 +349,11 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
             position = inst[1][0]
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * lz_list[position], psi)
-        if inst[0] == "cblock":
+        if inst[0] == "rydberg_block":
             # apply gate on all qubits
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * int_matrix, psi)
-        if inst[0] == "ufull":
+        if inst[0] == "rydberg_full":
             omega, delta, phi = inst[2]
             u_full = csc_matrix((dim_hilbert, dim_hilbert))
             # first the RX
