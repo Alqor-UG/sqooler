@@ -25,9 +25,9 @@ N_MAX_SHOTS = 1000000
 MAX_EXPERIMENTS = 1000
 
 
-class RXInstruction(GateInstruction):
+class RlxInstruction(GateInstruction):
     """
-    The rx instruction. As each instruction it requires the following attributes
+    The rlx instruction. As each instruction it requires the following attributes
 
     Attributes:
         name: The string to identify the instruction
@@ -36,21 +36,21 @@ class RXInstruction(GateInstruction):
         params: has to be empty
     """
 
-    name: Literal["rx"] = "rx"
+    name: Literal["rlx"] = "rlx"
     wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
     params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "omega"
-    description: str = "Evolution under RX"
+    description: str = "Evolution under Rlx"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate rx(omega) {}"
+    qasm_def = "gate rlx(omega) {}"
 
 
-class RZInstruction(GateInstruction):
+class RlzInstruction(GateInstruction):
     """
-    The rz instruction. As each instruction it requires the
+    The rlz instruction. As each instruction it requires the
 
     Attributes:
         name: The string to identify the instruction
@@ -59,16 +59,16 @@ class RZInstruction(GateInstruction):
         params: has to be empty
     """
 
-    name: Literal["rz"] = "rz"
+    name: Literal["rlz"] = "rlz"
     wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
     params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "delta"
-    description: str = "Evolution under the RZ gate"
+    description: str = "Evolution under the Rlz gate"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate rz(delta) {}"
+    qasm_def = "gate rlz(delta) {}"
 
 
 class RydbergBlockInstruction(GateInstruction):
@@ -200,8 +200,8 @@ class RydbergSpooler(Spooler):
 
 ryd_spooler = RydbergSpooler(
     ins_schema_dict={
-        "rx": RXInstruction,
-        "rz": RZInstruction,
+        "rlx": RlxInstruction,
+        "rlz": RlzInstruction,
         "rydberg_block": RydbergBlockInstruction,
         "rydberg_full": RydbergFullInstruction,
         "barrier": BarrierInstruction,
@@ -209,7 +209,7 @@ ryd_spooler = RydbergSpooler(
     },
     n_wires=N_MAX_WIRES,
     name="alqor_rydberg_simulator",
-    version="0.0.2",
+    version="0.0.3",
     description="A chain of qubits realized through Rydberg atoms.",
     n_max_experiments=MAX_EXPERIMENTS,
     n_max_shots=N_MAX_SHOTS,
@@ -337,15 +337,11 @@ def gen_circuit(json_dict: dict) -> ExperimentDict:
     measurement_indices = []
     shots_array = []
     for inst in ins_list:
-        if inst[0] == "rx":
+        if inst[0] == "rlx":
             position = inst[1][0]
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * lx_list[position], psi)
-        if inst[0] == "ry":
-            position = inst[1][0]
-            theta = inst[2][0]
-            psi = expm_multiply(-1j * theta * ly_list[position], psi)
-        if inst[0] == "rz":
+        if inst[0] == "rlz":
             position = inst[1][0]
             theta = inst[2][0]
             psi = expm_multiply(-1j * theta * lz_list[position], psi)
