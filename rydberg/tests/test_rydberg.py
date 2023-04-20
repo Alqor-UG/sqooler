@@ -15,8 +15,8 @@ from rydberg.spooler_rydberg import (
     ryd_spooler,
     gen_circuit,
     RydbergExperiment,
-    RXInstruction,
-    RZInstruction,
+    RlxInstruction,
+    RlzInstruction,
     RydbergBlockInstruction,
     RydbergFullInstruction,
 )
@@ -67,7 +67,7 @@ def test_pydantic_exp_validation():
     """
     experiment = {
         "instructions": [
-            ["rz", [0], [0.7]],
+            ["rlz", [0], [0.7]],
             ["measure", [0], []],
         ],
         "num_wires": 1,
@@ -93,57 +93,57 @@ def test_local_rot_instruction():
     """
     Test that the hop instruction instruction is properly constrained.
     """
-    inst_list = ["rx", [0], [0.7]]
+    inst_list = ["rlx", [0], [0.7]]
     gate_dict = gate_dict_from_list(inst_list)
     assert gate_dict == {
         "name": inst_list[0],
         "wires": inst_list[1],
         "params": inst_list[2],
     }
-    RXInstruction(**gate_dict)
+    RlxInstruction(**gate_dict)
 
-    inst_list = ["rz", [0], [0.7]]
+    inst_list = ["rlz", [0], [0.7]]
     gate_dict = gate_dict_from_list(inst_list)
-    RZInstruction(**gate_dict)
+    RlzInstruction(**gate_dict)
 
     # test that the name is nicely fixed
     with pytest.raises(ValidationError):
         poor_inst_list = ["rly", [0], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        RXInstruction(**gate_dict)
+        RlxInstruction(**gate_dict)
 
     # test that we cannot give too many wires
     with pytest.raises(ValidationError):
-        poor_inst_list = ["rx", [0, 1], [0.7]]
+        poor_inst_list = ["rlx", [0, 1], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        RXInstruction(**gate_dict)
+        RlxInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
-        poor_inst_list = ["rx", [200], [0.7]]
+        poor_inst_list = ["rlx", [200], [0.7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        RXInstruction(**gate_dict)
+        RlxInstruction(**gate_dict)
 
     # make sure that the parameters are enforced to be within the limits
     with pytest.raises(ValidationError):
-        poor_inst_list = ["rx", [0], [3 * np.pi]]
+        poor_inst_list = ["rlx", [0], [3 * np.pi]]
         gate_dict = gate_dict_from_list(poor_inst_list)
-        RXInstruction(**gate_dict)
+        RlxInstruction(**gate_dict)
 
     inst_config = {
-        "name": "rx",
+        "name": "rlx",
         "parameters": ["omega"],
-        "qasm_def": "gate rx(omega) {}",
+        "qasm_def": "gate rlx(omega) {}",
         "coupling_map": [[0], [1], [2], [3], [4]],
-        "description": "Evolution under RX",
+        "description": "Evolution under Rlx",
     }
-    assert inst_config == RXInstruction.config_dict()
+    assert inst_config == RlxInstruction.config_dict()
 
     # also spins of same length
     job_payload = {
         "experiment_0": {
             "instructions": [
-                ["rx", [0], [np.pi]],
+                ["rlx", [0], [np.pi]],
                 ["measure", [0], []],
                 ["measure", [1], []],
             ],
@@ -165,9 +165,9 @@ def test_local_rot_instruction():
     job_payload = {
         "experiment_0": {
             "instructions": [
-                ["rx", [0], [np.pi / 2]],
-                ["rz", [0], [np.pi]],
-                ["rx", [0], [np.pi / 2]],
+                ["rlx", [0], [np.pi / 2]],
+                ["rlz", [0], [np.pi]],
+                ["rlx", [0], [np.pi / 2]],
                 ["measure", [0], []],
                 ["measure", [1], []],
             ],
@@ -240,11 +240,11 @@ def test_blockade_instruction():
     job_payload = {
         "experiment_0": {
             "instructions": [
-                ["rx", [0], [np.pi / 2]],
-                ["rx", [1], [np.pi / 2]],
+                ["rlx", [0], [np.pi / 2]],
+                ["rlx", [1], [np.pi / 2]],
                 ["rydberg_block", [0, 1], [2 * np.pi]],
-                ["rx", [0], [np.pi / 2]],
-                ["rx", [1], [np.pi / 2]],
+                ["rlx", [0], [np.pi / 2]],
+                ["rlx", [1], [np.pi / 2]],
                 ["measure", [0], []],
                 ["measure", [1], []],
             ],
@@ -263,11 +263,11 @@ def test_blockade_instruction():
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
-def test_ufull_instruction():
+def test_rydberg_full_instruction():
     """
     Test that the RydbergFull  instruction is properly working.
     """
-    inst_list = ["ufull", [0, 1, 2, 3, 4], [0.7, 1, 3]]
+    inst_list = ["rydberg_full", [0, 1, 2, 3, 4], [0.7, 1, 3]]
     gate_dict = gate_dict_from_list(inst_list)
     assert gate_dict == {
         "name": inst_list[0],
@@ -278,26 +278,26 @@ def test_ufull_instruction():
 
     # test that the name is nicely fixed
     with pytest.raises(ValidationError):
-        poor_inst_list = ["ufulll", [0, 1, 2, 3, 4], [0.7, 1, 3]]
+        poor_inst_list = ["rydberg_fulll", [0, 1, 2, 3, 4], [0.7, 1, 3]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         RydbergFullInstruction(**gate_dict)
 
     # test that we cannot give too few wires
     with pytest.raises(ValidationError):
-        poor_inst_list = ["ufull", [0], [0.7, 1, 3]]
+        poor_inst_list = ["rydberg_full", [0], [0.7, 1, 3]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         RydbergFullInstruction(**gate_dict)
 
     # make sure that the wires cannot be above the limit
     with pytest.raises(ValidationError):
-        poor_inst_list = ["ufull", [0, 1, 2, 3, 7], [0.7, 1, 3e7]]
+        poor_inst_list = ["rydberg_full", [0, 1, 2, 3, 7], [0.7, 1, 3e7]]
         gate_dict = gate_dict_from_list(poor_inst_list)
         RydbergFullInstruction(**gate_dict)
 
     inst_config = {
-        "name": "ufull",
+        "name": "rydberg_full",
         "parameters": ["omega, delta, phi"],
-        "qasm_def": "gate ufull(omega, delta, phi) {}",
+        "qasm_def": "gate rydberg_full(omega, delta, phi) {}",
         "coupling_map": [[0, 1, 2, 3, 4]],
         "description": "Apply the Rydberg and Rabi coupling over the whole array.",
     }
@@ -307,7 +307,7 @@ def test_ufull_instruction():
     job_payload = {
         "experiment_0": {
             "instructions": [
-                ["ufull", [0, 1], [np.pi, 0, 0]],
+                ["rydberg_full", [0, 1], [np.pi, 0, 0]],
                 ["measure", [0], []],
                 ["measure", [1], []],
             ],
@@ -335,7 +335,7 @@ def test_z_gate():
     job_payload = {
         "experiment_0": {
             "instructions": [
-                ["rz", [0], [0.7]],
+                ["rlz", [0], [0.7]],
                 ["measure", [0], []],
             ],
             "num_wires": 1,
@@ -343,7 +343,7 @@ def test_z_gate():
         },
         "experiment_1": {
             "instructions": [
-                ["rz", [0], [0.7]],
+                ["rlz", [0], [0.7]],
                 ["measure", [0], []],
             ],
             "num_wires": 1,
@@ -360,13 +360,13 @@ def test_z_gate():
 
     # test the config
     inst_config = {
-        "name": "rz",
+        "name": "rlz",
         "parameters": ["delta"],
-        "qasm_def": "gate rz(delta) {}",
+        "qasm_def": "gate rlz(delta) {}",
         "coupling_map": [[0], [1], [2], [3], [4]],
-        "description": "Evolution under the RZ gate",
+        "description": "Evolution under the Rlz gate",
     }
-    assert inst_config == RZInstruction.config_dict()
+    assert inst_config == RlzInstruction.config_dict()
 
 
 def test_barrier_gate():
@@ -433,22 +433,22 @@ def test_spooler_config():
     mq_config_dict = {
         "name": "alqor_rydberg_simulator",
         "description": "A chain of qubits realized through Rydberg atoms.",
-        "version": "0.0.2",
+        "version": "0.0.3",
         "cold_atom_type": "spin",
         "gates": [
             {
                 "coupling_map": [[0], [1], [2], [3], [4]],
-                "description": "Evolution under RX",
-                "name": "rx",
+                "description": "Evolution under Rlx",
+                "name": "rlx",
                 "parameters": ["omega"],
-                "qasm_def": "gate rx(omega) {}",
+                "qasm_def": "gate rlx(omega) {}",
             },
             {
                 "coupling_map": [[0], [1], [2], [3], [4]],
-                "description": "Evolution under the RZ gate",
-                "name": "rz",
+                "description": "Evolution under the Rlz gate",
+                "name": "rlz",
                 "parameters": ["delta"],
-                "qasm_def": "gate rz(delta) {}",
+                "qasm_def": "gate rlz(delta) {}",
             },
             {
                 "coupling_map": [[0, 1, 2, 3, 4]],
@@ -461,19 +461,19 @@ def test_spooler_config():
                 "coupling_map": [[0, 1, 2, 3, 4]],
                 "description": "Apply the Rydberg and Rabi coupling over the whole "
                 "array.",
-                "name": "ufull",
+                "name": "rydberg_full",
                 "parameters": ["omega, delta, phi"],
-                "qasm_def": "gate ufull(omega, delta, phi) {}",
+                "qasm_def": "gate rydberg_full(omega, delta, phi) {}",
             },
         ],
         "max_experiments": 1000,
         "max_shots": 1e6,
         "simulator": True,
         "supported_instructions": [
-            "rx",
-            "rz",
+            "rlx",
+            "rlz",
             "rydberg_block",
-            "ufull",
+            "rydberg_full",
             "barrier",
             "measure",
         ],
@@ -495,7 +495,7 @@ def test_number_experiments():
     job_payload = {
         "experiment_0": {
             "instructions": [
-                ["rx", [0], [np.pi]],
+                ["rlx", [0], [np.pi]],
                 ["rydberg_block", [0, 1], [np.pi / 2]],
                 ["measure", [0], []],
                 ["measure", [1], []],
@@ -512,7 +512,7 @@ def test_number_experiments():
     assert len(shots_array) > 0, "shots_array got messed up"
     inst_dict = {
         "instructions": [
-            ["rx", [0], [np.pi]],
+            ["rlx", [0], [np.pi]],
             ["rydberg_block", [0, 1], [np.pi / 2]],
             ["measure", [0], []],
             ["measure", [1], []],
