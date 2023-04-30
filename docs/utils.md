@@ -9,9 +9,9 @@ This is the module that contains all the basic logic to read the json files that
 
 Below you can find the API of the `utils`.
 
-## Drpbx
+## Storage Providers
 
-::: utils.drpbx
+::: utils.storage_providers
     handler: python 
     options:
       show_source: true
