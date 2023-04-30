@@ -6,8 +6,8 @@ from typing import Tuple, Literal, List, Optional
 
 from pydantic import conint, BaseModel, ValidationError, conlist, confloat
 import numpy as np
-from scipy.sparse.linalg import expm_multiply  # type: ignore
-from scipy.sparse import diags, csc_matrix  # type: ignore
+from scipy.sparse.linalg import expm_multiply
+from scipy.sparse import diags, csc_matrix
 
 from utils.schemes import (
     ExperimentDict,

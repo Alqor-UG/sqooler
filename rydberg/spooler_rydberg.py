@@ -8,9 +8,9 @@ from pydantic import conint, BaseModel, ValidationError, conlist, confloat
 
 
 import numpy as np
-from scipy.sparse import identity, diags, csc_matrix  # type: ignore
-from scipy import sparse  # type: ignore
-from scipy.sparse.linalg import expm_multiply  # type: ignore
+from scipy.sparse import identity, diags, csc_matrix
+from scipy import sparse
+from scipy.sparse.linalg import expm_multiply
 
 from utils.schemes import (
     ExperimentDict,
