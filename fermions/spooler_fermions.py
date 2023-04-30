@@ -5,7 +5,7 @@ from typing import Tuple, Literal, List, Optional
 from pydantic import BaseModel, conint, ValidationError, conlist, confloat
 
 import numpy as np
-from scipy.sparse.linalg import expm  # type: ignore
+from scipy.sparse.linalg import expm
 
 
 from utils.schemes import (

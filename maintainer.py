@@ -2,26 +2,29 @@
 The module that contains all the necessary logic for processing jobs in the database queue.
 """
 import importlib
-import json
 import time
 import os
 import shutil
 import traceback
 import regex as re
 
-from utils import drpbx
+from utils.storage_providers import DropboxProvider
 
 from singlequdit.spooler_singlequdit import sq_spooler
 from multiqudit.spooler_multiqudit import mq_spooler
 from fermions.spooler_fermions import f_spooler
 from rydberg.spooler_rydberg import ryd_spooler
 
+# configure the backends
 backends = {
     "singlequdit": sq_spooler,
     "multiqudit": mq_spooler,
     "fermions": f_spooler,
     "rydberg": ryd_spooler,
 }
+
+# configure the storage provider
+storage_provider = DropboxProvider()
 
 
 def new_files_exist() -> bool:
@@ -52,14 +55,13 @@ def update_backends() -> None:
     """
     for requested_backend, spooler in backends.items():
         # the path and name
-        dbx_path = "/Backend_files/Config/" + requested_backend + "/config.json"
+        dbx_path = "Backend_files/Config/" + requested_backend
 
         # the content
         backend_config_dict = spooler.get_configuration()
 
-        result_binary = json.dumps(backend_config_dict).encode("utf-8")
-        # upload the content
-        drpbx.upload(result_binary, dbx_path)
+        # upload the content through the storage provider
+        storage_provider.upload(backend_config_dict, dbx_path, "config")
 
 
 def main() -> None:
@@ -82,11 +84,11 @@ def main() -> None:
         requested_backend = backends_list[0]
         backends_list.append(backends_list.pop(0))
         # let us first see if jobs are waiting
-        job_dict = drpbx.get_next_job_in_queue(requested_backend)
+        job_dict = storage_provider.get_next_job_in_queue(requested_backend)
         if job_dict["job_json_path"] == "None":
             continue
-        job_json_dict = json.loads(
-            drpbx.get_file_content(dbx_path=job_dict["job_json_path"])
+        job_json_dict = storage_provider.get_file_content(
+            storage_path=job_dict["job_json_path"], job_id=f"job-{job_dict['job_id']}"
         )
 
         requested_spooler = importlib.import_module(
@@ -119,7 +121,9 @@ def main() -> None:
             status_msg_dict["status"] = "ERROR"
             status_msg_dict["detail"] += "; " + slimmed_tb
             status_msg_dict["error_message"] += "; " + slimmed_tb
-        drpbx.update_in_database(result_dict, status_msg_dict, job_dict["job_id"])
+        storage_provider.update_in_database(
+            result_dict, status_msg_dict, job_dict["job_id"]
+        )
 
 
 if __name__ == "__main__":
