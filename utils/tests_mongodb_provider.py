@@ -17,20 +17,20 @@ class TestMongodbProvider:
         """
         storage_provider = MongodbProvider()
         # upload a file and get it back
-        file_id = uuid.uuid4().hex
         test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test_folder"
-        job_id = f"world-{file_id}"
+        storage_path = "test/subcollection"
+
+        job_id = uuid.uuid4().hex[:24]
         storage_provider.upload(test_content, storage_path, job_id)
         test_result = storage_provider.get_file_content(storage_path, job_id)
 
-        assert test_content, test_result
+        assert test_content["experiment_0"] == test_result["experiment_0"]
 
         # move it and get it back
-        second_path = "test_folder_2"
+        second_path = "test/subcollection_2"
         storage_provider.move_file(storage_path, second_path, job_id)
         test_result = storage_provider.get_file_content(second_path, job_id)
-        assert test_content == test_result
+        assert test_content["experiment_0"] == test_result["experiment_0"]
 
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
@@ -49,13 +49,17 @@ class TestMongodbProvider:
         dummy_dict["version"] = "0.0.1"
 
         backend_name = f"dummy_{dummy_id}"
-        dummy_path = f"Backend_files/Config/{backend_name}"
-        storage_provider.upload(dummy_dict, dummy_path, job_id="config")
+        storage_provider.upload_config(dummy_dict, backend_name)
 
         # can we get the backend in the list ?
 
-        backend_dict = storage_provider.get_file_content(dummy_path, "config")
-        assert backend_dict["name"] == dummy_dict["name"]
+        # get the database on which we work
+        database = storage_provider.client["backends"]
+        configs = database["configs"]
+        document_to_find = {"display_name": backend_name}
+
+        result_found = configs.find_one(document_to_find)
+        assert result_found["name"] == dummy_dict["name"]
 
     def test_get_next_job_in_queue(self):
         """

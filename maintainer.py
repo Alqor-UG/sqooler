@@ -8,7 +8,9 @@ import shutil
 import traceback
 import regex as re
 
-from utils.storage_providers import DropboxProvider
+# import the storage provider that you would like to use
+# currently we have dropbox and mongodb
+from utils.storage_providers import MongodbProvider
 
 from singlequdit.spooler_singlequdit import sq_spooler
 from multiqudit.spooler_multiqudit import mq_spooler
@@ -24,7 +26,7 @@ backends = {
 }
 
 # configure the storage provider
-storage_provider = DropboxProvider()
+storage_provider = MongodbProvider()
 
 
 def new_files_exist() -> bool:

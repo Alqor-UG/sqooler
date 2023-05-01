@@ -3,7 +3,7 @@ The module that contains all the necessary logic for communication with the exte
 storage for the jobs. It creates an abstract API layer for the storage providers.
 """
 import sys
-
+import uuid
 from abc import ABC, abstractmethod
 import json
 
@@ -373,6 +373,7 @@ class DropboxProvider(StorageProvider):
             job_dict["job_json_path"] = "Backend_files/Running_Jobs"
         return job_dict
 
+
 class MongodbProvider(StorageProvider):
     """
     The access to the mongodb
@@ -486,7 +487,23 @@ class MongodbProvider(StorageProvider):
         document_to_find = {"_id": ObjectId(job_id)}
         collection.delete_one(document_to_find)
 
-    
+    def upload_config(self, config_dict: dict, backend_name: str) -> None:
+        """
+        The function that uploads the spooler configuration to the storage.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            backend_name (str): The name of the backend
+
+        Returns:
+            None
+        """
+        config_path = "backends/configs"
+
+        config_dict["display_name"] = backend_name
+        config_id = uuid.uuid4().hex[:24]
+        self.upload(config_dict, config_path, config_id)
+
     def update_in_database(
         self, result_dict: dict, status_msg_dict: dict, job_id: str
     ) -> None:
@@ -502,7 +519,6 @@ class MongodbProvider(StorageProvider):
             None
         """
 
-    
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
         Get a list of files
@@ -514,7 +530,6 @@ class MongodbProvider(StorageProvider):
             A list of files that was found.
         """
 
-   
     def get_next_job_in_queue(self, backend_name: str) -> dict:
         """
         A function that obtains the next job in the queue.
