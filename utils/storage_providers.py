@@ -44,6 +44,18 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def upload_config(self, backend_name: str) -> dict:
+        """
+        A function that obtains the next job in the queue.
+
+        Args:
+            backend_name (str): The name of the backend
+
+        Returns:
+            the path towards the job
+        """
+
+    @abstractmethod
     def update_in_database(
         self, result_dict: dict, status_msg_dict: dict, job_id: str
     ) -> None:
@@ -83,6 +95,7 @@ class StorageProvider(ABC):
             the path towards the job
         """
 
+    
 
 class DropboxProvider(StorageProvider):
     """
