@@ -49,11 +49,11 @@ class TestDropboxProvider:
         dummy_dict["version"] = "0.0.1"
 
         backend_name = f"dummy_{dummy_id}"
-        dummy_path = f"Backend_files/Config/{backend_name}"
-        storage_provider.upload(dummy_dict, dummy_path, job_id="config")
 
+        storage_provider.upload_config(dummy_dict, backend_name)
+        
         # can we get the backend in the list ?
-
+        dummy_path = f"Backend_files/Config/{backend_name}"
         backend_dict = storage_provider.get_file_content(dummy_path, "config")
         assert backend_dict["name"] == dummy_dict["name"]
 

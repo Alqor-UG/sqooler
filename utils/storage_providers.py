@@ -44,15 +44,16 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def upload_config(self, backend_name: str) -> dict:
+    def upload_config(self, config_dict: dict, backend_name: str) -> None:
         """
-        A function that obtains the next job in the queue.
+        The function that uploads the spooler configuration to the storage.
 
         Args:
+            config_dict: The dictionary containing the configuration
             backend_name (str): The name of the backend
 
         Returns:
-            the path towards the job
+            None
         """
 
     @abstractmethod
@@ -223,6 +224,24 @@ class DropboxProvider(StorageProvider):
 
             full_path = "/" + storage_path + "/" + job_id + ".json"
             _ = dbx.files_delete(path=full_path)
+
+    def upload_config(self, config_dict: dict, backend_name: str) -> None:
+        """
+        The function that uploads the spooler configuration to the storage.
+
+        All the configurations are stored in the Backend_files/Config folder.
+        For each backend there is a separate folder in which the configuration is stored as a json file.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            backend_name (str): The name of the backend
+
+        Returns:
+            None
+        """
+        
+        config_path = "Backend_files/Config/" + backend_name
+        self.upload(config_dict, config_path, "config")
 
     def update_in_database(
         self, result_dict: dict, status_msg_dict: dict, job_id: str
