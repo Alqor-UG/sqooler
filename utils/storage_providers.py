@@ -11,6 +11,11 @@ import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
 
+# necessary for the mongodb provider
+from pymongo.mongo_client import MongoClient
+from bson.objectid import ObjectId
+
+# get the environment variables
 from decouple import config
 
 
@@ -336,3 +341,156 @@ class DropboxProvider(StorageProvider):
             self.move_file(job_json_dir, "Backend_files/Running_Jobs", job_json_name)
             job_dict["job_json_path"] = "Backend_files/Running_Jobs"
         return job_dict
+
+class MongodbProvider(StorageProvider):
+    """
+    The access to the mongodb
+    """
+
+    def __init__(self) -> None:
+        """
+        Set up the neccessary keys and create the client through which all the connections will run.
+        """
+        mongodb_username = config("MONGODB_USERNAME")
+        mongodb_password = config("MONGODB_PASSWORD")
+        mongodb_database_url = config("MONGODB_DATABASE_URL")
+
+        uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}@{mongodb_database_url}/?retryWrites=true&w=majority"
+        # Create a new client and connect to the server
+        self.client: MongoClient = MongoClient(uri)
+
+        # Send a ping to confirm a successful connection
+        self.client.admin.command("ping")
+
+    def upload(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+        """
+        Upload the file to the storage
+
+        content_dict: the content that should be uploaded onto the mongodb base
+        storage_path: the access path towards the mongodb collection
+        job_id: the id of the file we are about to create
+        """
+        storage_splitted = storage_path.split("/")
+
+        # get the database on which we work
+        database = self.client[storage_splitted[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_splitted[1:])
+        collection = database[collection_name]
+
+        content_dict["_id"] = ObjectId(job_id)
+        collection.insert_one(content_dict)
+
+    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the file content from the storage
+
+        storage_path: the path towards the file, excluding the filename / id
+        job_id: the id of the file we are about to look up
+        """
+        document_to_find = {"_id": ObjectId(job_id)}
+
+        # get the database on which we work
+        database = self.client[storage_path.split("/")[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_path.split("/")[1:])
+        collection = database[collection_name]
+
+        result_found = collection.find_one(document_to_find)
+
+        if not result_found:
+            return {}
+        return result_found
+
+    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+        """
+        Move the file from start_path to final_path
+
+        start_path: the path where the file is currently stored, but excluding the file name
+        final_path: the path where the file should be stored, but excluding the file name
+        job_id: the name of the file. Is a json file
+
+        Returns:
+            None
+        """
+        # get the database on which we work
+        database = self.client[start_path.split("/")[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(start_path.split("/")[1:])
+        collection = database[collection_name]
+
+        document_to_find = {"_id": ObjectId(job_id)}
+        result_found = collection.find_one(document_to_find)
+
+        # delete the old file
+        collection.delete_one(document_to_find)
+
+        # add the document to the new collection
+        database = self.client[final_path.split("/")[0]]
+        collection_name = ".".join(final_path.split("/")[1:])
+        collection = database[collection_name]
+        collection.insert_one(result_found)
+
+    def delete_file(self, storage_path: str, job_id: str) -> None:
+        """
+        Remove the file from the mongodb database
+
+        Args:
+            storage_path: the path where the file is currently stored, but excluding the file name
+            job_id: the name of the file
+
+        Returns:
+            None
+        """
+        # get the database on which we work
+        database = self.client[storage_path.split("/")[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_path.split("/")[1:])
+        collection = database[collection_name]
+
+        document_to_find = {"_id": ObjectId(job_id)}
+        collection.delete_one(document_to_find)
+
+    
+    def update_in_database(
+        self, result_dict: dict, status_msg_dict: dict, job_id: str
+    ) -> None:
+        """
+        Upload the status and result to the `StorageProvider`.
+
+        Args:
+            result_dict: the dictionary containing the result of the job
+            status_msg_dict: the dictionary containing the status message of the job
+            job_id: the name of the job
+
+        Returns:
+            None
+        """
+
+    
+    def get_file_queue(self, storage_path: str) -> list[str]:
+        """
+        Get a list of files
+
+        Args:
+            storage_path: Where are we looking for the files.
+
+        Returns:
+            A list of files that was found.
+        """
+
+   
+    def get_next_job_in_queue(self, backend_name: str) -> dict:
+        """
+        A function that obtains the next job in the queue.
+
+        Args:
+            backend_name (str): The name of the backend
+
+        Returns:
+            the path towards the job
+        """
