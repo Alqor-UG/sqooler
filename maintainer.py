@@ -54,14 +54,11 @@ def update_backends() -> None:
     Update the backends on the storage.
     """
     for requested_backend, spooler in backends.items():
-        # the path and name
-        dbx_path = "Backend_files/Config/" + requested_backend
-
         # the content
         backend_config_dict = spooler.get_configuration()
 
         # upload the content through the storage provider
-        storage_provider.upload(backend_config_dict, dbx_path, "config")
+        storage_provider.upload_config(backend_config_dict, requested_backend)
 
 
 def main() -> None:
