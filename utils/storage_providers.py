@@ -96,7 +96,6 @@ class StorageProvider(ABC):
             the path towards the job
         """
 
-    
 
 class DropboxProvider(StorageProvider):
     """
@@ -239,7 +238,7 @@ class DropboxProvider(StorageProvider):
         Returns:
             None
         """
-        
+
         config_path = "Backend_files/Config/" + backend_name
         self.upload(config_dict, config_path, "config")
 
