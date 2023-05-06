@@ -86,8 +86,8 @@ def main() -> None:
         job_dict = storage_provider.get_next_job_in_queue(requested_backend)
         if job_dict["job_json_path"] == "None":
             continue
-        job_json_dict = storage_provider.get_file_content(
-            storage_path=job_dict["job_json_path"], job_id=f"job-{job_dict['job_id']}"
+        job_json_dict = storage_provider.get_job_content(
+            storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
 
         requested_spooler = importlib.import_module(

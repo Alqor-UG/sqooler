@@ -37,6 +37,19 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the content of the job from the storage. This is a wrapper around get_file_content
+        and and handles the different ways of identifiying the job.
+
+        storage_path: the path towards the file, excluding the filename / id
+        job_id: the id of the file we are about to look up
+
+        Returns:
+            The content of the job
+        """
+
+    @abstractmethod
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from `start_path` to `final_path`
@@ -172,6 +185,19 @@ class DropboxProvider(StorageProvider):
             _, res = dbx.files_download(path=full_path)
             data = res.content
         return json.loads(data.decode("utf-8"))
+
+    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the content of the job from the storage. This is a wrapper around get_file_content
+        and and handles the different ways of identifiying the job.
+
+        storage_path: the path towards the file, excluding the filename / id
+        job_id: the id of the file we are about to look up
+
+        Returns:
+            The content of the job
+        """
+        return self.get_file_content(storage_path=storage_path, job_id=f"job-{job_id}")
 
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
@@ -429,6 +455,19 @@ class MongodbProvider(StorageProvider):
             return {}
         return result_found
 
+    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the content of the job from the storage. This is a wrapper around get_file_content
+        and and handles the different ways of identifiying the job.
+
+        storage_path: the path towards the file, excluding the filename / id
+        job_id: the id of the file we are about to look up
+
+        Returns:
+
+        """
+        return self.get_file_content(storage_path=storage_path, job_id=job_id)
+
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
@@ -498,23 +537,50 @@ class MongodbProvider(StorageProvider):
         self.upload(config_dict, config_path, config_id)
 
     def update_in_database(
-        self, result_dict: dict, status_msg_dict: dict, job_id: str
+        self, result_dict: dict, status_msg_dict: dict, job_id: str, backend_name: str
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
+
+        The function checks if the reported status of the job has changed to DONE. If so, it will create a
+        result json file and move the job json file to the finished folder. It will also update the
+        status json file.
 
         Args:
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
+            backend_name: the name of the backend
 
         Returns:
             None
         """
 
+        job_json_start_dir = "jobs/running"
+        # check if the job is done or had an error
+        if status_msg_dict["status"] == "DONE":
+            # let us create the result json file
+            result_json_dir = "results/" + backend_name
+            self.upload(result_dict, result_json_dir, job_id)
+
+            # now move the job out of the running jobs into the finished jobs
+            job_finished_json_dir = "jobs/finished/" + backend_name
+            self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
+
+        elif status_msg_dict["status"] == "ERROR":
+            # because there was an error, we move the job to the deleted jobs
+            deleted_json_dir = "jobs/deleted"
+            self.move_file(job_json_start_dir, deleted_json_dir, job_id)
+
+        # TODO: most likely we should raise an error if the status of the job is not DONE or ERROR
+
+        # and create the status json file
+        status_json_dir = "status/" + backend_name
+        self.upload(status_msg_dict, status_json_dir, job_id)
+
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
-        Get a list of files
+        Get a list of documents in the collection of all the queued jobs.
 
         Args:
             storage_path: Where are we looking for the files.
@@ -522,10 +588,27 @@ class MongodbProvider(StorageProvider):
         Returns:
             A list of files that was found.
         """
+        # strip trailing and leading slashes from the paths
+        storage_path = storage_path.strip("/")
+
+        # get the database on which we work
+        database = self.client[storage_path.split("/")[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_path.split("/")[1:])
+        collection = database[collection_name]
+
+        # now get the id of all the documents in the collection
+        results = collection.find({}, {"_id": 1})
+        file_list = []
+        for result in results:
+            file_list.append(str(result["_id"]))
+        return file_list
 
     def get_next_job_in_queue(self, backend_name: str) -> dict:
         """
-        A function that obtains the next job in the queue.
+        A function that obtains the next job in the queue. It looks in the queued folder and moves the
+        first job to the running folder.
 
         Args:
             backend_name (str): The name of the backend
@@ -533,3 +616,16 @@ class MongodbProvider(StorageProvider):
         Returns:
             the path towards the job
         """
+
+        queue_dir = "jobs/queued/" + backend_name
+        job_dict = {"job_id": 0, "job_json_path": "None"}
+        job_list = self.get_file_queue(queue_dir)
+        # if there is a job, we should move it
+        if job_list:
+            job_id = job_list[0]
+            job_dict["job_id"] = job_id
+
+            # and move the file into the right directory
+            self.move_file(queue_dir, "jobs/running", job_id)
+            job_dict["job_json_path"] = "jobs/running"
+        return job_dict

@@ -32,6 +32,10 @@ class TestMongodbProvider:
         test_result = storage_provider.get_file_content(second_path, job_id)
         assert test_content["experiment_0"] == test_result["experiment_0"]
 
+        # test that we can also get the job from the database
+        test_result = storage_provider.get_job_content(second_path, job_id)
+        assert test_content["experiment_0"] == test_result["experiment_0"]
+
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
@@ -71,29 +75,18 @@ class TestMongodbProvider:
         dummy_id = uuid.uuid4().hex[:5]
         backend_name = f"dummy_{dummy_id}"
 
-        username = "test_user"
-        job_id = (
-            (datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
-            + "-"
-            + backend_name
-            + "-"
-            + username
-            + "-"
-            + (uuid.uuid4().hex)[:5]
-        )
-
         # first we have to upload a dummy job
+        job_id = (uuid.uuid4().hex)[:24]
         job_dict = {"job_id": job_id, "job_json_path": "None"}
-        job_name = "job-" + job_id
-        queue_path = f"Backend_files/Queued_Jobs/{backend_name}"
+        queue_path = "jobs/queued/" + backend_name
         job_dict["job_json_path"] = queue_path
 
-        storage_provider.upload(job_dict, queue_path, job_id=job_name)
+        storage_provider.upload(job_dict, queue_path, job_id=job_id)
 
         # test if the file_queue is working
 
         job_list = storage_provider.get_file_queue(queue_path)
-        print(job_list)
+        assert len(job_list)
 
         # the last step is to get the next job and see if this nicely worked out
         next_job = storage_provider.get_next_job_in_queue(backend_name)
@@ -113,5 +106,20 @@ class TestMongodbProvider:
         }
         status_msg_dict = {"status": "DONE"}
         storage_provider.update_in_database(
-            result_dict, status_msg_dict, next_job["job_id"]
+            result_dict, status_msg_dict, next_job["job_id"], backend_name
         )
+
+        # we now need to check if the job is in the finished jobs folder
+        job_finished_json_dir = "jobs/finished/" + backend_name
+
+        finshed_job = storage_provider.get_file_content(job_finished_json_dir, job_id)
+        assert finshed_job["job_id"] == job_id
+
+        # we check if the status was updated
+        status_json_dir = "status/" + backend_name
+        status_dict = storage_provider.get_file_content(status_json_dir, job_id)
+        assert status_dict["status"] == "DONE"
+
+        # clean up the mess
+        storage_provider.delete_file(job_finished_json_dir, job_id)
+        storage_provider.delete_file(status_json_dir, job_id)

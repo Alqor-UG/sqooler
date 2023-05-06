@@ -17,23 +17,27 @@ class TestDropboxProvider:
         """
         storage_provider = DropboxProvider()
         # upload a file and get it back
-        file_id = uuid.uuid4().hex
+        job_id = uuid.uuid4().hex
         test_content = {"experiment_0": "Nothing happened here."}
         storage_path = "test_folder"
-        job_id = f"world-{file_id}"
-        storage_provider.upload(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
+        file_id = f"job-{job_id}"
+        storage_provider.upload(test_content, storage_path, file_id)
+        test_result = storage_provider.get_file_content(storage_path, file_id)
 
         assert test_content, test_result
 
         # move it and get it back
         second_path = "test_folder_2"
-        storage_provider.move_file(storage_path, second_path, job_id)
-        test_result = storage_provider.get_file_content(second_path, job_id)
+        storage_provider.move_file(storage_path, second_path, file_id)
+        test_result = storage_provider.get_file_content(second_path, file_id)
         assert test_content == test_result
 
+        # test that we can also get the job from the database
+        test_result = storage_provider.get_job_content(second_path, job_id)
+        assert test_content["experiment_0"] == test_result["experiment_0"]
+
         # clean up our mess
-        storage_provider.delete_file(second_path, job_id)
+        storage_provider.delete_file(second_path, file_id)
 
     def test_upload_configs(self):
         """
