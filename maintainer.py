@@ -121,7 +121,7 @@ def main() -> None:
             status_msg_dict["detail"] += "; " + slimmed_tb
             status_msg_dict["error_message"] += "; " + slimmed_tb
         storage_provider.update_in_database(
-            result_dict, status_msg_dict, job_dict["job_id"]
+            result_dict, status_msg_dict, job_dict["job_id"], requested_backend
         )
 
 
