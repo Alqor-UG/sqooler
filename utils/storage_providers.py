@@ -58,7 +58,7 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def update_in_database(
-        self, result_dict: dict, status_msg_dict: dict, job_id: str
+        self, result_dict: dict, status_msg_dict: dict, job_id: str, backend_name: str
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -67,6 +67,7 @@ class StorageProvider(ABC):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
+            backend_name: the name of the backend
 
         Returns:
             None
@@ -243,7 +244,7 @@ class DropboxProvider(StorageProvider):
         self.upload(config_dict, config_path, "config")
 
     def update_in_database(
-        self, result_dict: dict, status_msg_dict: dict, job_id: str
+        self, result_dict: dict, status_msg_dict: dict, job_id: str, backend_name: str
     ) -> None:
         """
         Upload the status and result to the dropbox.
@@ -252,20 +253,16 @@ class DropboxProvider(StorageProvider):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
+            backend_name: the name of the backend
 
         Returns:
             None
         """
         # this should become part of the json file instead of its name in the future
         extracted_username = job_id.split("-")[2]
-        requested_backend = job_id.split("-")[1]
 
         status_json_dir = (
-            "/Backend_files/Status/"
-            + requested_backend
-            + "/"
-            + extracted_username
-            + "/"
+            "/Backend_files/Status/" + backend_name + "/" + extracted_username + "/"
         )
         status_json_name = "status-" + job_id
 
@@ -275,11 +272,7 @@ class DropboxProvider(StorageProvider):
         if status_msg_dict["status"] == "DONE":
             # let us create the result json file
             result_json_dir = (
-                "/Backend_files/Result/"
-                + requested_backend
-                + "/"
-                + extracted_username
-                + "/"
+                "/Backend_files/Result/" + backend_name + "/" + extracted_username + "/"
             )
             result_json_name = "result-" + job_id
             self.upload(result_dict, result_json_dir, result_json_name)
@@ -287,7 +280,7 @@ class DropboxProvider(StorageProvider):
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = (
                 "/Backend_files/Finished_Jobs/"
-                + requested_backend
+                + backend_name
                 + "/"
                 + extracted_username
                 + "/"
