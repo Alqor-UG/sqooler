@@ -109,5 +109,25 @@ class TestDropboxProvider:
         }
         status_msg_dict = {"status": "DONE"}
         storage_provider.update_in_database(
-            result_dict, status_msg_dict, next_job["job_id"]
+            result_dict, status_msg_dict, next_job["job_id"], backend_name
         )
+
+        # we now need to check if the job is in the finished jobs folder
+        job_finished_json_dir = (
+            "/Backend_files/Finished_Jobs/" + backend_name + "/" + username + "/"
+        )
+
+        finshed_job = storage_provider.get_file_content(job_finished_json_dir, job_name)
+        assert finshed_job["job_id"] == job_id
+
+        # we check if the status was updated
+        status_json_dir = "/Backend_files/Status/" + backend_name + "/" + username + "/"
+        status_json_name = "status-" + job_id
+        status_dict = storage_provider.get_file_content(
+            status_json_dir, status_json_name
+        )
+        assert status_dict["status"] == "DONE"
+
+        # clean up the mess
+        storage_provider.delete_file(job_finished_json_dir, job_name)
+        storage_provider.delete_file(status_json_dir, status_json_name)
