@@ -36,6 +36,13 @@ class TestMongodbProvider:
         test_result = storage_provider.get_job_content(second_path, job_id)
         assert test_content["experiment_0"] == test_result["experiment_0"]
 
+        # test that we can update the file properly
+
+        new_content = {"experiment_0": "What happened here."}
+        storage_provider.update_file(new_content, second_path, job_id)
+        test_result = storage_provider.get_job_content(second_path, job_id)
+        assert new_content["experiment_0"] == test_result["experiment_0"]
+
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 

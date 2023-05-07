@@ -36,7 +36,6 @@ class StorageProvider(ABC):
         Get the file content from the storage
         """
 
-    @abstractmethod
     def get_job_content(self, storage_path: str, job_id: str) -> dict:
         """
         Get the content of the job from the storage. This is a wrapper around get_file_content
@@ -47,6 +46,20 @@ class StorageProvider(ABC):
 
         Returns:
             The content of the job
+        """
+
+    @abstractmethod
+    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+        """
+        Update the file content.
+
+        Args:
+            content_dict: The dictionary containing the new content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
+
+        Returns:
+            None
         """
 
     @abstractmethod
@@ -198,6 +211,39 @@ class DropboxProvider(StorageProvider):
             The content of the job
         """
         return self.get_file_content(storage_path=storage_path, job_id=f"job-{job_id}")
+
+    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+        """
+        Update the file content.
+
+        Args:
+            content_dict: The dictionary containing the new content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
+
+        Returns:
+            None
+        """
+        # create the appropriate string for the dropbox API
+        dump_str = json.dumps(content_dict)
+
+        # strip trailing and leading slashes from the storage_path
+        storage_path = storage_path.strip("/")
+
+        # create the full path
+        full_path = "/" + storage_path + "/" + job_id + ".json"
+
+        # Create an instance of a Dropbox class, which can make requests to the API.
+        with dropbox.Dropbox(
+            app_key=self.app_key,
+            app_secret=self.app_secret,
+            oauth2_refresh_token=self.refresh_token,
+        ) as dbx:
+            # Check that the access token is valid
+            dbx.users_get_current_account()
+            dbx.files_upload(
+                dump_str.encode("utf-8"), full_path, mode=WriteMode("overwrite")
+            )
 
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
@@ -468,6 +514,30 @@ class MongodbProvider(StorageProvider):
         """
         return self.get_file_content(storage_path=storage_path, job_id=job_id)
 
+    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+        """
+        Update the file content.
+
+        Args:
+            content_dict: The dictionary containing the new content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
+
+        Returns:
+            None
+        """
+        # get the database on which we work
+        database = self.client[storage_path.split("/")[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_path.split("/")[1:])
+        collection = database[collection_name]
+
+        filter = {"_id": ObjectId(job_id)}
+
+        newvalues = {"$set": content_dict}
+        collection.update_one(filter, newvalues)
+
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
@@ -576,7 +646,7 @@ class MongodbProvider(StorageProvider):
 
         # and create the status json file
         status_json_dir = "status/" + backend_name
-        self.upload(status_msg_dict, status_json_dir, job_id)
+        self.update_file(status_msg_dict, status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
