@@ -7,6 +7,7 @@ import os
 import shutil
 import traceback
 import regex as re
+from pprint import pprint
 
 # import the storage provider that you would like to use
 # currently we have dropbox and mongodb
@@ -86,10 +87,11 @@ def main() -> None:
         job_dict = storage_provider.get_next_job_in_queue(requested_backend)
         if job_dict["job_json_path"] == "None":
             continue
+        print("Got a new job!")
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
-
+        pprint(job_json_dict)
         requested_spooler = importlib.import_module(
             f"{requested_backend}.spooler_" + requested_backend
         )

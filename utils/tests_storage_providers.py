@@ -111,6 +111,10 @@ class TestDropboxProvider:
             "header": {},
             "results": [],
         }
+        status_msg_dict = {"status": "INITIALIZING"}
+        # upload the status dict without other status.
+
+        # time to update everything
         status_msg_dict = {"status": "DONE"}
         storage_provider.update_in_database(
             result_dict, status_msg_dict, next_job["job_id"], backend_name

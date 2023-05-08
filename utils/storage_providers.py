@@ -512,7 +512,9 @@ class MongodbProvider(StorageProvider):
         Returns:
 
         """
-        return self.get_file_content(storage_path=storage_path, job_id=job_id)
+        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
+        job_dict.pop("_id")
+        return job_dict
 
     def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
@@ -536,6 +538,7 @@ class MongodbProvider(StorageProvider):
         filter = {"_id": ObjectId(job_id)}
 
         newvalues = {"$set": content_dict}
+        print("Starting the update within the function.")
         collection.update_one(filter, newvalues)
 
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
