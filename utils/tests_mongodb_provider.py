@@ -4,7 +4,6 @@ The tests for the storage provider using mongodb
 
 import uuid
 from .storage_providers import MongodbProvider
-from pprint import pprint
 
 
 class TestMongodbProvider:
@@ -105,7 +104,7 @@ class TestMongodbProvider:
         job_json_dict = storage_provider.get_job_content(
             storage_path=next_job["job_json_path"], job_id=next_job["job_id"]
         )
-        assert not "_id" in job_json_dict.keys()
+        assert "_id" not in job_json_dict.keys()
 
         # we now also need to test the update_in_database part of the storage provider
         result_dict = {
@@ -136,8 +135,7 @@ class TestMongodbProvider:
 
         # we check if the status was updated
         status_dict = storage_provider.get_file_content(status_json_dir, job_id)
-        pprint(status_dict)
-        # assert status_dict["status"] == "DONE"
+        assert status_dict["status"] == "DONE"
 
         # clean up the mess
         storage_provider.delete_file(job_finished_json_dir, job_id)

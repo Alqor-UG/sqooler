@@ -452,7 +452,8 @@ class MongodbProvider(StorageProvider):
         mongodb_password = config("MONGODB_PASSWORD")
         mongodb_database_url = config("MONGODB_DATABASE_URL")
 
-        uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}@{mongodb_database_url}/?retryWrites=true&w=majority"
+        uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}@{mongodb_database_url}"
+        uri = uri + "/?retryWrites=true&w=majority"
         # Create a new client and connect to the server
         self.client: MongoClient = MongoClient(uri)
 
@@ -535,11 +536,10 @@ class MongodbProvider(StorageProvider):
         collection_name = ".".join(storage_path.split("/")[1:])
         collection = database[collection_name]
 
-        filter = {"_id": ObjectId(job_id)}
+        filter_dict = {"_id": ObjectId(job_id)}
 
         newvalues = {"$set": content_dict}
-        print("Starting the update within the function.")
-        collection.update_one(filter, newvalues)
+        collection.update_one(filter_dict, newvalues)
 
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
@@ -615,8 +615,8 @@ class MongodbProvider(StorageProvider):
         """
         Upload the status and result to the `StorageProvider`.
 
-        The function checks if the reported status of the job has changed to DONE. If so, it will create a
-        result json file and move the job json file to the finished folder. It will also update the
+        The function checks if the reported status of the job has changed to DONE. If so, it will create
+        a result json file and move the job json file to the finished folder. It will also update the
         status json file.
 
         Args:
