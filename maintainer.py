@@ -7,8 +7,11 @@ import os
 import shutil
 import traceback
 import regex as re
+from pprint import pprint
 
-from utils.storage_providers import DropboxProvider
+# import the storage provider that you would like to use
+# currently we have dropbox and mongodb
+from utils.storage_providers import MongodbProvider
 
 from singlequdit.spooler_singlequdit import sq_spooler
 from multiqudit.spooler_multiqudit import mq_spooler
@@ -24,7 +27,7 @@ backends = {
 }
 
 # configure the storage provider
-storage_provider = DropboxProvider()
+storage_provider = MongodbProvider()
 
 
 def new_files_exist() -> bool:
@@ -84,10 +87,9 @@ def main() -> None:
         job_dict = storage_provider.get_next_job_in_queue(requested_backend)
         if job_dict["job_json_path"] == "None":
             continue
-        job_json_dict = storage_provider.get_file_content(
-            storage_path=job_dict["job_json_path"], job_id=f"job-{job_dict['job_id']}"
+        job_json_dict = storage_provider.get_job_content(
+            storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
-
         requested_spooler = importlib.import_module(
             f"{requested_backend}.spooler_" + requested_backend
         )
