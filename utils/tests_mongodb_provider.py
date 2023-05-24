@@ -51,7 +51,7 @@ class TestMongodbProvider:
         We would like to make sure that we can properly upload the configuration files
         that come from the spoolers.
         """
-        
+
         storage_provider = MongodbProvider()
         dummy_id = uuid.uuid4().hex[:5]
         dummy_dict: dict = {}

@@ -605,7 +605,7 @@ class MongodbProvider(StorageProvider):
             None
         """
         config_path = "backends/configs"
-        
+
         # first we have to check if the device already exists in the database
 
         document_to_find = {"display_name": backend_name}
@@ -619,7 +619,11 @@ class MongodbProvider(StorageProvider):
         result_found = collection.find_one(document_to_find)
         if result_found:
             # update the file
-            self.update_file(content_dict=config_dict, storage_path=config_path, job_id=result_found["_id"])
+            self.update_file(
+                content_dict=config_dict,
+                storage_path=config_path,
+                job_id=result_found["_id"],
+            )
             return
 
         # if the device does not exist, we have to create it
