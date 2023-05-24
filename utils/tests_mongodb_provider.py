@@ -51,6 +51,7 @@ class TestMongodbProvider:
         We would like to make sure that we can properly upload the configuration files
         that come from the spoolers.
         """
+
         storage_provider = MongodbProvider()
         dummy_id = uuid.uuid4().hex[:5]
         dummy_dict: dict = {}
@@ -63,7 +64,6 @@ class TestMongodbProvider:
         storage_provider.upload_config(dummy_dict, backend_name)
 
         # can we get the backend in the list ?
-
         # get the database on which we work
         database = storage_provider.client["backends"]
         configs = database["configs"]
@@ -71,6 +71,15 @@ class TestMongodbProvider:
 
         result_found = configs.find_one(document_to_find)
         assert result_found["name"] == dummy_dict["name"]
+
+        # make sure that the upload of the same backend does only update it.
+        dummy_dict["num_wires"] = 4
+        storage_provider.upload_config(dummy_dict, backend_name)
+        results_found = configs.find(document_to_find)
+        assert len(list(results_found)) == 1
+
+        # clean up our mess
+        configs.delete_one(document_to_find)
 
     def test_get_next_job_in_queue(self):
         """
@@ -117,6 +126,7 @@ class TestMongodbProvider:
             "header": {},
             "results": [],
         }
+
         # upload the status dict without other status.
         status_msg_dict = {"status": "INITIALIZING"}
         status_json_dir = "status/" + backend_name
@@ -140,3 +150,16 @@ class TestMongodbProvider:
         # clean up the mess
         storage_provider.delete_file(job_finished_json_dir, job_id)
         storage_provider.delete_file(status_json_dir, job_id)
+
+        # remove the unused collections in the jobs
+        database = storage_provider.client["jobs"]
+        collection = database[f"queued.{backend_name}"]
+        collection.drop()
+
+        collection = database[f"finished.{backend_name}"]
+        collection.drop()
+
+        # remove the unused collections in the status
+        database = storage_provider.client["status"]
+        collection = database[f"{backend_name}"]
+        collection.drop()
