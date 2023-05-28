@@ -29,7 +29,7 @@ requests==2.26.0
 scipy==1.9.3
 six==1.16.0
 toml==0.10.2
-types-regex==2022.10.31.3
+types-regex==2023.5.5.0
 urllib3==1.26.7
 wincertstore==0.2
 pylint==2.12.2
