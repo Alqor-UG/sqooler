@@ -1,0 +1,31 @@
+﻿fermions
+========
+
+.. automodule:: fermions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   fermions.spooler_fermions
+

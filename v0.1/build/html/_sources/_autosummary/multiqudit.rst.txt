@@ -1,0 +1,31 @@
+﻿multiqudit
+==========
+
+.. automodule:: multiqudit
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   multiqudit.spooler_multiqudit
+
