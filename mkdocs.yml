@@ -23,6 +23,10 @@ nav:
 repo_url: https://github.com/alqor-ug/sqooler
 edit_uri: edit/main/docs/
 
+extra:
+  version:
+    provider: mike
+    
 plugins:
 - search
 - mkdocstrings
