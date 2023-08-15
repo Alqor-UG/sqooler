@@ -7,16 +7,15 @@ import os
 import shutil
 import traceback
 import regex as re
-from pprint import pprint
 
 # import the storage provider that you would like to use
 # currently we have dropbox and mongodb
 from utils.storage_providers import MongodbProvider
 
-from singlequdit.spooler_singlequdit import sq_spooler
-from multiqudit.spooler_multiqudit import mq_spooler
-from fermions.spooler_fermions import f_spooler
-from rydberg.spooler_rydberg import ryd_spooler
+from singlequdit.config import spooler_object as sq_spooler
+from multiqudit.config import spooler_object as mq_spooler
+from fermions.config import spooler_object as f_spooler
+from rydberg.config import spooler_object as ryd_spooler
 
 # configure the backends
 backends = {

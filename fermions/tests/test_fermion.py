@@ -9,10 +9,13 @@ import pytest
 from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
-from fermions.spooler_fermions import (
+from fermions.spooler import (
     gen_circuit,
+)
+
+from fermions.config import (
+    spooler_object as f_spooler,
     gate_dict_from_list,
-    f_spooler,
     FermionExperiment,
     BarrierInstruction,
     LoadMeasureInstruction,

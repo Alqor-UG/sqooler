@@ -11,14 +11,17 @@ from pprint import pprint
 
 # pylint: disable=C0413, E0401
 from utils.schemes import gate_dict_from_list
-from rydberg.spooler_rydberg import (
-    ryd_spooler,
-    gen_circuit,
+from rydberg.config import (
+    spooler_object as ryd_spooler,
     RydbergExperiment,
     RlxInstruction,
     RlzInstruction,
     RydbergBlockInstruction,
     RydbergFullInstruction,
+)
+
+from rydberg.spooler import (
+    gen_circuit,
 )
 
 
