@@ -1,23 +1,30 @@
-name: mkdocs 
-
+name: documentation
 on:
   push:
     branches:
       - main
-permissions:
-  contents: write
 jobs:
   deploy:
+    env:
+      CURRENT_VERSION: ${{ secrets.CURRENT_VERSION }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      with:
-        python-version: 3.x
-    - name: Install requirements
-      run: |
-        pip install mkdocs-material
-        pip install mkdocstrings
-        pip install mkdocstrings[python]
-    - name: Run mkdocs
-      run: mkdocs gh-deploy --force
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # fetch all commits/branches
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Configure Git user
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+      - name: Deploy with mike now 🚀
+        run: |
+          mike deploy $CURRENT_VERSION
+          mike set-default $CURRENT_VERSION
+          git push origin gh-pages
