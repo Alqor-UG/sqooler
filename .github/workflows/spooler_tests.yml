@@ -9,6 +9,13 @@ on:
 jobs:
   tests:
     name: tests-python${{ matrix.python-version }}-${{ matrix.os }}
+    env:
+      APP_KEY: ${{secrets.APP_KEY}}
+      APP_SECRET: ${{secrets.APP_SECRET}}
+      REFRESH_TOKEN: ${{secrets.REFRESH_TOKEN}}
+      MONGODB_USERNAME: ${{secrets.MONGODB_USERNAME}}
+      MONGODB_PASSWORD: ${{secrets.MONGODB_PASSWORD}}
+      MONGODB_DATABASE_URL: ${{secrets.MONGODB_DATABASE_URL}}
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
