@@ -11,7 +11,7 @@ class TestMongodbProvider:
     The class that contains all the tests for the dropbox provider.
     """
 
-    def test_upload_etc(self):
+    def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
         """
@@ -46,7 +46,7 @@ class TestMongodbProvider:
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
-    def test_upload_configs(self):
+    def test_upload_configs(self) -> None:
         """
         We would like to make sure that we can properly upload the configuration files
         that come from the spoolers.
@@ -70,6 +70,8 @@ class TestMongodbProvider:
         document_to_find = {"display_name": backend_name}
 
         result_found = configs.find_one(document_to_find)
+        if result_found is None:
+            raise ValueError("The backend was not uploaded properly.")
         assert result_found["name"] == dummy_dict["name"]
 
         # make sure that the upload of the same backend does only update it.
@@ -81,7 +83,7 @@ class TestMongodbProvider:
         # clean up our mess
         configs.delete_one(document_to_find)
 
-    def test_get_next_job_in_queue(self):
+    def test_get_next_job_in_queue(self) -> None:
         """
         Is it possible to work through the queue of jobs?
         """

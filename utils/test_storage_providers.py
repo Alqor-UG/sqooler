@@ -11,7 +11,7 @@ class TestDropboxProvider:
     The class that contains all the tests for the dropbox provider.
     """
 
-    def test_upload_etc(self):
+    def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
         """
@@ -39,7 +39,7 @@ class TestDropboxProvider:
         # clean up our mess
         storage_provider.delete_file(second_path, file_id)
 
-    def test_upload_configs(self):
+    def test_upload_configs(self) -> None:
         """
         We would like to make sure that we can properly upload the configuration files
         that come from the spoolers.
@@ -61,7 +61,7 @@ class TestDropboxProvider:
         backend_dict = storage_provider.get_file_content(dummy_path, "config")
         assert backend_dict["name"] == dummy_dict["name"]
 
-    def test_get_next_job_in_queue(self):
+    def test_get_next_job_in_queue(self) -> None:
         """
         Is it possible to work through the queue of jobs?
         """
