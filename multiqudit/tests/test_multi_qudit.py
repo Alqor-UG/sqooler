@@ -10,15 +10,18 @@ from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
 from utils.schemes import gate_dict_from_list
-from multiqudit.spooler_multiqudit import (
-    mq_spooler,
-    gen_circuit,
+from multiqudit.config import (
+    spooler_object as mq_spooler,
     MultiQuditExperiment,
     LocalSqueezingInstruction,
     RlxInstruction,
     RlzInstruction,
     RlxlyInstruction,
     RlzlzInstruction,
+)
+
+from multiqudit.spooler import (
+    gen_circuit,
 )
 
 
