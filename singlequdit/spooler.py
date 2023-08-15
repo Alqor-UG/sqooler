@@ -1,6 +1,7 @@
 """
 The module that contains all the necessary logic to simulate the singlequdit. 
-It has to implement the code that is executed for all the instructions that we defined in the `conf.py` file.
+It has to implement the code that is executed for all the instructions that we defined 
+in the `conf.py` file.
 """
 
 import numpy as np
