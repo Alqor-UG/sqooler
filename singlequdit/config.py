@@ -1,5 +1,7 @@
 """
-In this module we define all the configuration parameters for the singlequdit package.
+In this module we define all the configuration parameters for the singlequdit package. 
+
+No simulation is performed here. The entire logic is implemented in the `spooler.py` module.
 """
 
 from typing import Tuple, Literal, List, Optional
@@ -201,8 +203,8 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
     job_id = status_msg_dict["job_id"]
 
     result_dict = {
-        "backend_name": sq_spooler.name,
-        "backend_version": sq_spooler.version,
+        "backend_name": spooler_object.name,
+        "backend_version": spooler_object.version,
         "job_id": job_id,
         "qobj_id": None,
         "success": True,
@@ -210,7 +212,7 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
         "header": {},
         "results": [],
     }
-    err_msg, json_is_fine = sq_spooler.check_json_dict(json_dict)
+    err_msg, json_is_fine = spooler_object.check_json_dict(json_dict)
     if json_is_fine:
         for exp in json_dict:
             exp_dict = {exp: json_dict[exp]}
