@@ -183,7 +183,6 @@ spooler_object = SingleQuditSpooler(
         "load": LoadInstruction,
     },
     n_wires=1,
-    name="alqor_singlequdit_simulator",
     version="0.0.2",
     description="Setup of a cold atomic gas experiment with a single qudit.",
     n_max_experiments=MAX_EXPERIMENTS,
@@ -218,7 +217,6 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
             exp_dict = {exp: json_dict[exp]}
             # Here we
             result_dict["results"].append(gen_circuit(exp_dict))
-        print("done form")
 
         status_msg_dict[
             "detail"

@@ -64,7 +64,7 @@ class Spooler:
         self,
         ins_schema_dict: dict,
         n_wires: int,
-        name: str,
+        name: str = "",
         description: str = "",
         n_max_shots: int = 1000,
         version: str = "0.0.1",

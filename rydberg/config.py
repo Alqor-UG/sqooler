@@ -207,7 +207,6 @@ spooler_object = RydbergSpooler(
         "measure": MeasureInstruction,
     },
     n_wires=N_MAX_WIRES,
-    name="alqor_rydberg_simulator",
     version="0.0.3",
     description="A chain of qubits realized through Rydberg atoms.",
     n_max_experiments=MAX_EXPERIMENTS,

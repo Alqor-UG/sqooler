@@ -274,7 +274,6 @@ spooler_object = MultiQuditSpooler(
         "load": LoadInstruction,
     },
     n_wires=N_MAX_WIRES,
-    name="alqor_multiqudit_simulator",
     description="Setup of a cold atomic gas experiment with a multiple qudits.",
     n_max_experiments=MAX_EXPERIMENTS,
     n_max_shots=N_MAX_SHOTS,

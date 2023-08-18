@@ -147,9 +147,10 @@ class DropboxProvider(StorageProvider):
         """
         Upload the content_dict as a json file to the dropbox
 
-        content_dict: the content of the file that should be uploaded
-        storage_path: the path where the file should be stored, but excluding the file name
-        job_id: the name of the file without the .json extension
+        Args:
+            content_dict: the content of the file that should be uploaded
+            storage_path: the path where the file should be stored, but excluding the file name
+            job_id: the name of the file without the .json extension
         """
 
         # create the appropriate string for the dropbox API

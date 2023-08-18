@@ -17,7 +17,6 @@ from utils.schemes import (
 
 from .spooler import gen_circuit
 
-
 NUM_WIRES = 8
 N_MAX_SHOTS = 10**6
 MAX_EXPERIMENTS = 1000
@@ -195,6 +194,7 @@ spooler_object = FermionSpooler(
     n_max_experiments=MAX_EXPERIMENTS,
     cold_atom_type="fermion",
     num_species=2,
+    version="0.1",
 )
 
 
@@ -247,8 +247,8 @@ def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
     job_id = status_msg_dict["job_id"]
 
     result_dict = {
-        "backend_name": "alqor_fermionic_tweezer_simulator",
-        "backend_version": "0.0.2",
+        "backend_name": spooler_object.name,
+        "backend_version": spooler_object.version,
         "job_id": job_id,
         "qobj_id": None,
         "success": True,
