@@ -277,6 +277,7 @@ spooler_object = MultiQuditSpooler(
     description="Setup of a cold atomic gas experiment with a multiple qudits.",
     n_max_experiments=MAX_EXPERIMENTS,
     n_max_shots=N_MAX_SHOTS,
+    version="0.1",
 )
 
 

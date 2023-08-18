@@ -530,7 +530,7 @@ def test_spooler_config():
             "The even wires denote the occupations of the spin-up fermions"
             " and the odd wires denote the spin-down fermions"
         ),
-        "version": "0.0.1",
+        "version": "0.1",
         "cold_atom_type": "fermion",
         "gates": [
             {
@@ -582,4 +582,5 @@ def test_spooler_config():
         "num_species": 2,
     }
     spooler_config_dict = f_spooler.get_configuration()
+    print(spooler_config_dict)
     assert spooler_config_dict == fermion_config_dict

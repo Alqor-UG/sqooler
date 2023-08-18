@@ -183,7 +183,7 @@ spooler_object = SingleQuditSpooler(
         "load": LoadInstruction,
     },
     n_wires=1,
-    version="0.0.2",
+    version="0.2",
     description="Setup of a cold atomic gas experiment with a single qudit.",
     n_max_experiments=MAX_EXPERIMENTS,
     n_max_shots=N_MAX_SHOTS,

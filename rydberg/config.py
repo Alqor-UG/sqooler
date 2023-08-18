@@ -207,7 +207,7 @@ spooler_object = RydbergSpooler(
         "measure": MeasureInstruction,
     },
     n_wires=N_MAX_WIRES,
-    version="0.0.3",
+    version="0.3",
     description="A chain of qubits realized through Rydberg atoms.",
     n_max_experiments=MAX_EXPERIMENTS,
     n_max_shots=N_MAX_SHOTS,
