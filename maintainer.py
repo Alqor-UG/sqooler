@@ -58,6 +58,8 @@ def update_backends() -> None:
     for requested_backend, spooler in backends.items():
         # the content
         backend_config_dict = spooler.get_configuration()
+        # set the display name
+        backend_config_dict["display_name"] = requested_backend
 
         # upload the content through the storage provider
         storage_provider.upload_config(backend_config_dict, requested_backend)
