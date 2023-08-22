@@ -89,9 +89,7 @@ def main() -> None:
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
-        requested_spooler = importlib.import_module(
-            f"{requested_backend}.spooler_" + requested_backend
-        )
+        requested_spooler = importlib.import_module(f"{requested_backend}.config")
         add_job = getattr(requested_spooler, "add_job")
         result_dict = {}
         status_msg_dict = {
