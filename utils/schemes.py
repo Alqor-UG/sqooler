@@ -64,7 +64,6 @@ class Spooler:
         self,
         ins_schema_dict: dict,
         n_wires: int,
-        name: str = "",
         description: str = "",
         n_max_shots: int = 1000,
         version: str = "0.0.1",
@@ -78,7 +77,6 @@ class Spooler:
         """
         self.ins_schema_dict = ins_schema_dict
         self.n_max_shots = n_max_shots
-        self.name = name
         self.n_wires = n_wires
         self.description = description
         self.version = version
@@ -107,7 +105,6 @@ class Spooler:
             if "is_gate" in ins_obj.__fields__:
                 gate_list.append(ins_obj.config_dict())
         return {
-            "name": self.name,
             "description": self.description,
             "version": self.version,
             "cold_atom_type": self.cold_atom_type,

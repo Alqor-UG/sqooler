@@ -184,7 +184,6 @@ spooler_object = FermionSpooler(
         "measure": LoadMeasureInstruction,
     },
     n_wires=N_MAX_WIRES,
-    name="alqor_fermionic_tweezer_simulator",
     description=(
         "simulator of a fermionic tweezer hardware. "
         "The even wires denote the occupations of the spin-up fermions"
