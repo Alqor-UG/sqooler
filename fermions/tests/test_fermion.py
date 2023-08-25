@@ -583,3 +583,41 @@ def test_spooler_config():
     }
     spooler_config_dict = f_spooler.get_configuration()
     assert spooler_config_dict == fermion_config_dict
+
+
+def test_add_job():
+    """
+    Test if we can simply add jobs as we should be able too.
+    """
+
+    # first test the system that is fine.
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["load", [0], []],
+                ["fhop", [0, 4, 1, 5], [np.pi / 4]],
+                ["fphase", [2, 6], [np.pi]],
+                ["fhop", [0, 4, 1, 5], [np.pi / 4]],
+                ["measure", [0], []],
+                ["measure", [1], []],
+            ],
+            "num_wires": 8,
+            "shots": 2,
+            "wire_order": "interleaved",
+        },
+    }
+
+    job_id = 1
+    status_msg_dict = {
+        "job_id": job_id,
+        "status": "None",
+        "detail": "None",
+        "error_message": "None",
+    }
+    result_dict, status_msg_dict = f_spooler.add_job(job_payload, status_msg_dict)
+    # assert that all the elements in the result dict memory are of string '1 0'
+    expected_value = "0 1"
+    for element in result_dict["results"][0]["data"]["memory"]:
+        assert (
+            element == expected_value
+        ), f"Element {element} is not equal to {expected_value}"

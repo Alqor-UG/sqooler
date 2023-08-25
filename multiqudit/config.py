@@ -261,6 +261,69 @@ class MultiQuditSpooler(Spooler):
                 break
         return err_code.replace("\n", ".."), dim_ok
 
+    def add_job(self, json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
+        """
+        The function that translates the json with the instructions into some circuit and executes it.
+
+        It performs several checks for the job to see if it is properly working.
+        If things are fine the job gets added the list of things that should be executed.
+
+        This one is different as it also checks for the size of the Hilbert space.
+
+        json_dict: A dictonary of all the instructions.
+        status_msg_dict:  WHAT IS THIS FOR ?
+        """
+        job_id = status_msg_dict["job_id"]
+
+        result_dict = {
+            "backend_name": self.name,
+            "backend_version": self.version,
+            "job_id": job_id,
+            "qobj_id": None,
+            "success": True,
+            "status": "finished",
+            "header": {},
+            "results": [],
+        }
+        err_msg, json_is_fine = self.check_json_dict(json_dict)
+
+        if json_is_fine:
+            # check_hilbert_space_dimension
+            dim_err_msg, dim_ok = self.check_dimension(json_dict)
+            if dim_ok:
+                for exp in json_dict:
+                    exp_dict = {exp: json_dict[exp]}
+                    # Here we
+                    result_dict["results"].append(self.gen_circuit(exp_dict))
+                print("done form")
+
+                status_msg_dict[
+                    "detail"
+                ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
+                status_msg_dict["status"] = "DONE"
+                return result_dict, status_msg_dict
+
+            status_msg_dict["detail"] += (
+                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
+                + dim_err_msg
+            )
+            status_msg_dict["error_message"] += (
+                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
+                + dim_err_msg
+            )
+            status_msg_dict["status"] = "ERROR"
+            return result_dict, status_msg_dict
+        status_msg_dict["detail"] += (
+            "; Failed json sanity check. File will be deleted. Error message : "
+            + err_msg
+        )
+        status_msg_dict["error_message"] += (
+            "; Failed json sanity check. File will be deleted. Error message : "
+            + err_msg
+        )
+        status_msg_dict["status"] = "ERROR"
+        return result_dict, status_msg_dict
+
 
 spooler_object = MultiQuditSpooler(
     ins_schema_dict={
@@ -280,62 +343,5 @@ spooler_object = MultiQuditSpooler(
     n_max_shots=N_MAX_SHOTS,
 )
 
-
-def add_job(json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
-    """
-    The function that translates the json with the instructions into some circuit and executes it.
-
-    It performs several checks for the job to see if it is properly working.
-    If things are fine the job gets added the list of things that should be executed.
-
-    json_dict: A dictonary of all the instructions.
-    status_msg_dict:  WHAT IS THIS FOR ?
-    """
-    job_id = status_msg_dict["job_id"]
-
-    result_dict = {
-        "backend_name": spooler_object.name,
-        "backend_version": spooler_object.version,
-        "job_id": job_id,
-        "qobj_id": None,
-        "success": True,
-        "status": "finished",
-        "header": {},
-        "results": [],
-    }
-    err_msg, json_is_fine = spooler_object.check_json_dict(json_dict)
-
-    if json_is_fine:
-        # check_hilbert_space_dimension
-        dim_err_msg, dim_ok = spooler_object.check_dimension(json_dict)
-        if dim_ok:
-            for exp in json_dict:
-                exp_dict = {exp: json_dict[exp]}
-                # Here we
-                result_dict["results"].append(gen_circuit(exp_dict))
-            print("done form")
-
-            status_msg_dict[
-                "detail"
-            ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
-            status_msg_dict["status"] = "DONE"
-            return result_dict, status_msg_dict
-
-        status_msg_dict["detail"] += (
-            "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
-            + dim_err_msg
-        )
-        status_msg_dict["error_message"] += (
-            "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
-            + dim_err_msg
-        )
-        status_msg_dict["status"] = "ERROR"
-        return result_dict, status_msg_dict
-    status_msg_dict["detail"] += (
-        "; Failed json sanity check. File will be deleted. Error message : " + err_msg
-    )
-    status_msg_dict["error_message"] += (
-        "; Failed json sanity check. File will be deleted. Error message : " + err_msg
-    )
-    status_msg_dict["status"] = "ERROR"
-    return result_dict, status_msg_dict
+# Now also add the function that generates the circuit
+spooler_object.gen_circuit = gen_circuit

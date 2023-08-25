@@ -175,6 +175,62 @@ class Spooler:
                 break
         return err_code.replace("\n", ".."), exp_ok
 
+    @property
+    def gen_circuit(self):
+        return self._gen_circuit
+
+    @gen_circuit.setter
+    def gen_circuit(self, value):
+        if callable(value):  # Check if the provided value is a callable (function)
+            self._gen_circuit = value
+        else:
+            raise ValueError("gen_circuit must be a callable function")
+
+    def add_job(self, json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
+        """
+        The function that translates the json with the instructions into some circuit and executes it.
+        It performs several checks for the job to see if it is properly working.
+        If things are fine the job gets added the list of things that should be executed.
+
+        json_dict: The job dictonary of all the instructions.
+        job_id: the ID of the job we are treating.
+        """
+        job_id = status_msg_dict["job_id"]
+
+        result_dict = {
+            "backend_name": self.name,
+            "backend_version": self.version,
+            "job_id": job_id,
+            "qobj_id": None,
+            "success": True,
+            "status": "finished",
+            "header": {},
+            "results": [],
+        }
+        err_msg, json_is_fine = self.check_json_dict(json_dict)
+        if json_is_fine:
+            for exp in json_dict:
+                exp_dict = {exp: json_dict[exp]}
+                # Here we
+                result_dict["results"].append(self.gen_circuit(exp_dict))
+            print("done form")
+
+            status_msg_dict[
+                "detail"
+            ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
+            status_msg_dict["status"] = "DONE"
+        else:
+            status_msg_dict["detail"] += (
+                "; Failed json sanity check. File will be deleted. Error message : "
+                + err_msg
+            )
+            status_msg_dict["error_message"] += (
+                "; Failed json sanity check. File will be deleted. Error message : "
+                + err_msg
+            )
+            status_msg_dict["status"] = "ERROR"
+        return result_dict, status_msg_dict
+
 
 def gate_dict_from_list(inst_list: list) -> dict:
     """

@@ -102,7 +102,7 @@ def main() -> None:
         # Fix this pylint issue whenever you have time, but be careful !
         # pylint: disable=W0703
         try:
-            result_dict, status_msg_dict = add_job(job_json_dict, status_msg_dict)
+            backends[requested_backend].add_job(job_json_dict, status_msg_dict)
         except Exception:
             # Remove sensitive info like filepaths
             tb_list = traceback.format_exc().splitlines()

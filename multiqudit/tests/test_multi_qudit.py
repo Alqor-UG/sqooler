@@ -498,3 +498,37 @@ def test_number_experiments():
     job_id = 1
     with pytest.raises(AssertionError):
         data = run_json_circuit(job_payload, job_id)
+
+
+def test_add_job():
+    """
+    Test if we can simply add jobs as we should be able too.
+    """
+
+    # first test the system that is fine.
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["rlx", [0], [np.pi]],
+                ["measure", [0], []],
+            ],
+            "num_wires": 1,
+            "shots": 150,
+            "wire_order": "sequential",
+        }
+    }
+
+    job_id = 1
+    status_msg_dict = {
+        "job_id": job_id,
+        "status": "None",
+        "detail": "None",
+        "error_message": "None",
+    }
+    result_dict, status_msg_dict = mq_spooler.add_job(job_payload, status_msg_dict)
+    # assert that all the elements in the result dict memory are of string '1 0'
+    expected_value = "1"
+    for element in result_dict["results"][0]["data"]["memory"]:
+        assert (
+            element == expected_value
+        ), f"Element {element} is not equal to {expected_value}"
