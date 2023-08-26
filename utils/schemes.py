@@ -139,6 +139,22 @@ class Spooler:
                 break
         return err_code, exp_ok
 
+    def check_dimension(self, json_dict: dict) -> Tuple[str, bool]:
+        """
+        Make sure that the Hilbert space dimension is not too large.
+
+        It can be implemented in the class that inherits, but it is not necessary.
+        So this is only a placeholder.
+
+        Args:
+            json_dict: the dictonary with the instructions
+
+        Returns:
+            str: the error message
+            bool: is the dimension ok ?
+        """
+        return "", True
+
     def check_json_dict(self, json_dict: dict) -> Tuple[str, bool]:
         """
         Check if the json file has the appropiate syntax.
@@ -209,15 +225,30 @@ class Spooler:
         }
         err_msg, json_is_fine = self.check_json_dict(json_dict)
         if json_is_fine:
-            for exp in json_dict:
-                exp_dict = {exp: json_dict[exp]}
-                # Here we
-                result_dict["results"].append(self.gen_circuit(exp_dict))
+            # check_hilbert_space_dimension
+            dim_err_msg, dim_ok = self.check_dimension(json_dict)
+            if dim_ok:
+                for exp in json_dict:
+                    exp_dict = {exp: json_dict[exp]}
+                    # Here we
+                    result_dict["results"].append(self.gen_circuit(exp_dict))
 
-            status_msg_dict[
-                "detail"
-            ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
-            status_msg_dict["status"] = "DONE"
+                status_msg_dict[
+                    "detail"
+                ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
+                status_msg_dict["status"] = "DONE"
+                return result_dict, status_msg_dict
+
+            status_msg_dict["detail"] += (
+                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
+                + dim_err_msg
+            )
+            status_msg_dict["error_message"] += (
+                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
+                + dim_err_msg
+            )
+            status_msg_dict["status"] = "ERROR"
+            return result_dict, status_msg_dict
         else:
             status_msg_dict["detail"] += (
                 "; Failed json sanity check. File will be deleted. Error message : "
