@@ -3,7 +3,7 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Tuple, TypedDict, List, Dict
+from typing import Tuple, TypedDict, List, Dict, Callable
 from pydantic import ValidationError, BaseModel
 
 
@@ -193,7 +193,7 @@ class Spooler:
         return err_code.replace("\n", ".."), exp_ok
 
     @property
-    def gen_circuit(self):
+    def gen_circuit(self) -> Callable[[dict], ExperimentDict]:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
@@ -201,7 +201,7 @@ class Spooler:
         return self._gen_circuit
 
     @gen_circuit.setter
-    def gen_circuit(self, value):
+    def gen_circuit(self, value: Callable[[dict], ExperimentDict]) -> None:
         if callable(value):  # Check if the provided value is a callable (function)
             self._gen_circuit = value
         else:
