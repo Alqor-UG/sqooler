@@ -153,6 +153,7 @@ class Spooler:
             str: the error message
             bool: is the dimension ok ?
         """
+        # pylint: disable=W0613
         return "", True
 
     def check_json_dict(self, json_dict: dict) -> Tuple[str, bool]:
@@ -193,6 +194,10 @@ class Spooler:
 
     @property
     def gen_circuit(self):
+        """
+        The function that generates the circuit.
+        It can be basically anything that allows the execution of the circuit.
+        """
         return self._gen_circuit
 
     @gen_circuit.setter
