@@ -16,7 +16,6 @@ from utils.schemes import (
 )
 
 from .spooler import gen_circuit
-from pprint import pprint
 
 N_MAX_SHOTS = 1000000
 N_MAX_ATOMS = 500
