@@ -1,7 +1,6 @@
 """
 The module that contains all the necessary logic for processing jobs in the database queue.
 """
-import importlib
 import time
 import os
 import shutil
@@ -89,7 +88,7 @@ def main() -> None:
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
-        result_dict = {}
+        result_dict: dict = {}
         status_msg_dict = {
             "job_id": job_dict["job_id"],
             "status": "None",
