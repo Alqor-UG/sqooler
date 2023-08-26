@@ -593,8 +593,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.gen_circuit" class="md-nav__link">
+    gen_circuit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#utils.schemes.Spooler.__init__" class="md-nav__link">
     __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.add_job" class="md-nav__link">
+    add_job()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.check_dimension" class="md-nav__link">
+    check_dimension()
   </a>
   
 </li>
@@ -1100,8 +1121,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.gen_circuit" class="md-nav__link">
+    gen_circuit
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#utils.schemes.Spooler.__init__" class="md-nav__link">
     __init__()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.add_job" class="md-nav__link">
+    add_job()
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utils.schemes.Spooler.check_dimension" class="md-nav__link">
+    check_dimension()
   </a>
   
 </li>
@@ -6579,7 +6621,98 @@ So it should most likely live in another file at some point.</p>
 <span class="normal">173</span>
 <span class="normal">174</span>
 <span class="normal">175</span>
-<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class for the spooler. So it is not just a scheme, but it also contains some common logic.</span>
 <span class="sd">    So it should most likely live in another file at some point.</span>
@@ -6673,6 +6806,23 @@ So it should most likely live in another file at some point.</p>
                 <span class="k">break</span>
         <span class="k">return</span> <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span>
 
+    <span class="k">def</span> <span class="nf">check_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make sure that the Hilbert space dimension is not too large.</span>
+
+<span class="sd">        It can be implemented in the class that inherits, but it is not necessary.</span>
+<span class="sd">        So this is only a placeholder.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            json_dict: the dictonary with the instructions</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: the error message</span>
+<span class="sd">            bool: is the dimension ok ?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=W0613</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">True</span>
+
     <span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if the json file has the appropiate syntax.</span>
@@ -6708,6 +6858,80 @@ So it should most likely live in another file at some point.</p>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">exp_ok</span><span class="p">:</span>
                 <span class="k">break</span>
         <span class="k">return</span> <span class="n">err_code</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span><span class="p">),</span> <span class="n">exp_ok</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">gen_circuit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">ExperimentDict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The function that generates the circuit.</span>
+<span class="sd">        It can be basically anything that allows the execution of the circuit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gen_circuit</span>
+
+    <span class="nd">@gen_circuit</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">gen_circuit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">ExperimentDict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>  <span class="c1"># Check if the provided value is a callable (function)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_gen_circuit</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;gen_circuit must be a callable function&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The function that translates the json with the instructions into some circuit and executes it.</span>
+<span class="sd">        It performs several checks for the job to see if it is properly working.</span>
+<span class="sd">        If things are fine the job gets added the list of things that should be executed.</span>
+
+<span class="sd">        json_dict: The job dictonary of all the instructions.</span>
+<span class="sd">        job_id: the ID of the job we are treating.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">job_id</span> <span class="o">=</span> <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;job_id&quot;</span><span class="p">]</span>
+
+        <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;backend_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;backend_version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+            <span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
+            <span class="s2">&quot;qobj_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;finished&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">&quot;results&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="p">}</span>
+        <span class="n">err_msg</span><span class="p">,</span> <span class="n">json_is_fine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_json_dict</span><span class="p">(</span><span class="n">json_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">json_is_fine</span><span class="p">:</span>
+            <span class="c1"># check_hilbert_space_dimension</span>
+            <span class="n">dim_err_msg</span><span class="p">,</span> <span class="n">dim_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_dimension</span><span class="p">(</span><span class="n">json_dict</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dim_ok</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">json_dict</span><span class="p">:</span>
+                    <span class="n">exp_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">exp</span><span class="p">:</span> <span class="n">json_dict</span><span class="p">[</span><span class="n">exp</span><span class="p">]}</span>
+                    <span class="c1"># Here we</span>
+                    <span class="n">result_dict</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_circuit</span><span class="p">(</span><span class="n">exp_dict</span><span class="p">))</span>
+
+                <span class="n">status_msg_dict</span><span class="p">[</span>
+                    <span class="s2">&quot;detail&quot;</span>
+                <span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;; Passed json sanity check; Compilation done. Shots sent to solver.&quot;</span>
+                <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DONE&quot;</span>
+                <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span>
+
+            <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;detail&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;; Failed dimensionality test. Too many atoms. File will be deleted. Error message : &quot;</span>
+                <span class="o">+</span> <span class="n">dim_err_msg</span>
+            <span class="p">)</span>
+            <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;error_message&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  &quot;</span>
+                <span class="o">+</span> <span class="n">dim_err_msg</span>
+            <span class="p">)</span>
+            <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ERROR&quot;</span>
+            <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;detail&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;; Failed json sanity check. File will be deleted. Error message : &quot;</span>
+                <span class="o">+</span> <span class="n">err_msg</span>
+            <span class="p">)</span>
+            <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;error_message&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot;; Failed json sanity check. File will be deleted. Error message : &quot;</span>
+                <span class="o">+</span> <span class="n">err_msg</span>
+            <span class="p">)</span>
+            <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ERROR&quot;</span>
+        <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span>
 </code></pre></div></td></tr></table></div>
             </details>
 
@@ -6720,6 +6944,29 @@ So it should most likely live in another file at some point.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="utils.schemes.Spooler.gen_circuit" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">gen_circuit</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">ExperimentDict</span><span class="p">]</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The function that generates the circuit.
+It can be basically anything that allows the execution of the circuit.</p>
+  </div>
+
+</div>
 
 
 
@@ -6791,6 +7038,268 @@ So it should most likely live in another file at some point.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">n_max_experiments</span> <span class="o">=</span> <span class="n">n_max_experiments</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">wire_order</span> <span class="o">=</span> <span class="n">wire_order</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">num_species</span> <span class="o">=</span> <span class="n">num_species</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="utils.schemes.Spooler.add_job" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">add_job</span><span class="p">(</span><span class="n">json_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The function that translates the json with the instructions into some circuit and executes it.
+It performs several checks for the job to see if it is properly working.
+If things are fine the job gets added the list of things that should be executed.</p>
+<p>json_dict: The job dictonary of all the instructions.
+job_id: the ID of the job we are treating.</p>
+
+          <details class="quote">
+            <summary>Source code in <code>utils/schemes.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The function that translates the json with the instructions into some circuit and executes it.</span>
+<span class="sd">    It performs several checks for the job to see if it is properly working.</span>
+<span class="sd">    If things are fine the job gets added the list of things that should be executed.</span>
+
+<span class="sd">    json_dict: The job dictonary of all the instructions.</span>
+<span class="sd">    job_id: the ID of the job we are treating.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">job_id</span> <span class="o">=</span> <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;job_id&quot;</span><span class="p">]</span>
+
+    <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;backend_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="s2">&quot;backend_version&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+        <span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
+        <span class="s2">&quot;qobj_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;finished&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;results&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">}</span>
+    <span class="n">err_msg</span><span class="p">,</span> <span class="n">json_is_fine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_json_dict</span><span class="p">(</span><span class="n">json_dict</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">json_is_fine</span><span class="p">:</span>
+        <span class="c1"># check_hilbert_space_dimension</span>
+        <span class="n">dim_err_msg</span><span class="p">,</span> <span class="n">dim_ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_dimension</span><span class="p">(</span><span class="n">json_dict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dim_ok</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">json_dict</span><span class="p">:</span>
+                <span class="n">exp_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">exp</span><span class="p">:</span> <span class="n">json_dict</span><span class="p">[</span><span class="n">exp</span><span class="p">]}</span>
+                <span class="c1"># Here we</span>
+                <span class="n">result_dict</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gen_circuit</span><span class="p">(</span><span class="n">exp_dict</span><span class="p">))</span>
+
+            <span class="n">status_msg_dict</span><span class="p">[</span>
+                <span class="s2">&quot;detail&quot;</span>
+            <span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;; Passed json sanity check; Compilation done. Shots sent to solver.&quot;</span>
+            <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DONE&quot;</span>
+            <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span>
+
+        <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;detail&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="s2">&quot;; Failed dimensionality test. Too many atoms. File will be deleted. Error message : &quot;</span>
+            <span class="o">+</span> <span class="n">dim_err_msg</span>
+        <span class="p">)</span>
+        <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;error_message&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="s2">&quot;; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  &quot;</span>
+            <span class="o">+</span> <span class="n">dim_err_msg</span>
+        <span class="p">)</span>
+        <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ERROR&quot;</span>
+        <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;detail&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="s2">&quot;; Failed json sanity check. File will be deleted. Error message : &quot;</span>
+            <span class="o">+</span> <span class="n">err_msg</span>
+        <span class="p">)</span>
+        <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;error_message&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span>
+            <span class="s2">&quot;; Failed json sanity check. File will be deleted. Error message : &quot;</span>
+            <span class="o">+</span> <span class="n">err_msg</span>
+        <span class="p">)</span>
+        <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ERROR&quot;</span>
+    <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="utils.schemes.Spooler.check_dimension" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">check_dimension</span><span class="p">(</span><span class="n">json_dict</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Make sure that the Hilbert space dimension is not too large.</p>
+<p>It can be implemented in the class that inherits, but it is not necessary.
+So this is only a placeholder.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>json_dict</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the dictonary with the instructions</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>str</code></td>          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the error message</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+<td><code>bool</code></td>          <td>
+                <code>bool</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>is the dimension ok ?</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>utils/schemes.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make sure that the Hilbert space dimension is not too large.</span>
+
+<span class="sd">    It can be implemented in the class that inherits, but it is not necessary.</span>
+<span class="sd">    So this is only a placeholder.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        json_dict: the dictonary with the instructions</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: the error message</span>
+<span class="sd">        bool: is the dimension ok ?</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=W0613</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">True</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
@@ -6998,24 +7507,7 @@ be verified.</p>
 
           <details class="quote">
             <summary>Source code in <code>utils/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
@@ -7032,7 +7524,24 @@ be verified.</p>
 <span class="normal">173</span>
 <span class="normal">174</span>
 <span class="normal">175</span>
-<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if the json file has the appropiate syntax.</span>
 
@@ -7166,28 +7675,28 @@ with proprer formatting.</p>
 
           <details class="quote">
             <summary>Source code in <code>utils/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
     <span class="n">shots_array</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_shots</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperimentDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -7232,11 +7741,11 @@ with proprer formatting.</p>
 
           <details class="quote">
             <summary>Source code in <code>utils/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a list into an appropiate dictionnary for instructions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
