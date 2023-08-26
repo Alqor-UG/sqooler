@@ -617,6 +617,7 @@ class MongodbProvider(StorageProvider):
         collection = database["configs"]
 
         result_found = collection.find_one(document_to_find)
+        config_dict["display_name"] = backend_name
         if result_found:
             # update the file
             self.update_file(
@@ -627,7 +628,7 @@ class MongodbProvider(StorageProvider):
             return
 
         # if the device does not exist, we have to create it
-        config_dict["display_name"] = backend_name
+
         config_id = uuid.uuid4().hex[:24]
         self.upload(config_dict, config_path, config_id)
 
