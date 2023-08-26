@@ -1,7 +1,6 @@
 """
 The module that contains all the necessary logic for processing jobs in the database queue.
 """
-import importlib
 import time
 import os
 import shutil
@@ -89,9 +88,7 @@ def main() -> None:
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
-        requested_spooler = importlib.import_module(f"{requested_backend}.config")
-        add_job = getattr(requested_spooler, "add_job")
-        result_dict = {}
+        result_dict: dict = {}
         status_msg_dict = {
             "job_id": job_dict["job_id"],
             "status": "None",
@@ -102,7 +99,7 @@ def main() -> None:
         # Fix this pylint issue whenever you have time, but be careful !
         # pylint: disable=W0703
         try:
-            result_dict, status_msg_dict = add_job(job_json_dict, status_msg_dict)
+            backends[requested_backend].add_job(job_json_dict, status_msg_dict)
         except Exception:
             # Remove sensitive info like filepaths
             tb_list = traceback.format_exc().splitlines()
