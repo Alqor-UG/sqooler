@@ -6,6 +6,7 @@ from typing import Union
 import pytest
 from pydantic import ValidationError
 import numpy as np
+from pprint import pprint
 
 # pylint: disable=C0413, E0401
 from singlequdit.spooler import (
@@ -36,24 +37,15 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
     Returns:
         the results dict
     """
-    result_dict = {
-        "backend_name": "alqor_single_qudit_simulator",
-        "backend_version": "0.0.1",
+    status_msg_dict = {
         "job_id": job_id,
-        "qobj_id": None,
-        "success": True,
-        "status": "finished",
-        "header": {},
-        "results": [],
+        "status": "None",
+        "detail": "None",
+        "error_message": "None",
     }
-    err_msg, json_is_fine = sq_spooler.check_json_dict(json_dict)
-    assert json_is_fine is True, "Failed JSON sanity check : " + err_msg
-    if json_is_fine:
-        for exp in json_dict:
-            exp_dict = {exp: json_dict[exp]}
-            # Here we
-            result_dict["results"].append(gen_circuit(exp_dict))
 
+    result_dict, status_msg_dict = sq_spooler.add_job(json_dict, status_msg_dict)
+    assert status_msg_dict["status"] == "DONE", "Job failed"
     return result_dict
 
 
@@ -431,3 +423,37 @@ def test_number_experiments():
     job_id = 1
     with pytest.raises(AssertionError):
         data = run_json_circuit(job_payload, job_id)
+
+
+def test_add_job():
+    """
+    Test if we can simply add jobs as we should be able too.
+    """
+
+    # first test the system that is fine.
+    job_payload = {
+        "experiment_0": {
+            "instructions": [
+                ["rlx", [0], [np.pi]],
+                ["measure", [0], []],
+            ],
+            "num_wires": 1,
+            "shots": 150,
+            "wire_order": "interleaved",
+        }
+    }
+
+    job_id = 1
+    status_msg_dict = {
+        "job_id": job_id,
+        "status": "None",
+        "detail": "None",
+        "error_message": "None",
+    }
+    result_dict, status_msg_dict = sq_spooler.add_job(job_payload, status_msg_dict)
+    # assert that all the elements in the result dict memory are of string '1 0'
+    expected_value = "1"
+    for element in result_dict["results"][0]["data"]["memory"]:
+        assert (
+            element == expected_value
+        ), f"Element {element} is not equal to {expected_value}"
