@@ -213,7 +213,6 @@ class Spooler:
                 exp_dict = {exp: json_dict[exp]}
                 # Here we
                 result_dict["results"].append(self.gen_circuit(exp_dict))
-            print("done form")
 
             status_msg_dict[
                 "detail"

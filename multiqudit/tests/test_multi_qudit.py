@@ -20,10 +20,6 @@ from multiqudit.config import (
     RlzlzInstruction,
 )
 
-from multiqudit.spooler import (
-    gen_circuit,
-)
-
 
 def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
     """
@@ -36,24 +32,15 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
     Returns:
         the results dict
     """
-    result_dict = {
-        "backend_name": "alqor_multi_qudit_simulator",
-        "backend_version": "0.0.1",
+    status_msg_dict = {
         "job_id": job_id,
-        "qobj_id": None,
-        "success": True,
-        "status": "finished",
-        "header": {},
-        "results": [],
+        "status": "None",
+        "detail": "None",
+        "error_message": "None",
     }
-    err_msg, json_is_fine = mq_spooler.check_json_dict(json_dict)
-    assert json_is_fine is True, "Failed JSON sanity check : " + err_msg
-    if json_is_fine:
-        for exp in json_dict:
-            exp_dict = {exp: json_dict[exp]}
-            # Here we
-            result_dict["results"].append(gen_circuit(exp_dict))
 
+    result_dict, status_msg_dict = mq_spooler.add_job(json_dict, status_msg_dict)
+    assert status_msg_dict["status"] == "DONE", "Job failed"
     return result_dict
 
 
