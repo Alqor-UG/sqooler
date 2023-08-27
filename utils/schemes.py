@@ -20,7 +20,7 @@ class ExperimentDict(TypedDict):
     data: dict
 
 
-class ResultDict(TypedDict, total=False):
+class ResultDict(TypedDict):
     """
     A class that defines the structure of results.
     """

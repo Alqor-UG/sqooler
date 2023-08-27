@@ -4,6 +4,7 @@ The tests for the storage provider
 import datetime
 import uuid
 from .storage_providers import DropboxProvider
+from .schemes import ResultDict
 
 
 class TestDropboxProvider:
@@ -100,8 +101,8 @@ class TestDropboxProvider:
         assert next_job["job_id"] == job_id
 
         # we now also need to test the update_in_database part of the storage provider
-        result_dict = {
-            "backend_name": backend_name,
+        result_dict: ResultDict = {
+            "display_name": backend_name,
             "backend_version": "0.0.1",
             "job_id": next_job["job_id"],
             "qobj_id": None,

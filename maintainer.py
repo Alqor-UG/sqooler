@@ -96,7 +96,7 @@ def main() -> None:
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
-        result_dict: ResultDict = {}
+        result_dict = None
         status_msg_dict = {
             "job_id": job_dict["job_id"],
             "status": "None",

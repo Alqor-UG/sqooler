@@ -646,7 +646,7 @@ class MongodbProvider(StorageProvider):
 
     def update_in_database(
         self,
-        result_dict: ResultDict | dict,
+        result_dict: ResultDict | None,
         status_msg_dict: dict,
         job_id: str,
         backend_name: str,
@@ -666,11 +666,19 @@ class MongodbProvider(StorageProvider):
 
         Returns:
             None
+
+        Raises:
+
         """
 
         job_json_start_dir = "jobs/running"
         # check if the job is done or had an error
         if status_msg_dict["status"] == "DONE":
+            # test if the result dict is None
+            if result_dict is None:
+                raise ValueError(
+                    "The 'result_dict' argument cannot be None if the job is done."
+                )
             # let us create the result json file
             result_json_dir = "results/" + backend_name
             self.upload(result_dict, result_json_dir, job_id)
