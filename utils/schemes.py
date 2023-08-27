@@ -218,7 +218,7 @@ class Spooler:
     @display_name.setter
     def display_name(self, value: str) -> None:
         if isinstance(value, str):  # Check if the provided value is a string
-            self._gen_circuit = value
+            self._display_name = value
         else:
             raise ValueError("display_name must be a string")
 
@@ -237,7 +237,9 @@ class Spooler:
         else:
             raise ValueError("gen_circuit must be a callable function")
 
-    def add_job(self, json_dict: dict, status_msg_dict: dict) -> tuple[dict, dict]:
+    def add_job(
+        self, json_dict: dict, status_msg_dict: dict
+    ) -> tuple[ResultDict, dict]:
         """
         The function that translates the json with the instructions into some circuit and executes it.
         It performs several checks for the job to see if it is properly working.

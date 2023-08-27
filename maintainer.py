@@ -71,6 +71,11 @@ def main() -> None:
     # TODO: This should be pull in automatically from the back-end config at some point.
     backends_list = list(backends.keys())
 
+    # set the appropiate display names for all the back-ends
+    for requested_backend, spooler in backends.items():
+        # the content
+        spooler.display_name = requested_backend
+
     # loop which is looking for the jobs
     while True:
         time.sleep(0.2)
