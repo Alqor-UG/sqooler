@@ -9,9 +9,6 @@ import pytest
 from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
-from fermions.spooler import (
-    gen_circuit,
-)
 
 from fermions.config import (
     spooler_object as f_spooler,
@@ -571,7 +568,6 @@ def test_spooler_config():
         "num_species": 2,
     }
     spooler_config_dict = f_spooler.get_configuration()
-    print(spooler_config_dict)
     assert spooler_config_dict == fermion_config_dict
 
 
