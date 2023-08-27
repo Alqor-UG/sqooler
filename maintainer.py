@@ -99,7 +99,10 @@ def main() -> None:
         # Fix this pylint issue whenever you have time, but be careful !
         # pylint: disable=W0703
         try:
-            backends[requested_backend].add_job(job_json_dict, status_msg_dict)
+            result_dict, status_msg_dict = backends[requested_backend].add_job(
+                job_json_dict, status_msg_dict
+            )
+
         except Exception:
             # Remove sensitive info like filepaths
             tb_list = traceback.format_exc().splitlines()
@@ -114,6 +117,7 @@ def main() -> None:
             status_msg_dict["status"] = "ERROR"
             status_msg_dict["detail"] += "; " + slimmed_tb
             status_msg_dict["error_message"] += "; " + slimmed_tb
+
         storage_provider.update_in_database(
             result_dict, status_msg_dict, job_dict["job_id"], requested_backend
         )
