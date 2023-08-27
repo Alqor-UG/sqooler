@@ -6,7 +6,7 @@ No simulation is performed here. The entire logic is implemented in the `spooler
 
 from typing import Tuple, Literal, List, Optional
 
-from pydantic import conint, BaseModel, ValidationError, conlist, confloat
+from pydantic import Field, BaseModel, ValidationError
 
 
 import numpy as np
@@ -18,6 +18,7 @@ from utils.schemes import (
 )
 
 from .spooler import gen_circuit
+from typing_extensions import Annotated
 
 N_MAX_WIRES = 5
 N_MAX_SHOTS = 1000000
@@ -36,8 +37,8 @@ class RlxInstruction(GateInstruction):
     """
 
     name: Literal["rlx"] = "rlx"
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=1, max_length=1)]  # type: ignore
+    params: Annotated[List[Annotated[float, Field(ge=0, le=2 * np.pi)]], Field(min_length=1, max_length=1)]  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "omega"
@@ -59,8 +60,8 @@ class RlzInstruction(GateInstruction):
     """
 
     name: Literal["rlz"] = "rlz"
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=1, max_length=1)]  # type: ignore
+    params: Annotated[List[Annotated[float, Field(ge=0, le=2 * np.pi)]], Field(min_length=1, max_length=1)]  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "delta"
@@ -82,8 +83,8 @@ class RydbergBlockInstruction(GateInstruction):
     """
 
     name: Literal["rydberg_block"] = "rydberg_block"
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=2, max_length=N_MAX_WIRES)]  # type: ignore
+    params: Annotated[List[Annotated[float, Field(ge=0, le=2 * np.pi)]], Field(min_length=1, max_length=1)]  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "phi"
@@ -105,8 +106,8 @@ class RydbergFullInstruction(GateInstruction):
     """
 
     name: Literal["rydberg_full"] = "rydberg_full"
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
-    params: conlist(confloat(ge=0, le=5e6 * np.pi), min_items=3, max_items=3)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=2, max_length=N_MAX_WIRES)]  # type: ignore
+    params: Annotated[List[Annotated[float, Field(ge=0, le=5e6 * np.pi)]], Field(min_length=3, max_length=3)]  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "omega, delta, phi"
@@ -128,8 +129,8 @@ class BarrierInstruction(BaseModel):
     """
 
     name: Literal["barrier"]
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=0, max_items=N_MAX_WIRES)  # type: ignore
-    params: conlist(float, max_items=0)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=0, max_length=N_MAX_WIRES)]  # type: ignore
+    params: Annotated[List[float], Field(max_length=0)]  # type: ignore
 
 
 class MeasureInstruction(BaseModel):
@@ -143,8 +144,8 @@ class MeasureInstruction(BaseModel):
     """
 
     name: Literal["measure"]
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
-    params: conlist(float, max_items=0)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=1, max_length=1)]  # type: ignore
+    params: Annotated[List[float], Field(max_length=0)]  # type: ignore
 
 
 class RydbergExperiment(BaseModel):
@@ -157,10 +158,10 @@ class RydbergExperiment(BaseModel):
     # mypy keeps throwing errors here because it does not understand the type.
     # not sure how to fix it, so we leave it as is for the moment
     # HINT: Annotated does not work
-    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
-    num_wires: conint(ge=1, le=N_MAX_WIRES)  # type: ignore
+    shots: Annotated[int, Field(gt=0, le=N_MAX_SHOTS)]  # type: ignore
+    num_wires: Annotated[int, Field(ge=1, le=N_MAX_WIRES)]  # type: ignore
     instructions: List[list]
-    seed: Optional[int]
+    seed: Optional[int] = None
 
 
 class RydbergSpooler(Spooler):

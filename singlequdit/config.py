@@ -6,7 +6,7 @@ No simulation is performed here. The entire logic is implemented in the `spooler
 
 from typing import Tuple, Literal, List, Optional
 
-from pydantic import conint, BaseModel, ValidationError, conlist, confloat
+from pydantic import Field, BaseModel, ValidationError
 import numpy as np
 
 from utils.schemes import (
@@ -16,6 +16,7 @@ from utils.schemes import (
 )
 
 from .spooler import gen_circuit
+from typing_extensions import Annotated
 
 N_MAX_SHOTS = 1000000
 N_MAX_ATOMS = 500
@@ -34,8 +35,8 @@ class RlxInstruction(GateInstruction):
     """
 
     name: Literal["rlx"] = "rlx"
-    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=0)]], Field(min_length=0, max_length=1)]  # type: ignore
+    params: Annotated[List[Annotated[float, Field(ge=0, le=2 * np.pi)]], Field(min_length=1, max_length=1)]  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "omega"
@@ -57,8 +58,8 @@ class RlzInstruction(GateInstruction):
     """
 
     name: Literal["rlz"] = "rlz"
-    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=0)]], Field(min_length=0, max_length=1)]  # type: ignore
+    params: Annotated[List[Annotated[float, Field(ge=0, le=2 * np.pi)]], Field(min_length=1, max_length=1)]  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "delta"
@@ -80,8 +81,8 @@ class LocalSqueezingInstruction(GateInstruction):
     """
 
     name: Literal["rlz2"] = "rlz2"
-    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
-    params: conlist(confloat(ge=0, le=10 * 2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=0)]], Field(min_length=0, max_length=1)]  # type: ignore
+    params: Annotated[List[Annotated[float, Field(ge=0, le=10 * 2 * np.pi)]], Field(min_length=1, max_length=1)]  # type: ignore
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "chi"
@@ -103,8 +104,8 @@ class LoadInstruction(BaseModel):
     """
 
     name: Literal["load"]
-    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
-    params: conlist(conint(ge=1, le=N_MAX_ATOMS), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=0)]], Field(min_length=0, max_length=1)]  # type: ignore
+    params: Annotated[List[Annotated[int, Field(ge=1, le=N_MAX_ATOMS)]], Field(min_length=1, max_length=1)]  # type: ignore
 
 
 class MeasureBarrierInstruction(BaseModel):
@@ -119,8 +120,8 @@ class MeasureBarrierInstruction(BaseModel):
     """
 
     name: Literal["measure", "barrier"]
-    wires: conlist(conint(ge=0, le=0), min_items=0, max_items=1)  # type: ignore
-    params: conlist(float, min_items=0, max_items=0)  # type: ignore
+    wires: Annotated[List[Annotated[int, Field(ge=0, le=0)]], Field(min_length=0, max_length=1)]  # type: ignore
+    params: Annotated[List[float], Field(min_length=0, max_length=0)]  # type: ignore
 
 
 class SingleQuditExperiment(BaseModel):
@@ -132,10 +133,10 @@ class SingleQuditExperiment(BaseModel):
     # mypy keeps throwing errors here because it does not understand the type.
     # not sure how to fix it, so we leave it as is for the moment
     # HINT: Annotated does not work
-    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
+    shots: Annotated[int, Field(gt=0, le=N_MAX_SHOTS)]  # type: ignore
     num_wires: Literal[1]
     instructions: List[list]
-    seed: Optional[int]
+    seed: Optional[int] = None
 
 
 class SingleQuditSpooler(Spooler):
