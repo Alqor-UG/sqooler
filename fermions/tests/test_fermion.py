@@ -514,7 +514,6 @@ def test_spooler_config():
      as we would like.
     """
     fermion_config_dict = {
-        "name": "alqor_fermionic_tweezer_simulator",
         "description": (
             "simulator of a fermionic tweezer hardware. "
             "The even wires denote the occupations of the spin-up fermions"

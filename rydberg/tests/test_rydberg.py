@@ -421,7 +421,6 @@ def test_spooler_config():
     """
 
     mq_config_dict = {
-        "name": "",
         "description": "A chain of qubits realized through Rydberg atoms.",
         "version": "0.0.3",
         "cold_atom_type": "spin",
