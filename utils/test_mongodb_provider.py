@@ -4,6 +4,7 @@ The tests for the storage provider using mongodb
 
 import uuid
 from .storage_providers import MongodbProvider
+from .schemes import ResultDict
 
 
 class TestMongodbProvider:
@@ -119,8 +120,8 @@ class TestMongodbProvider:
         assert "_id" not in job_json_dict.keys()
 
         # we now also need to test the update_in_database part of the storage provider
-        result_dict = {
-            "backend_name": backend_name,
+        result_dict: ResultDict = {
+            "display_name": backend_name,
             "backend_version": "0.0.1",
             "job_id": next_job["job_id"],
             "qobj_id": None,
