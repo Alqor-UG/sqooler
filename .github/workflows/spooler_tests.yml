@@ -63,6 +63,7 @@ jobs:
         pylint multiqudit
         pylint singlequdit
         pylint rydberg
+        pylint maintainer.py
     - name: Run black
       run: |
         black --check .
