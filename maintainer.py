@@ -10,6 +10,7 @@ import regex as re
 # import the storage provider that you would like to use
 # currently we have dropbox and mongodb
 from utils.storage_providers import MongodbProvider
+from utils.schemes import ResultDict
 
 from singlequdit.config import spooler_object as sq_spooler
 from multiqudit.config import spooler_object as mq_spooler
@@ -95,7 +96,7 @@ def main() -> None:
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
-        result_dict: dict = {}
+        result_dict: ResultDict = {}
         status_msg_dict = {
             "job_id": job_dict["job_id"],
             "status": "None",
