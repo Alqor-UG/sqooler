@@ -57,6 +57,8 @@ def update_backends() -> None:
     for requested_backend, spooler in backends.items():
         # the content
         backend_config_dict = spooler.get_configuration()
+        # set the display name
+        backend_config_dict["display_name"] = requested_backend
 
         # upload the content through the storage provider
         storage_provider.upload_config(backend_config_dict, requested_backend)
@@ -68,6 +70,11 @@ def main() -> None:
     """
     # TODO: This should be pull in automatically from the back-end config at some point.
     backends_list = list(backends.keys())
+
+    # set the appropiate display names for all the back-ends
+    for requested_backend, spooler in backends.items():
+        # the content
+        spooler.display_name = requested_backend
 
     # loop which is looking for the jobs
     while True:
@@ -88,7 +95,7 @@ def main() -> None:
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
-        result_dict: dict = {}
+        result_dict = None
         status_msg_dict = {
             "job_id": job_dict["job_id"],
             "status": "None",

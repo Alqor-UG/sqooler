@@ -7,6 +7,7 @@ import uuid
 from abc import ABC, abstractmethod
 import json
 
+from typing import Mapping
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
@@ -18,6 +19,8 @@ from bson.objectid import ObjectId
 # get the environment variables
 from decouple import config
 
+from .schemes import ResultDict
+
 
 class StorageProvider(ABC):
     """
@@ -25,7 +28,7 @@ class StorageProvider(ABC):
     """
 
     @abstractmethod
-    def upload(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
         """
@@ -90,7 +93,11 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def update_in_database(
-        self, result_dict: dict, status_msg_dict: dict, job_id: str, backend_name: str
+        self,
+        result_dict: ResultDict,
+        status_msg_dict: dict,
+        job_id: str,
+        backend_name: str,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -143,13 +150,14 @@ class DropboxProvider(StorageProvider):
         self.app_secret = config("APP_SECRET")
         self.refresh_token = config("REFRESH_TOKEN")
 
-    def upload(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the content_dict as a json file to the dropbox
 
-        content_dict: the content of the file that should be uploaded
-        storage_path: the path where the file should be stored, but excluding the file name
-        job_id: the name of the file without the .json extension
+        Args:
+            content_dict: the content of the file that should be uploaded
+            storage_path: the path where the file should be stored, but excluding the file name
+            job_id: the name of the file without the .json extension
         """
 
         # create the appropriate string for the dropbox API
@@ -322,7 +330,11 @@ class DropboxProvider(StorageProvider):
         self.upload(config_dict, config_path, "config")
 
     def update_in_database(
-        self, result_dict: dict, status_msg_dict: dict, job_id: str, backend_name: str
+        self,
+        result_dict: ResultDict,
+        status_msg_dict: dict,
+        job_id: str,
+        backend_name: str,
     ) -> None:
         """
         Upload the status and result to the dropbox.
@@ -461,7 +473,7 @@ class MongodbProvider(StorageProvider):
         # Send a ping to confirm a successful connection
         self.client.admin.command("ping")
 
-    def upload(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
 
@@ -478,7 +490,7 @@ class MongodbProvider(StorageProvider):
         collection_name = ".".join(storage_splitted[1:])
         collection = database[collection_name]
 
-        content_dict["_id"] = ObjectId(job_id)
+        content_dict["_id"] = ObjectId(job_id)  # type: ignore
         collection.insert_one(content_dict)
 
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
@@ -633,7 +645,11 @@ class MongodbProvider(StorageProvider):
         self.upload(config_dict, config_path, config_id)
 
     def update_in_database(
-        self, result_dict: dict, status_msg_dict: dict, job_id: str, backend_name: str
+        self,
+        result_dict: ResultDict | None,
+        status_msg_dict: dict,
+        job_id: str,
+        backend_name: str,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -650,11 +666,19 @@ class MongodbProvider(StorageProvider):
 
         Returns:
             None
+
+        Raises:
+
         """
 
         job_json_start_dir = "jobs/running"
         # check if the job is done or had an error
         if status_msg_dict["status"] == "DONE":
+            # test if the result dict is None
+            if result_dict is None:
+                raise ValueError(
+                    "The 'result_dict' argument cannot be None if the job is done."
+                )
             # let us create the result json file
             result_json_dir = "results/" + backend_name
             self.upload(result_dict, result_json_dir, job_id)

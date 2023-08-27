@@ -353,7 +353,6 @@ def test_spooler_config():
      as we would like.
     """
     sq_config_dict = {
-        "name": "alqor_singlequdit_simulator",
         "description": "Setup of a cold atomic gas experiment with a single qudit.",
         "version": "0.0.2",
         "cold_atom_type": "spin",

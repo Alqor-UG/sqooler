@@ -17,7 +17,6 @@ from utils.schemes import (
 
 from .spooler import gen_circuit
 
-
 NUM_WIRES = 8
 N_MAX_SHOTS = 10**6
 MAX_EXPERIMENTS = 1000
@@ -185,7 +184,6 @@ spooler_object = FermionSpooler(
         "measure": LoadMeasureInstruction,
     },
     n_wires=N_MAX_WIRES,
-    name="alqor_fermionic_tweezer_simulator",
     description=(
         "simulator of a fermionic tweezer hardware. "
         "The even wires denote the occupations of the spin-up fermions"
@@ -195,6 +193,7 @@ spooler_object = FermionSpooler(
     n_max_experiments=MAX_EXPERIMENTS,
     cold_atom_type="fermion",
     num_species=2,
+    version="0.1",
 )
 
 # Now also add the function that generates the circuit

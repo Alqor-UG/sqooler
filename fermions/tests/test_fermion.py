@@ -9,9 +9,6 @@ import pytest
 from pydantic import ValidationError
 
 # pylint: disable=C0413, E0401
-from fermions.spooler import (
-    gen_circuit,
-)
 
 from fermions.config import (
     spooler_object as f_spooler,
@@ -514,13 +511,12 @@ def test_spooler_config():
      as we would like.
     """
     fermion_config_dict = {
-        "name": "alqor_fermionic_tweezer_simulator",
         "description": (
             "simulator of a fermionic tweezer hardware. "
             "The even wires denote the occupations of the spin-up fermions"
             " and the odd wires denote the spin-down fermions"
         ),
-        "version": "0.0.1",
+        "version": "0.1",
         "cold_atom_type": "fermion",
         "gates": [
             {

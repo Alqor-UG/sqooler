@@ -4,6 +4,7 @@ The tests for the storage provider using mongodb
 
 import uuid
 from .storage_providers import MongodbProvider
+from .schemes import ResultDict
 
 
 class TestMongodbProvider:
@@ -54,13 +55,14 @@ class TestMongodbProvider:
 
         storage_provider = MongodbProvider()
         dummy_id = uuid.uuid4().hex[:5]
+        backend_name = f"dummy_{dummy_id}"
+
         dummy_dict: dict = {}
         dummy_dict["gates"] = []
-        dummy_dict["name"] = "Dummy"
+        dummy_dict["display_name"] = backend_name
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
 
-        backend_name = f"dummy_{dummy_id}"
         storage_provider.upload_config(dummy_dict, backend_name)
 
         # can we get the backend in the list ?
@@ -72,7 +74,7 @@ class TestMongodbProvider:
         result_found = configs.find_one(document_to_find)
         if result_found is None:
             raise ValueError("The backend was not uploaded properly.")
-        assert result_found["name"] == dummy_dict["name"]
+        assert result_found["display_name"] == dummy_dict["display_name"]
 
         # make sure that the upload of the same backend does only update it.
         dummy_dict["num_wires"] = 4
@@ -118,8 +120,8 @@ class TestMongodbProvider:
         assert "_id" not in job_json_dict.keys()
 
         # we now also need to test the update_in_database part of the storage provider
-        result_dict = {
-            "backend_name": backend_name,
+        result_dict: ResultDict = {
+            "display_name": backend_name,
             "backend_version": "0.0.1",
             "job_id": next_job["job_id"],
             "qobj_id": None,

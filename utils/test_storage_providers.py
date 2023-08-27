@@ -4,6 +4,7 @@ The tests for the storage provider
 import datetime
 import uuid
 from .storage_providers import DropboxProvider
+from .schemes import ResultDict
 
 
 class TestDropboxProvider:
@@ -46,20 +47,19 @@ class TestDropboxProvider:
         """
         storage_provider = DropboxProvider()
         dummy_id = uuid.uuid4().hex[:5]
+        backend_name = f"dummy_{dummy_id}"
         dummy_dict: dict = {}
+        dummy_dict["display_name"] = backend_name
         dummy_dict["gates"] = []
-        dummy_dict["name"] = "Dummy"
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
-
-        backend_name = f"dummy_{dummy_id}"
 
         storage_provider.upload_config(dummy_dict, backend_name)
 
         # can we get the backend in the list ?
         dummy_path = f"Backend_files/Config/{backend_name}"
         backend_dict = storage_provider.get_file_content(dummy_path, "config")
-        assert backend_dict["name"] == dummy_dict["name"]
+        assert backend_dict["display_name"] == dummy_dict["display_name"]
 
     def test_get_next_job_in_queue(self) -> None:
         """
@@ -101,8 +101,8 @@ class TestDropboxProvider:
         assert next_job["job_id"] == job_id
 
         # we now also need to test the update_in_database part of the storage provider
-        result_dict = {
-            "backend_name": backend_name,
+        result_dict: ResultDict = {
+            "display_name": backend_name,
             "backend_version": "0.0.1",
             "job_id": next_job["job_id"],
             "qobj_id": None,

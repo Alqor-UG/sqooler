@@ -3,8 +3,10 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Tuple, TypedDict, List, Dict, Callable
+from collections.abc import Callable
 from pydantic import ValidationError, BaseModel
+
+from typing_extensions import NotRequired, TypedDict
 
 
 class ExperimentDict(TypedDict):
@@ -18,6 +20,22 @@ class ExperimentDict(TypedDict):
     data: dict
 
 
+class ResultDict(TypedDict):
+    """
+    A class that defines the structure of results.
+    """
+
+    display_name: str
+    backend_version: str
+    job_id: str
+    qobj_id: str | None
+    success: bool
+    status: str
+    header: dict
+    results: list
+    backend_name: NotRequired[str]
+
+
 class GateInstruction(BaseModel):
     """
     The basic class for all the gate intructions of a backend.
@@ -27,12 +45,12 @@ class GateInstruction(BaseModel):
     name: str
     parameters: str
     description: str
-    coupling_map: List
+    coupling_map: list
     qasm_def: str = "{}"
     is_gate: bool = True
 
     @classmethod
-    def config_dict(cls) -> Dict:
+    def config_dict(cls) -> dict:
         """
         Give back the properties of the instruction such as needed for the server.
         """
@@ -64,7 +82,6 @@ class Spooler:
         self,
         ins_schema_dict: dict,
         n_wires: int,
-        name: str,
         description: str = "",
         n_max_shots: int = 1000,
         version: str = "0.0.1",
@@ -78,7 +95,6 @@ class Spooler:
         """
         self.ins_schema_dict = ins_schema_dict
         self.n_max_shots = n_max_shots
-        self.name = name
         self.n_wires = n_wires
         self.description = description
         self.version = version
@@ -86,8 +102,9 @@ class Spooler:
         self.n_max_experiments = n_max_experiments
         self.wire_order = wire_order
         self.num_species = num_species
+        self._display_name: str = ""
 
-    def check_experiment(self, exper_dict: dict) -> Tuple[str, bool]:
+    def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
         Check the validity of the experiment.
         This has to be implement in each subclass extra.
@@ -107,7 +124,6 @@ class Spooler:
             if "is_gate" in ins_obj.__fields__:
                 gate_list.append(ins_obj.config_dict())
         return {
-            "name": self.name,
             "description": self.description,
             "version": self.version,
             "cold_atom_type": self.cold_atom_type,
@@ -121,7 +137,7 @@ class Spooler:
             "num_species": self.num_species,
         }
 
-    def check_instructions(self, ins_list: list) -> Tuple[str, bool]:
+    def check_instructions(self, ins_list: list) -> tuple[str, bool]:
         """
         Check all the instruction to make sure that they are valid.
         """
@@ -139,7 +155,7 @@ class Spooler:
                 break
         return err_code, exp_ok
 
-    def check_dimension(self, json_dict: dict) -> Tuple[str, bool]:
+    def check_dimension(self, json_dict: dict) -> tuple[str, bool]:
         """
         Make sure that the Hilbert space dimension is not too large.
 
@@ -156,7 +172,7 @@ class Spooler:
         # pylint: disable=W0613
         return "", True
 
-    def check_json_dict(self, json_dict: dict) -> Tuple[str, bool]:
+    def check_json_dict(self, json_dict: dict) -> tuple[str, bool]:
         """
         Check if the json file has the appropiate syntax.
 
@@ -193,6 +209,20 @@ class Spooler:
         return err_code.replace("\n", ".."), exp_ok
 
     @property
+    def display_name(self) -> str:
+        """
+        The name of the spooler.
+        """
+        return self._display_name
+
+    @display_name.setter
+    def display_name(self, value: str) -> None:
+        if isinstance(value, str):  # Check if the provided value is a string
+            self._display_name = value
+        else:
+            raise ValueError("display_name must be a string")
+
+    @property
     def gen_circuit(self) -> Callable[[dict], ExperimentDict]:
         """
         The function that generates the circuit.
@@ -207,19 +237,21 @@ class Spooler:
         else:
             raise ValueError("gen_circuit must be a callable function")
 
-    def add_job(self, json_dict: dict, status_msg_dict: dict) -> Tuple[dict, dict]:
+    def add_job(
+        self, json_dict: dict, status_msg_dict: dict
+    ) -> tuple[ResultDict, dict]:
         """
         The function that translates the json with the instructions into some circuit and executes it.
         It performs several checks for the job to see if it is properly working.
         If things are fine the job gets added the list of things that should be executed.
 
         json_dict: The job dictonary of all the instructions.
-        job_id: the ID of the job we are treating.
+        status_msg_dict: the status dictionary of the job we are treating.
         """
         job_id = status_msg_dict["job_id"]
 
-        result_dict = {
-            "backend_name": self.name,
+        result_dict: ResultDict = {
+            "display_name": self.display_name,
             "backend_version": self.version,
             "job_id": job_id,
             "qobj_id": None,

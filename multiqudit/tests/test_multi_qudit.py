@@ -375,9 +375,8 @@ def test_spooler_config():
     """
 
     mq_config_dict = {
-        "name": "alqor_multiqudit_simulator",
         "description": "Setup of a cold atomic gas experiment with a multiple qudits.",
-        "version": "0.0.1",
+        "version": "0.1",
         "cold_atom_type": "spin",
         "gates": [
             {
