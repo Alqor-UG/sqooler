@@ -49,7 +49,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> ResultDict:
 ###########################
 
 
-def test_pydantic_exp_validation():
+def test_pydantic_exp_validation() -> None:
     """
     Test that the validation of the experiment is working
     """
@@ -77,7 +77,7 @@ def test_pydantic_exp_validation():
         RydbergExperiment(**poor_experiment)
 
 
-def test_local_rot_instruction():
+def test_local_rot_instruction() -> None:
     """
     Test that the hop instruction instruction is properly constrained.
     """
@@ -174,7 +174,7 @@ def test_local_rot_instruction():
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
-def test_blockade_instruction():
+def test_blockade_instruction() -> None:
     """
     Test that the Rydberg blockade instruction is properly constrained.
     """
@@ -251,7 +251,7 @@ def test_blockade_instruction():
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
-def test_rydberg_full_instruction():
+def test_rydberg_full_instruction() -> None:
     """
     Test that the RydbergFull  instruction is properly working.
     """
@@ -314,7 +314,7 @@ def test_rydberg_full_instruction():
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
-def test_z_gate():
+def test_z_gate() -> None:
     """
     Test that the z gate is properly applied.
     """
@@ -357,7 +357,7 @@ def test_z_gate():
     assert inst_config == RlzInstruction.config_dict()
 
 
-def test_barrier_gate():
+def test_barrier_gate() -> None:
     """
     Test that the barrier can be properly applied.
     """
@@ -383,7 +383,7 @@ def test_barrier_gate():
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
-def test_measure_gate():
+def test_measure_gate() -> None:
     """
     Test that the measure can be properly applied.
     """
@@ -412,7 +412,7 @@ def test_measure_gate():
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
-def test_spooler_config():
+def test_spooler_config() -> None:
     """
     Test that the back-end is properly configured and we can indeed provide those parameters
      as we would like.
@@ -472,7 +472,7 @@ def test_spooler_config():
     assert spooler_config_dict == mq_config_dict
 
 
-def test_number_experiments():
+def test_number_experiments() -> None:
     """
     Make sure that we cannot submit too many experiments.
     """
@@ -518,7 +518,7 @@ def test_number_experiments():
         data = run_json_circuit(job_payload, job_id)
 
 
-def test_add_job():
+def test_add_job() -> None:
     """
     Test if we can simply add jobs as we should be able too.
     """

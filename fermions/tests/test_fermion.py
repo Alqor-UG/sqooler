@@ -52,7 +52,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> ResultDict:
 ###########################
 
 
-def test_pydantic_exp_validation():
+def test_pydantic_exp_validation() -> None:
     """
     Test that the validation of the experiment is working
     """
@@ -86,7 +86,7 @@ def test_pydantic_exp_validation():
         FermionExperiment(**poor_experiment)
 
 
-def test_barrier_instruction():
+def test_barrier_instruction() -> None:
     """
     Test that the barrier instruction is properly constrained.
     """
@@ -123,7 +123,7 @@ def test_barrier_instruction():
         BarrierInstruction(**gate_dict)
 
 
-def test_load_measure_instruction():
+def test_load_measure_instruction() -> None:
     """
     Test that the barrier instruction is properly constrained.
     """
@@ -170,7 +170,7 @@ def test_load_measure_instruction():
         LoadMeasureInstruction(**gate_dict)
 
 
-def test_hop_instruction():
+def test_hop_instruction() -> None:
     """
     Test that the hop instruction instruction is properly constrained.
     """
@@ -223,7 +223,7 @@ def test_hop_instruction():
     assert inst_config == HopInstruction.config_dict()
 
 
-def test_interaction_instruction():
+def test_interaction_instruction() -> None:
     """
     Test that the hop instruction instruction is properly constrained.
     """
@@ -275,7 +275,7 @@ def test_interaction_instruction():
     assert inst_config == IntInstruction.config_dict()
 
 
-def test_wire_order():
+def test_wire_order() -> None:
     """
     Test that the wire_order is properly working.
     """
@@ -301,7 +301,7 @@ def test_wire_order():
         dummy = run_json_circuit(job_payload, job_id)
 
 
-def test_load_gate():
+def test_load_gate() -> None:
     """
     Test that the loading is properly working.
     """
@@ -331,7 +331,7 @@ def test_load_gate():
     assert shots_array[0] == "1 0 1", "shots_array got messed up"
 
 
-def test_hop_gate():
+def test_hop_gate() -> None:
     """
     Test that the hopping is properly working.
     """
@@ -363,7 +363,7 @@ def test_hop_gate():
     assert shots_array[0] == "0 1 0 1", "shots_array got messed up"
 
 
-def test_number_experiments():
+def test_number_experiments() -> None:
     """
     Make sure that we cannot submit too many experiments.
     """
@@ -415,7 +415,7 @@ def test_number_experiments():
         data = run_json_circuit(job_payload, job_id)
 
 
-def test_phase_gate():
+def test_phase_gate() -> None:
     """
     Test that the phase gate is properly working.
     """
@@ -456,7 +456,7 @@ def test_phase_gate():
     assert inst_config == PhaseInstruction.config_dict()
 
 
-def test_seed():
+def test_seed() -> None:
     """
     Test that the hopping is properly working.
     """
@@ -505,7 +505,7 @@ def test_seed():
     assert shots_array_1 == shots_array_2, "seed got messed up"
 
 
-def test_spooler_config():
+def test_spooler_config() -> None:
     """
     Test that the back-end is properly configured and we can indeed provide those parameters
      as we would like.
@@ -571,7 +571,7 @@ def test_spooler_config():
     assert spooler_config_dict == fermion_config_dict
 
 
-def test_add_job():
+def test_add_job() -> None:
     """
     Test if we can simply add jobs as we should be able too.
     """
