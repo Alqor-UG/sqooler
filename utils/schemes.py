@@ -55,11 +55,11 @@ class GateInstruction(BaseModel):
         Give back the properties of the instruction such as needed for the server.
         """
         return {
-            "coupling_map": cls.__fields__["coupling_map"].default,
-            "description": cls.__fields__["description"].default,
-            "name": cls.__fields__["name"].default,
-            "parameters": [cls.__fields__["parameters"].default],
-            "qasm_def": cls.__fields__["qasm_def"].default,
+            "coupling_map": cls.model_fields["coupling_map"].default,
+            "description": cls.model_fields["description"].default,
+            "name": cls.model_fields["name"].default,
+            "parameters": [cls.model_fields["parameters"].default],
+            "qasm_def": cls.model_fields["qasm_def"].default,
         }
 
 
@@ -121,7 +121,7 @@ class Spooler:
         """
         gate_list = []
         for _, ins_obj in self.ins_schema_dict.items():
-            if "is_gate" in ins_obj.__fields__:
+            if "is_gate" in ins_obj.model_fields:
                 gate_list.append(ins_obj.config_dict())
         return {
             "description": self.description,
