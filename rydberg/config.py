@@ -5,9 +5,8 @@ No simulation is performed here. The entire logic is implemented in the `spooler
 """
 
 from typing import Tuple, Literal, List, Optional
-
-from pydantic import conint, BaseModel, ValidationError, conlist, confloat
-
+from pydantic import Field, BaseModel, ValidationError
+from typing_extensions import Annotated
 
 import numpy as np
 
@@ -36,15 +35,21 @@ class RlxInstruction(GateInstruction):
     """
 
     name: Literal["rlx"] = "rlx"
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=2 * np.pi)]],
+        Field(min_length=1, max_length=1),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "omega"
     description: str = "Evolution under Rlx"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate rlx(omega) {}"
+    qasm_def: str = "gate rlx(omega) {}"
 
 
 class RlzInstruction(GateInstruction):
@@ -59,15 +64,21 @@ class RlzInstruction(GateInstruction):
     """
 
     name: Literal["rlz"] = "rlz"
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=2 * np.pi)]],
+        Field(min_length=1, max_length=1),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "delta"
     description: str = "Evolution under the Rlz gate"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate rlz(delta) {}"
+    qasm_def: str = "gate rlz(delta) {}"
 
 
 class RydbergBlockInstruction(GateInstruction):
@@ -82,15 +93,21 @@ class RydbergBlockInstruction(GateInstruction):
     """
 
     name: Literal["rydberg_block"] = "rydberg_block"
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), min_items=1, max_items=1)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=2, max_length=N_MAX_WIRES),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=2 * np.pi)]],
+        Field(min_length=1, max_length=1),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "phi"
     description: str = "Apply the Rydberg blockade over the whole array"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1, 2, 3, 4]]
-    qasm_def = "gate rydberg_block(phi) {}"
+    qasm_def: str = "gate rydberg_block(phi) {}"
 
 
 class RydbergFullInstruction(GateInstruction):
@@ -105,15 +122,21 @@ class RydbergFullInstruction(GateInstruction):
     """
 
     name: Literal["rydberg_full"] = "rydberg_full"
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=2, max_items=N_MAX_WIRES)  # type: ignore
-    params: conlist(confloat(ge=0, le=5e6 * np.pi), min_items=3, max_items=3)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=2, max_length=N_MAX_WIRES),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=5e6 * np.pi)]],
+        Field(min_length=3, max_length=3),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "omega, delta, phi"
     description: str = "Apply the Rydberg and Rabi coupling over the whole array."
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1, 2, 3, 4]]
-    qasm_def = "gate rydberg_full(omega, delta, phi) {}"
+    qasm_def: str = "gate rydberg_full(omega, delta, phi) {}"
 
 
 class BarrierInstruction(BaseModel):
@@ -128,8 +151,11 @@ class BarrierInstruction(BaseModel):
     """
 
     name: Literal["barrier"]
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=0, max_items=N_MAX_WIRES)  # type: ignore
-    params: conlist(float, max_items=0)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=0, max_length=N_MAX_WIRES),
+    ]
+    params: Annotated[List[float], Field(max_length=0)]
 
 
 class MeasureInstruction(BaseModel):
@@ -143,8 +169,11 @@ class MeasureInstruction(BaseModel):
     """
 
     name: Literal["measure"]
-    wires: conlist(conint(ge=0, le=N_MAX_WIRES - 1), min_items=1, max_items=1)  # type: ignore
-    params: conlist(float, max_items=0)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[List[float], Field(max_length=0)]
 
 
 class RydbergExperiment(BaseModel):
@@ -157,10 +186,10 @@ class RydbergExperiment(BaseModel):
     # mypy keeps throwing errors here because it does not understand the type.
     # not sure how to fix it, so we leave it as is for the moment
     # HINT: Annotated does not work
-    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
-    num_wires: conint(ge=1, le=N_MAX_WIRES)  # type: ignore
+    shots: Annotated[int, Field(gt=0, le=N_MAX_SHOTS)]
+    num_wires: Annotated[int, Field(ge=1, le=N_MAX_WIRES)]
     instructions: List[list]
-    seed: Optional[int]
+    seed: Optional[int] = None
 
 
 class RydbergSpooler(Spooler):

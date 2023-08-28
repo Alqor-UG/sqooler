@@ -6,17 +6,10 @@ from typing import Union
 import pytest
 from pydantic import ValidationError
 import numpy as np
-from pprint import pprint
 
-# pylint: disable=C0413, E0401
-from singlequdit.spooler import (
-    gen_circuit,
-)
-
-
+from utils.schemes import ResultDict, gate_dict_from_list
 from singlequdit.config import (
     spooler_object as sq_spooler,
-    gate_dict_from_list,
     SingleQuditExperiment,
     LoadInstruction,
     MeasureBarrierInstruction,
@@ -26,7 +19,7 @@ from singlequdit.config import (
 )
 
 
-def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
+def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> ResultDict:
     """
     A support function that executes the job.
 
@@ -56,7 +49,7 @@ def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
 ###########################
 
 
-def test_pydantic_exp_validation():
+def test_pydantic_exp_validation() -> None:
     """
     Test that the validation of the experiment is working
     """
@@ -110,7 +103,7 @@ def test_pydantic_exp_validation():
     assert inst_config == RlxInstruction.config_dict()
 
 
-def test_load_instruction():
+def test_load_instruction() -> None:
     """
     Test that the load instruction instruction is properly constrained.
     """
@@ -148,7 +141,7 @@ def test_load_instruction():
         LoadInstruction(**gate_dict)
 
 
-def test_local_rot_instruction():
+def test_local_rot_instruction() -> None:
     """
     Test that the rotation instruction is properly constrained.
     """
@@ -190,7 +183,7 @@ def test_local_rot_instruction():
         RlxInstruction(**gate_dict)
 
 
-def test_squeezing_instruction():
+def test_squeezing_instruction() -> None:
     """
     Test that the rotation instruction is properly constrained.
     """
@@ -238,7 +231,7 @@ def test_squeezing_instruction():
     assert inst_config == LocalSqueezingInstruction.config_dict()
 
 
-def test_measure_instruction():
+def test_measure_instruction() -> None:
     """
     Test that the rotation instruction is properly constrained.
     """
@@ -276,7 +269,7 @@ def test_measure_instruction():
         MeasureBarrierInstruction(**gate_dict)
 
 
-def test_check_json_dict():
+def test_check_json_dict() -> None:
     """
     See if the check of the json dict works out properly.
     """
@@ -303,7 +296,7 @@ def test_check_json_dict():
     assert json_is_fine
 
 
-def test_z_gate():
+def test_z_gate() -> None:
     """
     Test that the z gate is properly applied.
     """
@@ -329,11 +322,11 @@ def test_z_gate():
         },
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
     # test the config
@@ -347,14 +340,14 @@ def test_z_gate():
     assert inst_config == RlzInstruction.config_dict()
 
 
-def test_spooler_config():
+def test_spooler_config() -> None:
     """
     Test that the back-end is properly configured and we can indeed provide those parameters
      as we would like.
     """
     sq_config_dict = {
         "description": "Setup of a cold atomic gas experiment with a single qudit.",
-        "version": "0.0.2",
+        "version": "0.2",
         "cold_atom_type": "spin",
         "gates": [
             {
@@ -391,7 +384,7 @@ def test_spooler_config():
     assert spooler_config_dict == sq_config_dict
 
 
-def test_number_experiments():
+def test_number_experiments() -> None:
     """
     Make sure that we cannot submit too many experiments.
     """
@@ -424,7 +417,7 @@ def test_number_experiments():
         data = run_json_circuit(job_payload, job_id)
 
 
-def test_add_job():
+def test_add_job() -> None:
     """
     Test if we can simply add jobs as we should be able too.
     """

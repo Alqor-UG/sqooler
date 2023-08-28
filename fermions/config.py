@@ -5,7 +5,8 @@ No simulation is performed here. The entire logic is implemented in the `spooler
 """
 
 from typing import Tuple, Literal, List, Optional
-from pydantic import BaseModel, conint, ValidationError, conlist, confloat
+from pydantic import Field, BaseModel, ValidationError
+from typing_extensions import Annotated
 
 import numpy as np
 
@@ -37,8 +38,11 @@ class BarrierInstruction(BaseModel):
     """
 
     name: Literal["barrier"]
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=0, max_items=NUM_WIRES)  # type: ignore
-    params: conlist(float, max_items=0)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=NUM_WIRES - 1)]],
+        Field(min_length=0, max_length=NUM_WIRES),
+    ]
+    params: Annotated[List[float], Field(max_length=0)]
 
 
 class LoadMeasureInstruction(BaseModel):
@@ -52,8 +56,11 @@ class LoadMeasureInstruction(BaseModel):
     """
 
     name: Literal["load", "measure"]
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=1, max_items=1)  # type: ignore
-    params: conlist(float, max_items=0)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=NUM_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[List[float], Field(max_length=0)]
 
 
 class HopInstruction(GateInstruction):
@@ -68,8 +75,13 @@ class HopInstruction(GateInstruction):
     """
 
     name: Literal["fhop"] = "fhop"
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=4, max_items=4)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=NUM_WIRES - 1)]],
+        Field(min_length=4, max_length=4),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=2 * np.pi)]], Field(max_length=1)
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "j_i"
@@ -94,8 +106,13 @@ class IntInstruction(GateInstruction):
     """
 
     name: Literal["fint"] = "fint"
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=NUM_WIRES)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=NUM_WIRES - 1)]],
+        Field(min_length=2, max_length=NUM_WIRES),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=2 * np.pi)]], Field(max_length=1)
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "u"
@@ -115,8 +132,13 @@ class PhaseInstruction(GateInstruction):
     """
 
     name: Literal["fphase"] = "fphase"
-    wires: conlist(conint(ge=0, le=NUM_WIRES - 1), min_items=2, max_items=2)  # type: ignore
-    params: conlist(confloat(ge=0, le=2 * np.pi), max_items=1)  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=NUM_WIRES - 1)]],
+        Field(min_length=2, max_length=2),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=2 * np.pi)]], Field(max_length=1)
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "mu_i"
@@ -134,10 +156,10 @@ class FermionExperiment(BaseModel):
 
     wire_order: Literal["interleaved"]
     # we use the Annotated notation to make mypy happy with constrained types
-    shots: conint(gt=0, le=N_MAX_SHOTS)  # type: ignore
-    num_wires: conint(ge=1, le=N_MAX_WIRES)  # type: ignore
+    shots: Annotated[int, Field(gt=0, le=N_MAX_SHOTS)]
+    num_wires: Annotated[int, Field(ge=1, le=N_MAX_WIRES)]
     instructions: List[list]
-    seed: Optional[int]
+    seed: Optional[int] = None
 
 
 class FermionSpooler(Spooler):
