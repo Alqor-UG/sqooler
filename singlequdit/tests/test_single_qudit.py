@@ -6,17 +6,10 @@ from typing import Union
 import pytest
 from pydantic import ValidationError
 import numpy as np
-from pprint import pprint
 
-# pylint: disable=C0413, E0401
-from singlequdit.spooler import (
-    gen_circuit,
-)
-
-
+from utils.schemes import ResultDict, gate_dict_from_list
 from singlequdit.config import (
     spooler_object as sq_spooler,
-    gate_dict_from_list,
     SingleQuditExperiment,
     LoadInstruction,
     MeasureBarrierInstruction,
@@ -26,7 +19,7 @@ from singlequdit.config import (
 )
 
 
-def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
+def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> ResultDict:
     """
     A support function that executes the job.
 
@@ -329,11 +322,11 @@ def test_z_gate():
         },
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
     # test the config
@@ -354,7 +347,7 @@ def test_spooler_config():
     """
     sq_config_dict = {
         "description": "Setup of a cold atomic gas experiment with a single qudit.",
-        "version": "0.0.2",
+        "version": "0.2",
         "cold_atom_type": "spin",
         "gates": [
             {

@@ -7,10 +7,8 @@ import numpy as np
 import pytest
 
 from pydantic import ValidationError
-from pprint import pprint
 
-# pylint: disable=C0413, E0401
-from utils.schemes import gate_dict_from_list
+from utils.schemes import gate_dict_from_list, ResultDict
 from rydberg.config import (
     spooler_object as ryd_spooler,
     RydbergExperiment,
@@ -21,7 +19,7 @@ from rydberg.config import (
 )
 
 
-def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
+def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> ResultDict:
     """
     A support function that executes the job.
 
@@ -143,12 +141,12 @@ def test_local_rot_instruction():
         }
     }
 
-    job_id = 2
+    job_id = "2"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
     assert shots_array[0] == "1 0", "job_id got messed up"
-    assert data["job_id"] == 2, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
     # also spins of same length
@@ -167,12 +165,12 @@ def test_local_rot_instruction():
         }
     }
 
-    job_id = 2
+    job_id = "2"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
     assert shots_array[0] == "0 0", "job_id got messed up"
-    assert data["job_id"] == 2, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
@@ -244,12 +242,12 @@ def test_blockade_instruction():
         }
     }
 
-    job_id = 2
+    job_id = "2"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
     assert shots_array[0] == "1 1", "job_id got messed up"
-    assert data["job_id"] == 2, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
@@ -307,12 +305,12 @@ def test_rydberg_full_instruction():
         }
     }
 
-    job_id = 2
+    job_id = "2"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
     assert shots_array[0] == "1 1", "job_id got messed up"
-    assert data["job_id"] == 2, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
@@ -341,11 +339,11 @@ def test_z_gate():
         },
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
     # test the config
@@ -377,11 +375,11 @@ def test_barrier_gate():
         }
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
 
@@ -403,11 +401,11 @@ def test_measure_gate():
         }
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
 
     assert shots_array[0] == "0 0", "job_id got messed up"
@@ -422,7 +420,7 @@ def test_spooler_config():
 
     mq_config_dict = {
         "description": "A chain of qubits realized through Rydberg atoms.",
-        "version": "0.0.3",
+        "version": "0.3",
         "cold_atom_type": "spin",
         "gates": [
             {

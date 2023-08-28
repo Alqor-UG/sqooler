@@ -8,11 +8,9 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
-# pylint: disable=C0413, E0401
 
 from fermions.config import (
     spooler_object as f_spooler,
-    gate_dict_from_list,
     FermionExperiment,
     BarrierInstruction,
     LoadMeasureInstruction,
@@ -21,8 +19,10 @@ from fermions.config import (
     PhaseInstruction,
 )
 
+from utils.schemes import gate_dict_from_list, ResultDict
 
-def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> dict:
+
+def run_json_circuit(json_dict: dict, job_id: Union[int, str]) -> ResultDict:
     """
     A support function that executes the job.
 
@@ -322,11 +322,11 @@ def test_load_gate():
         },
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
     assert shots_array[0] == "1 0 1", "shots_array got messed up"
 
@@ -354,11 +354,11 @@ def test_hop_gate():
         },
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
     assert shots_array[0] == "0 1 0 1", "shots_array got messed up"
 
@@ -437,11 +437,11 @@ def test_phase_gate():
         },
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array = data["results"][0]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array) > 0, "shots_array got messed up"
     assert shots_array[0] == "0 1", "shots_array got messed up"
 
@@ -495,12 +495,12 @@ def test_seed():
         },
     }
 
-    job_id = 1
+    job_id = "1"
     data = run_json_circuit(job_payload, job_id)
 
     shots_array_1 = data["results"][0]["data"]["memory"]
     shots_array_2 = data["results"][1]["data"]["memory"]
-    assert data["job_id"] == 1, "job_id got messed up"
+    assert data["job_id"] == job_id, "job_id got messed up"
     assert len(shots_array_1) > 0, "shots_array got messed up"
     assert shots_array_1 == shots_array_2, "seed got messed up"
 

@@ -6,6 +6,7 @@ No simulation is performed here. The entire logic is implemented in the `spooler
 
 from typing import List, Tuple, Literal, Optional
 from pydantic import Field, BaseModel, ValidationError
+from typing_extensions import Annotated
 
 from numpy import pi
 
@@ -16,7 +17,6 @@ from utils.schemes import (
 )
 
 from .spooler import gen_circuit
-from typing_extensions import Annotated
 
 N_MAX_WIRES = 4
 N_MAX_SHOTS = int(1e6)
@@ -42,15 +42,21 @@ class RlxInstruction(GateInstruction):
     """
 
     name: Literal["rlx"] = "rlx"
-    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=1, max_length=1)]  # type: ignore
-    params: Annotated[List[Annotated[float, Field(ge=0, le=2 * pi)]], Field(min_length=1, max_length=1)]  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=2 * pi)]],
+        Field(min_length=1, max_length=1),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "omega"
     description: str = "Evolution under Lx"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate lrx(omega) {}"
+    qasm_def: str = "gate lrx(omega) {}"
 
 
 class RlzInstruction(GateInstruction):
@@ -65,15 +71,21 @@ class RlzInstruction(GateInstruction):
     """
 
     name: Literal["rlz"] = "rlz"
-    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=1, max_length=1)]  # type: ignore
-    params: Annotated[List[Annotated[float, Field(ge=0, le=2 * pi)]], Field(min_length=1, max_length=1)]  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=2 * pi)]],
+        Field(min_length=1, max_length=1),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "delta"
     description: str = "Evolution under the Z gate"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate rlz(delta) {}"
+    qasm_def: str = "gate rlz(delta) {}"
 
 
 class LocalSqueezingInstruction(GateInstruction):
@@ -88,15 +100,21 @@ class LocalSqueezingInstruction(GateInstruction):
     """
 
     name: Literal["rlz2"] = "rlz2"
-    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=1, max_length=1)]  # type: ignore
-    params: Annotated[List[Annotated[float, Field(ge=0, le=10 * 2 * pi)]], Field(min_length=1, max_length=1)]  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=10 * 2 * pi)]],
+        Field(min_length=1, max_length=1),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "chi"
     description: str = "Evolution under lz2"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0], [1], [2], [3], [4]]
-    qasm_def = "gate rlz2(chi) {}"
+    qasm_def: str = "gate rlz2(chi) {}"
 
 
 class RlxlyInstruction(GateInstruction):
@@ -111,15 +129,21 @@ class RlxlyInstruction(GateInstruction):
     """
 
     name: Literal["rlxly"] = "rlxly"
-    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=2, max_length=N_MAX_WIRES)]  # type: ignore
-    params: Annotated[List[Annotated[float, Field(ge=0, le=10 * 2 * pi)]], Field(min_length=1, max_length=1)]  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=2, max_length=N_MAX_WIRES),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=10 * 2 * pi)]],
+        Field(min_length=1, max_length=1),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "J"
     description: str = "Entanglement between neighboring gates with an xy interaction"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]]
-    qasm_def = "gate rlylx(J) {}"
+    qasm_def: str = "gate rlylx(J) {}"
 
 
 class RlzlzInstruction(GateInstruction):
@@ -134,15 +158,21 @@ class RlzlzInstruction(GateInstruction):
     """
 
     name: Literal["rlzlz"] = "rlzlz"
-    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=2, max_length=N_MAX_WIRES)]  # type: ignore
-    params: Annotated[List[Annotated[float, Field(ge=0, le=10 * 2 * pi)]], Field(min_length=1, max_length=1)]  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=2, max_length=N_MAX_WIRES),
+    ]
+    params: Annotated[
+        List[Annotated[float, Field(ge=0, le=10 * 2 * pi)]],
+        Field(min_length=1, max_length=1),
+    ]
 
     # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
     parameters: str = "J"
     description: str = "Entanglement between neighboring gates with a zz interaction"
     # TODO: This should become most likely a type that is then used for the enforcement of the wires.
     coupling_map: List = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 1, 2, 3, 4]]
-    qasm_def = "gate rlzlz(J) {}"
+    qasm_def: str = "gate rlzlz(J) {}"
 
 
 class BarrierInstruction(BaseModel):
@@ -157,8 +187,11 @@ class BarrierInstruction(BaseModel):
     """
 
     name: Literal["barrier"]
-    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=0, max_length=N_MAX_WIRES)]  # type: ignore
-    params: Annotated[List[float], Field(max_length=0)]  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=0, max_length=N_MAX_WIRES),
+    ]
+    params: Annotated[List[float], Field(max_length=0)]
 
 
 class LoadInstruction(BaseModel):
@@ -172,8 +205,14 @@ class LoadInstruction(BaseModel):
     """
 
     name: Literal["load"]
-    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=1, max_length=1)]  # type: ignore
-    params: Annotated[List[Annotated[int, Field(ge=1, le=N_MAX_ATOMS)]], Field(min_length=1, max_length=1)]  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[
+        List[Annotated[int, Field(ge=1, le=N_MAX_ATOMS)]],
+        Field(min_length=1, max_length=1),
+    ]
 
 
 class MeasureInstruction(BaseModel):
@@ -187,8 +226,11 @@ class MeasureInstruction(BaseModel):
     """
 
     name: Literal["measure"]
-    wires: Annotated[List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]], Field(min_length=1, max_length=1)]  # type: ignore
-    params: Annotated[List[float], Field(max_length=0)]  # type: ignore
+    wires: Annotated[
+        List[Annotated[int, Field(ge=0, le=N_MAX_WIRES - 1)]],
+        Field(min_length=1, max_length=1),
+    ]
+    params: Annotated[List[float], Field(max_length=0)]
 
 
 class MultiQuditExperiment(BaseModel):
@@ -201,8 +243,8 @@ class MultiQuditExperiment(BaseModel):
     # mypy keeps throwing errors here because it does not understand the type.
     # not sure how to fix it, so we leave it as is for the moment
     # HINT: Annotated does not work
-    shots: Annotated[int, Field(gt=0, le=N_MAX_SHOTS)]  # type: ignore
-    num_wires: Annotated[int, Field(ge=1, le=N_MAX_WIRES)]  # type: ignore
+    shots: Annotated[int, Field(gt=0, le=N_MAX_SHOTS)]
+    num_wires: Annotated[int, Field(ge=1, le=N_MAX_WIRES)]
     instructions: List[list]
     seed: Optional[int] = None
 
