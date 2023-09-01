@@ -27,7 +27,7 @@ pluggy==1.2.0
 pymongo==4.3.3
 pydantic==2.3.0
 pylint==2.17.5
-pyparsing==3.0.4
+pyparsing==3.1.1
 pyrsistent==0.17.3
 pytest==7.4.0
 python-decouple==3.6
