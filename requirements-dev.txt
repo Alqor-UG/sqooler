@@ -30,7 +30,7 @@ pylint==2.17.5
 pyparsing==3.0.4
 pyrsistent==0.17.3
 pytest==7.4.0
-python-decouple==3.6
+python-decouple==3.8
 pytz==2021.1
 regex==2023.6.3
 requests==2.31.0
