@@ -8,6 +8,11 @@ from abc import ABC, abstractmethod
 import json
 
 from typing import Mapping
+
+# necessary for the local provider
+import shutil
+import os
+
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
@@ -15,6 +20,7 @@ from dropbox.exceptions import ApiError, AuthError
 # necessary for the mongodb provider
 from pymongo.mongo_client import MongoClient
 from bson.objectid import ObjectId
+
 
 # get the environment variables
 from decouple import config
@@ -743,6 +749,226 @@ class MongodbProvider(StorageProvider):
         # if there is a job, we should move it
         if job_list:
             job_id = job_list[0]
+            job_dict["job_id"] = job_id
+
+            # and move the file into the right directory
+            self.move_file(queue_dir, "jobs/running", job_id)
+            job_dict["job_json_path"] = "jobs/running"
+        return job_dict
+
+
+class LocalProvider(StorageProvider):
+    """
+    Create a file storage that works on the local machine.
+    """
+
+    def __init__(self) -> None:
+        """
+        Set up the neccessary keys and create the client through which all the connections will run.
+        """
+        base_path = config("BASE_PATH")
+        self.base_path = base_path
+
+    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
+        """
+        Upload the file to the storage
+        """
+        # strip trailing and leading slashes from the storage_path
+        storage_path = storage_path.strip("/")
+
+        # json folder
+        folder_path = self.base_path + "/" + storage_path
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        # create the full path
+        full_json_path = folder_path + "/" + job_id + ".json"
+
+        with open(full_json_path, "w", encoding="utf-8") as json_file:
+            json.dump(content_dict, json_file)
+
+    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the file content from the storage
+        """
+        # strip trailing and leading slashes from the storage_path
+        storage_path = storage_path.strip("/")
+
+        # create the full path
+        full_json_path = self.base_path + "/" + storage_path + "/" + job_id + ".json"
+
+        with open(full_json_path, "r", encoding="utf-8") as json_file:
+            loaded_data_dict = json.load(json_file)
+        return loaded_data_dict
+
+    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the content of the job from the storage. This is a wrapper around get_file_content
+        and and handles the different ways of identifiying the job.
+
+        storage_path: the path towards the file, excluding the filename / id
+        job_id: the id of the file we are about to look up
+
+        Returns:
+            The content of the job
+        """
+        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
+        return job_dict
+
+    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+        """
+        Update the file content.
+
+        Args:
+            content_dict: The dictionary containing the new content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
+
+        Returns:
+            None
+        """
+        # strip trailing and leading slashes from the storage_path
+        storage_path = storage_path.strip("/")
+
+        # json folder
+        folder_path = self.base_path + "/" + storage_path
+
+        # create the full path
+        full_json_path = folder_path + "/" + job_id + ".json"
+
+        # does the file already exist ?
+        if not os.path.exists(full_json_path):
+            raise FileNotFoundError(
+                f"The file {full_json_path} does not exist and cannot be updated."
+            )
+        with open(full_json_path, "w", encoding="utf-8") as json_file:
+            json.dump(content_dict, json_file)
+
+    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+        """
+        Move the file from `start_path` to `final_path`
+        """
+        start_path = start_path.strip("/")
+
+        source_file = self.base_path + "/" + start_path + "/" + job_id + ".json"
+        final_path = self.base_path + "/" + final_path + "/"
+        if not os.path.exists(final_path):
+            os.makedirs(final_path)
+
+        # Move the file
+        shutil.move(source_file, final_path)
+
+    def delete_file(self, storage_path: str, job_id: str) -> None:
+        """
+        Delete the file from the storage
+
+        Args:
+            storage_path: the path where the file is currently stored, but excluding the file name
+            job_id: the name of the file
+
+        Returns:
+            None
+        """
+        storage_path = storage_path.strip("/")
+        source_file = self.base_path + "/" + storage_path + "/" + job_id + ".json"
+        os.remove(source_file)
+
+    def upload_config(self, config_dict: dict, backend_name: str) -> None:
+        """
+        The function that uploads the spooler configuration to the storage.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            backend_name (str): The name of the backend
+
+        Returns:
+            None
+        """
+        # path of the configs
+        config_path = self.base_path + "/backends/configs"
+        # test if the config path already exists. If it does not, create it
+        if not os.path.exists(config_path):
+            os.makedirs(config_path)
+
+        full_json_path = config_path + "/" + backend_name + ".json"
+        with open(full_json_path, "w", encoding="utf-8") as json_file:
+            json.dump(config_dict, json_file)
+
+    def update_in_database(
+        self,
+        result_dict: ResultDict,
+        status_msg_dict: dict,
+        job_id: str,
+        backend_name: str,
+    ) -> None:
+        """
+        Upload the status and result to the `StorageProvider`.
+
+        Args:
+            result_dict: the dictionary containing the result of the job
+            status_msg_dict: the dictionary containing the status message of the job
+            job_id: the name of the job
+            backend_name: the name of the backend
+
+        Returns:
+            None
+        """
+        job_json_start_dir = "jobs/running"
+        # check if the job is done or had an error
+        if status_msg_dict["status"] == "DONE":
+            # test if the result dict is None
+            if result_dict is None:
+                raise ValueError(
+                    "The 'result_dict' argument cannot be None if the job is done."
+                )
+            # let us create the result json file
+            result_json_dir = "results/" + backend_name
+            self.upload(result_dict, result_json_dir, job_id)
+
+            # now move the job out of the running jobs into the finished jobs
+            job_finished_json_dir = "jobs/finished/" + backend_name
+            self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
+
+        elif status_msg_dict["status"] == "ERROR":
+            # because there was an error, we move the job to the deleted jobs
+            deleted_json_dir = "jobs/deleted"
+            self.move_file(job_json_start_dir, deleted_json_dir, job_id)
+
+        # and create the status json file
+        status_json_dir = "status/" + backend_name
+        self.update_file(status_msg_dict, status_json_dir, job_id)
+
+    def get_file_queue(self, storage_path: str) -> list[str]:
+        """
+        Get a list of files
+
+        Args:
+            storage_path: Where are we looking for the files.
+
+        Returns:
+            A list of files that was found.
+        """
+        # get a list of files in the folder
+        full_path = self.base_path + "/" + storage_path
+        return os.listdir(full_path)
+
+    def get_next_job_in_queue(self, backend_name: str) -> dict:
+        """
+        A function that obtains the next job in the queue.
+
+        Args:
+            backend_name (str): The name of the backend
+
+        Returns:
+            the path towards the job
+        """
+        queue_dir = "jobs/queued/" + backend_name
+        job_dict = {"job_id": 0, "job_json_path": "None"}
+        job_list = self.get_file_queue(queue_dir)
+        # if there is a job, we should move it
+        if job_list:
+            job_json_name = job_list[0]
+            job_id = job_json_name[:-5]
             job_dict["job_id"] = job_id
 
             # and move the file into the right directory
