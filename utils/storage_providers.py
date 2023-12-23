@@ -957,7 +957,7 @@ class LocalProvider(StorageProvider):
         A function that obtains the next job in the queue.
 
         Args:
-            backend_name (str): The name of the backend
+            backend_name: The name of the backend
 
         Returns:
             the path towards the job
