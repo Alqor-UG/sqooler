@@ -3,8 +3,8 @@ The tests for the storage provider using mongodb
 """
 
 import uuid
-from .storage_providers import MongodbProvider
-from .schemes import ResultDict
+from sqooler.storage_providers import MongodbProvider
+from sqooler.schemes import ResultDict
 
 
 class TestMongodbProvider:

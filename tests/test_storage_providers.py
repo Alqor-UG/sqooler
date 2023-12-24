@@ -3,8 +3,8 @@ The tests for the storage provider
 """
 import datetime
 import uuid
-from .storage_providers import DropboxProvider
-from .schemes import ResultDict
+from sqooler.storage_providers import DropboxProvider
+from sqooler.schemes import ResultDict
 
 
 class TestDropboxProvider:

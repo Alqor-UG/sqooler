@@ -6,8 +6,8 @@ import uuid
 import json
 import shutil
 
-from .storage_providers import LocalProvider
-from .schemes import ResultDict
+from sqooler.storage_providers import LocalProvider
+from sqooler.schemes import ResultDict
 
 
 class TestLocalProvider:
