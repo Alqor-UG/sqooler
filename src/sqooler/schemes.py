@@ -36,6 +36,16 @@ class ResultDict(TypedDict):
     backend_name: NotRequired[str]
 
 
+class DropboxLoginInformation(BaseModel):
+    """
+    The login information for the dropbox
+    """
+
+    app_key: str
+    app_secret: str
+    refresh_token: str
+
+
 class MongodbLoginInformation(BaseModel):
     """
     The login information for MongoDB

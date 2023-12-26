@@ -4,7 +4,10 @@ The tests for the storage provider
 import datetime
 import uuid
 from sqooler.storage_providers import DropboxProvider
-from sqooler.schemes import ResultDict
+from sqooler.schemes import ResultDict, DropboxLoginInformation
+
+# get the environment variables
+from decouple import config
 
 
 class TestDropboxProvider:
@@ -12,11 +15,25 @@ class TestDropboxProvider:
     The class that contains all the tests for the dropbox provider.
     """
 
+    def get_login(self) -> DropboxLoginInformation:
+        # put together the login information
+
+        app_key = config("APP_KEY")
+        app_secret = config("APP_SECRET")
+        refresh_token = config("REFRESH_TOKEN")
+
+        login_dict = {
+            "app_key": app_key,
+            "app_secret": app_secret,
+            "refresh_token": refresh_token,
+        }
+        return DropboxLoginInformation(**login_dict)
+
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
         """
-        storage_provider = DropboxProvider()
+        storage_provider = DropboxProvider(self.get_login())
         # upload a file and get it back
         job_id = uuid.uuid4().hex
         test_content = {"experiment_0": "Nothing happened here."}
@@ -45,7 +62,7 @@ class TestDropboxProvider:
         We would like to make sure that we can properly upload the configuration files
         that come from the spoolers.
         """
-        storage_provider = DropboxProvider()
+        storage_provider = DropboxProvider(self.get_login())
         dummy_id = uuid.uuid4().hex[:5]
         backend_name = f"dummy_{dummy_id}"
         dummy_dict: dict = {}
@@ -65,7 +82,7 @@ class TestDropboxProvider:
         """
         Is it possible to work through the queue of jobs?
         """
-        storage_provider = DropboxProvider()
+        storage_provider = DropboxProvider(self.get_login())
 
         # create a dummy backend
         dummy_id = uuid.uuid4().hex[:5]

@@ -23,7 +23,7 @@ from bson.objectid import ObjectId
 
 from decouple import config
 
-from .schemes import ResultDict, MongodbLoginInformation
+from .schemes import ResultDict, MongodbLoginInformation, DropboxLoginInformation
 
 
 class StorageProvider(ABC):
@@ -146,13 +146,13 @@ class DropboxProvider(StorageProvider):
     The class that implements the dropbox storage provider.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, login_dict: DropboxLoginInformation) -> None:
         """
         Set up the neccessary keys.
         """
-        self.app_key = config("APP_KEY")
-        self.app_secret = config("APP_SECRET")
-        self.refresh_token = config("REFRESH_TOKEN")
+        self.app_key = login_dict.app_key
+        self.app_secret = login_dict.app_secret
+        self.refresh_token = login_dict.refresh_token
 
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
