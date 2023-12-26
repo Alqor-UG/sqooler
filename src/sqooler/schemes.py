@@ -56,6 +56,16 @@ class MongodbLoginInformation(BaseModel):
     mongodb_database_url: str
 
 
+class LocalLoginInformation(BaseModel):
+    """
+    The login information for a local storage provider.
+
+    base_path: The base path of the storage provider on your local file system.
+    """
+
+    base_path: str
+
+
 class GateInstruction(BaseModel):
     """
     The basic class for all the gate intructions of a backend.

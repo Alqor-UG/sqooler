@@ -21,9 +21,12 @@ from dropbox.exceptions import ApiError, AuthError
 from pymongo.mongo_client import MongoClient
 from bson.objectid import ObjectId
 
-from decouple import config
-
-from .schemes import ResultDict, MongodbLoginInformation, DropboxLoginInformation
+from .schemes import (
+    ResultDict,
+    MongodbLoginInformation,
+    DropboxLoginInformation,
+    LocalLoginInformation,
+)
 
 
 class StorageProvider(ABC):
@@ -760,12 +763,11 @@ class LocalProvider(StorageProvider):
     Create a file storage that works on the local machine.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, login_dict: LocalLoginInformation) -> None:
         """
         Set up the neccessary keys and create the client through which all the connections will run.
         """
-        base_path = config("BASE_PATH")
-        self.base_path = base_path
+        self.base_path = login_dict.base_path
 
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """

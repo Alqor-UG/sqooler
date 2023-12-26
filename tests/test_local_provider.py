@@ -7,7 +7,10 @@ import json
 import shutil
 
 from sqooler.storage_providers import LocalProvider
-from sqooler.schemes import ResultDict
+from sqooler.schemes import ResultDict, LocalLoginInformation
+
+# get the environment variables
+from decouple import config
 
 
 class TestLocalProvider:
@@ -22,11 +25,17 @@ class TestLocalProvider:
         """
         shutil.rmtree("storage")
 
+    def get_login(self) -> LocalLoginInformation:
+        """
+        Pull all the login information from the environment variables.
+        """
+        return LocalLoginInformation(base_path=config("BASE_PATH"))
+
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
         """
-        storage_provider = LocalProvider()
+        storage_provider = LocalProvider(self.get_login())
         # upload a file and get it back
         test_content = {"experiment_0": "Nothing happened here."}
         storage_path = "test/subcollection"
@@ -63,7 +72,7 @@ class TestLocalProvider:
         that come from the spoolers.
         """
 
-        storage_provider = LocalProvider()
+        storage_provider = LocalProvider(self.get_login())
         dummy_id = uuid.uuid4().hex[:5]
         backend_name = f"dummy_{dummy_id}"
 
@@ -99,7 +108,7 @@ class TestLocalProvider:
         """
         Is it possible to work through the queue of jobs?
         """
-        storage_provider = LocalProvider()
+        storage_provider = LocalProvider(self.get_login())
 
         # create a dummy backend
         dummy_id = uuid.uuid4().hex[:5]
