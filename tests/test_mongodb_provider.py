@@ -1,10 +1,12 @@
 """
 The tests for the storage provider using mongodb
 """
-
 import uuid
 from sqooler.storage_providers import MongodbProvider
-from sqooler.schemes import ResultDict
+from sqooler.schemes import ResultDict, MongodbLoginInformation
+
+# get the environment variables
+from decouple import config
 
 
 class TestMongodbProvider:
@@ -12,11 +14,26 @@ class TestMongodbProvider:
     The class that contains all the tests for the dropbox provider.
     """
 
+    def get_login(self) -> MongodbLoginInformation:
+        # put together the login information
+        mongodb_username = config("MONGODB_USERNAME")
+        mongodb_password = config("MONGODB_PASSWORD")
+        mongodb_database_url = config("MONGODB_DATABASE_URL")
+
+        login_dict = {
+            "mongodb_username": mongodb_username,
+            "mongodb_password": mongodb_password,
+            "mongodb_database_url": mongodb_database_url,
+        }
+        return MongodbLoginInformation(**login_dict)
+
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
         """
-        storage_provider = MongodbProvider()
+        login_dict = self.get_login()
+        print(login_dict)
+        storage_provider = MongodbProvider(login_dict)
         # upload a file and get it back
         test_content = {"experiment_0": "Nothing happened here."}
         storage_path = "test/subcollection"
@@ -53,7 +70,7 @@ class TestMongodbProvider:
         that come from the spoolers.
         """
 
-        storage_provider = MongodbProvider()
+        storage_provider = MongodbProvider(self.get_login())
         dummy_id = uuid.uuid4().hex[:5]
         backend_name = f"dummy_{dummy_id}"
 
@@ -89,7 +106,7 @@ class TestMongodbProvider:
         """
         Is it possible to work through the queue of jobs?
         """
-        storage_provider = MongodbProvider()
+        storage_provider = MongodbProvider(self.get_login())
 
         # create a dummy backend
         dummy_id = uuid.uuid4().hex[:5]

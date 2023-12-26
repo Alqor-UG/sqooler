@@ -21,11 +21,9 @@ from dropbox.exceptions import ApiError, AuthError
 from pymongo.mongo_client import MongoClient
 from bson.objectid import ObjectId
 
-
-# get the environment variables
 from decouple import config
 
-from .schemes import ResultDict
+from .schemes import ResultDict, MongodbLoginInformation
 
 
 class StorageProvider(ABC):
@@ -463,13 +461,13 @@ class MongodbProvider(StorageProvider):
     The access to the mongodb
     """
 
-    def __init__(self) -> None:
+    def __init__(self, login_dict: MongodbLoginInformation) -> None:
         """
         Set up the neccessary keys and create the client through which all the connections will run.
         """
-        mongodb_username = config("MONGODB_USERNAME")
-        mongodb_password = config("MONGODB_PASSWORD")
-        mongodb_database_url = config("MONGODB_DATABASE_URL")
+        mongodb_username = login_dict.mongodb_username
+        mongodb_password = login_dict.mongodb_password
+        mongodb_database_url = login_dict.mongodb_database_url
 
         uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}@{mongodb_database_url}"
         uri = uri + "/?retryWrites=true&w=majority"

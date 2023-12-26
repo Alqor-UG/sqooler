@@ -36,6 +36,16 @@ class ResultDict(TypedDict):
     backend_name: NotRequired[str]
 
 
+class MongodbLoginInformation(BaseModel):
+    """
+    The login information for MongoDB
+    """
+
+    mongodb_username: str
+    mongodb_password: str
+    mongodb_database_url: str
+
+
 class GateInstruction(BaseModel):
     """
     The basic class for all the gate intructions of a backend.
