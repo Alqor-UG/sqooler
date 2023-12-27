@@ -275,8 +275,13 @@ class Spooler:
         It performs several checks for the job to see if it is properly working.
         If things are fine the job gets added the list of things that should be executed.
 
-        json_dict: The job dictonary of all the instructions.
-        status_msg_dict: the status dictionary of the job we are treating.
+        Args:
+            json_dict: The job dictonary of all the instructions.
+            status_msg_dict: the status dictionary of the job we are treating.
+
+        Returns:
+            result_dict: The dictionary with the results of the job.
+            status_msg_dict: The status dictionary of the job.
         """
         job_id = status_msg_dict["job_id"]
 

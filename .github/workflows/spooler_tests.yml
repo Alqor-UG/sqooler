@@ -20,7 +20,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.9', '3.12']
+        python-version: ['3.10', '3.12']
         os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
     steps:
       - name: Print Concurrency Group
