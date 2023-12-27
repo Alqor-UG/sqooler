@@ -3,9 +3,10 @@ This is the test tool for the utils module.
 """
 import os
 import uuid
-import pytest
 import shutil
 from typing import Iterator, Callable
+
+import pytest
 
 from sqooler.utils import update_backends, main
 from sqooler.schemes import LocalLoginInformation, Spooler
@@ -20,6 +21,7 @@ test_spooler = Spooler(ins_schema_dict={}, n_wires=2)
 backends = {"test": test_spooler}
 
 
+# pylint: disable=W0613, W0621
 @pytest.fixture
 def utils_storage_setup_teardown() -> Iterator[None]:
     """
