@@ -3,20 +3,39 @@ The tests for the storage provider using mongodb
 """
 
 import uuid
-from .storage_providers import MongodbProvider
-from .schemes import ResultDict
+import json
+import shutil
+
+from sqooler.storage_providers import LocalProvider
+from sqooler.schemes import ResultDict, LocalLoginInformation
+
+# get the environment variables
+from decouple import config
 
 
-class TestMongodbProvider:
+class TestLocalProvider:
     """
     The class that contains all the tests for the dropbox provider.
     """
+
+    @classmethod
+    def teardown_class(cls) -> None:
+        """
+        Remove the `storage` folder.
+        """
+        shutil.rmtree("storage")
+
+    def get_login(self) -> LocalLoginInformation:
+        """
+        Pull all the login information from the environment variables.
+        """
+        return LocalLoginInformation(base_path=config("BASE_PATH"))
 
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
         """
-        storage_provider = MongodbProvider()
+        storage_provider = LocalProvider(self.get_login())
         # upload a file and get it back
         test_content = {"experiment_0": "Nothing happened here."}
         storage_path = "test/subcollection"
@@ -53,7 +72,7 @@ class TestMongodbProvider:
         that come from the spoolers.
         """
 
-        storage_provider = MongodbProvider()
+        storage_provider = LocalProvider(self.get_login())
         dummy_id = uuid.uuid4().hex[:5]
         backend_name = f"dummy_{dummy_id}"
 
@@ -67,11 +86,11 @@ class TestMongodbProvider:
 
         # can we get the backend in the list ?
         # get the database on which we work
-        database = storage_provider.client["backends"]
-        configs = database["configs"]
-        document_to_find = {"display_name": backend_name}
+        uploaded_path = storage_provider.base_path + "/backends/configs"
+        full_json_path = uploaded_path + "/" + backend_name + ".json"
+        with open(full_json_path, "r", encoding="UTF-8") as json_file:
+            result_found = json.load(json_file)
 
-        result_found = configs.find_one(document_to_find)
         if result_found is None:
             raise ValueError("The backend was not uploaded properly.")
         assert result_found["display_name"] == dummy_dict["display_name"]
@@ -79,17 +98,17 @@ class TestMongodbProvider:
         # make sure that the upload of the same backend does only update it.
         dummy_dict["num_wires"] = 4
         storage_provider.upload_config(dummy_dict, backend_name)
-        results_found = configs.find(document_to_find)
-        assert len(list(results_found)) == 1
+        with open(full_json_path, "r", encoding="UTF-8") as json_file:
+            result_found = json.load(json_file)
 
-        # clean up our mess
-        configs.delete_one(document_to_find)
+        # clean up our mess and remove the file
+        storage_provider.delete_file("backends/configs", backend_name)
 
     def test_get_next_job_in_queue(self) -> None:
         """
         Is it possible to work through the queue of jobs?
         """
-        storage_provider = MongodbProvider()
+        storage_provider = LocalProvider(self.get_login())
 
         # create a dummy backend
         dummy_id = uuid.uuid4().hex[:5]
@@ -154,16 +173,3 @@ class TestMongodbProvider:
         # clean up the mess
         storage_provider.delete_file(job_finished_json_dir, job_id)
         storage_provider.delete_file(status_json_dir, job_id)
-
-        # remove the unused collections in the jobs
-        database = storage_provider.client["jobs"]
-        collection = database[f"queued.{backend_name}"]
-        collection.drop()
-
-        collection = database[f"finished.{backend_name}"]
-        collection.drop()
-
-        # remove the unused collections in the status
-        database = storage_provider.client["status"]
-        collection = database[f"{backend_name}"]
-        collection.drop()

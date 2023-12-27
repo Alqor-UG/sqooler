@@ -11,14 +11,14 @@ Below you can find the API of the `utils`.
 
 ## Storage Providers
 
-::: utils.storage_providers
+::: src.sqooler.storage_providers
     handler: python 
     options:
       show_source: true
 
 ## Schemes
 
-::: utils.schemes
+::: src.sqooler.schemes
     handler: python 
     options:
       show_source: true

@@ -21,11 +21,12 @@ from dropbox.exceptions import ApiError, AuthError
 from pymongo.mongo_client import MongoClient
 from bson.objectid import ObjectId
 
-
-# get the environment variables
-from decouple import config
-
-from .schemes import ResultDict
+from .schemes import (
+    ResultDict,
+    MongodbLoginInformation,
+    DropboxLoginInformation,
+    LocalLoginInformation,
+)
 
 
 class StorageProvider(ABC):
@@ -148,13 +149,13 @@ class DropboxProvider(StorageProvider):
     The class that implements the dropbox storage provider.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, login_dict: DropboxLoginInformation) -> None:
         """
         Set up the neccessary keys.
         """
-        self.app_key = config("APP_KEY")
-        self.app_secret = config("APP_SECRET")
-        self.refresh_token = config("REFRESH_TOKEN")
+        self.app_key = login_dict.app_key
+        self.app_secret = login_dict.app_secret
+        self.refresh_token = login_dict.refresh_token
 
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
@@ -463,13 +464,13 @@ class MongodbProvider(StorageProvider):
     The access to the mongodb
     """
 
-    def __init__(self) -> None:
+    def __init__(self, login_dict: MongodbLoginInformation) -> None:
         """
         Set up the neccessary keys and create the client through which all the connections will run.
         """
-        mongodb_username = config("MONGODB_USERNAME")
-        mongodb_password = config("MONGODB_PASSWORD")
-        mongodb_database_url = config("MONGODB_DATABASE_URL")
+        mongodb_username = login_dict.mongodb_username
+        mongodb_password = login_dict.mongodb_password
+        mongodb_database_url = login_dict.mongodb_database_url
 
         uri = f"mongodb+srv://{mongodb_username}:{mongodb_password}@{mongodb_database_url}"
         uri = uri + "/?retryWrites=true&w=majority"
@@ -762,12 +763,11 @@ class LocalProvider(StorageProvider):
     Create a file storage that works on the local machine.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, login_dict: LocalLoginInformation) -> None:
         """
         Set up the neccessary keys and create the client through which all the connections will run.
         """
-        base_path = config("BASE_PATH")
-        self.base_path = base_path
+        self.base_path = login_dict.base_path
 
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
@@ -957,7 +957,7 @@ class LocalProvider(StorageProvider):
         A function that obtains the next job in the queue.
 
         Args:
-            backend_name (str): The name of the backend
+            backend_name: The name of the backend
 
         Returns:
             the path towards the job

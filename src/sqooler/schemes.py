@@ -36,6 +36,36 @@ class ResultDict(TypedDict):
     backend_name: NotRequired[str]
 
 
+class DropboxLoginInformation(BaseModel):
+    """
+    The login information for the dropbox
+    """
+
+    app_key: str
+    app_secret: str
+    refresh_token: str
+
+
+class MongodbLoginInformation(BaseModel):
+    """
+    The login information for MongoDB
+    """
+
+    mongodb_username: str
+    mongodb_password: str
+    mongodb_database_url: str
+
+
+class LocalLoginInformation(BaseModel):
+    """
+    The login information for a local storage provider.
+
+    base_path: The base path of the storage provider on your local file system.
+    """
+
+    base_path: str
+
+
 class GateInstruction(BaseModel):
     """
     The basic class for all the gate intructions of a backend.
