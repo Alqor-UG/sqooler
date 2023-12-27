@@ -21,6 +21,7 @@ pytest = "^7.4.0"
 pylint = "^3.0.3"
 mypy = "^1.8.0"
 python-decouple = "^3.6"
+ipykernel = "^6.28.0"
 
 [tool.poetry.group.docs]
 optional = true
