@@ -3,11 +3,12 @@ The tests for the storage provider
 """
 import datetime
 import uuid
-from sqooler.storage_providers import DropboxProvider
-from sqooler.schemes import ResultDict, DropboxLoginInformation
 
 # get the environment variables
 from decouple import config
+
+from sqooler.storage_providers import DropboxProvider
+from sqooler.schemes import ResultDict, DropboxLoginInformation
 
 
 class TestDropboxProvider:
@@ -16,6 +17,9 @@ class TestDropboxProvider:
     """
 
     def get_login(self) -> DropboxLoginInformation:
+        """
+        Get the login information for the dropbox database.
+        """
         # put together the login information
 
         app_key = config("APP_KEY")

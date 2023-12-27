@@ -6,11 +6,11 @@ import uuid
 import json
 import shutil
 
-from sqooler.storage_providers import LocalProvider
-from sqooler.schemes import ResultDict, LocalLoginInformation
-
 # get the environment variables
 from decouple import config
+
+from sqooler.storage_providers import LocalProvider
+from sqooler.schemes import ResultDict, LocalLoginInformation
 
 
 class TestLocalProvider:
