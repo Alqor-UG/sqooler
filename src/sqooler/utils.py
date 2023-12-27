@@ -34,13 +34,19 @@ def update_backends(
         storage_provider.upload_config(backend_config_dict, requested_backend)
 
 
-def main(storage_provider: StorageProvider, backends: dict[str, Spooler]) -> None:
+def main(
+    storage_provider: StorageProvider,
+    backends: dict[str, Spooler],
+    num_iter: int = 0,
+) -> None:
     """
     Function for processing jobs continuously.
 
     Args:
         storage_provider: The storage provider that should be used.
         backends: A dictionary of all the backends that should be updated.
+        num_iter: The number of iterations that should be done. If 0, then the loop
+            will run forever.
     """
     backends_list = list(backends.keys())
 
@@ -49,8 +55,9 @@ def main(storage_provider: StorageProvider, backends: dict[str, Spooler]) -> Non
         # the content
         spooler.display_name = requested_backend
 
+    counter = 0
     # loop which is looking for the jobs
-    while True:
+    while num_iter == 0 or counter < num_iter:
         time.sleep(0.2)
 
         # the following a fancy for loop of going through all the back-ends in the list
@@ -107,3 +114,5 @@ def main(storage_provider: StorageProvider, backends: dict[str, Spooler]) -> Non
         storage_provider.update_in_database(
             result_dict, status_msg_dict, job_dict["job_id"], requested_backend
         )
+
+        counter += 1

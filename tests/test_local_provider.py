@@ -113,11 +113,15 @@ class TestLocalProvider:
         # create a dummy backend
         dummy_id = uuid.uuid4().hex[:5]
         backend_name = f"dummy_{dummy_id}"
+        queue_path = "jobs/queued/" + backend_name
+
+        # what happens if there are no jobs in the queue?
+        job_list = storage_provider.get_file_queue(queue_path)
+        assert not job_list
 
         # first we have to upload a dummy job
         job_id = (uuid.uuid4().hex)[:24]
         job_dict = {"job_id": job_id, "job_json_path": "None"}
-        queue_path = "jobs/queued/" + backend_name
         job_dict["job_json_path"] = queue_path
 
         storage_provider.upload(job_dict, queue_path, job_id=job_id)

@@ -950,6 +950,9 @@ class LocalProvider(StorageProvider):
         """
         # get a list of files in the folder
         full_path = self.base_path + "/" + storage_path
+        # test if the path exists. Otherwise simply return an empty list
+        if not os.path.exists(full_path):
+            return []
         return os.listdir(full_path)
 
     def get_next_job_in_queue(self, backend_name: str) -> dict:
