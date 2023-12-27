@@ -3988,7 +3988,10 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">974</span>
 <span class="normal">975</span>
 <span class="normal">976</span>
-<span class="normal">977</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LocalProvider</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">):</span>
+<span class="normal">977</span>
+<span class="normal">978</span>
+<span class="normal">979</span>
+<span class="normal">980</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LocalProvider</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a file storage that works on the local machine.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -4180,6 +4183,9 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># get a list of files in the folder</span>
         <span class="n">full_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">storage_path</span>
+        <span class="c1"># test if the path exists. Otherwise simply return an empty list</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
@@ -4505,7 +4511,10 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">950</span>
 <span class="normal">951</span>
 <span class="normal">952</span>
-<span class="normal">953</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of files</span>
 
@@ -4517,6 +4526,9 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># get a list of files in the folder</span>
     <span class="n">full_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">storage_path</span>
+    <span class="c1"># test if the path exists. Otherwise simply return an empty list</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
           </details>
@@ -4672,10 +4684,7 @@ job_id: the id of the file we are about to look up</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">955</span>
-<span class="normal">956</span>
-<span class="normal">957</span>
-<span class="normal">958</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">958</span>
 <span class="normal">959</span>
 <span class="normal">960</span>
 <span class="normal">961</span>
@@ -4694,7 +4703,10 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">974</span>
 <span class="normal">975</span>
 <span class="normal">976</span>
-<span class="normal">977</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">977</span>
+<span class="normal">978</span>
+<span class="normal">979</span>
+<span class="normal">980</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A function that obtains the next job in the queue.</span>
 
@@ -9195,7 +9207,12 @@ So it should most likely live in another file at some point.</p>
 <span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
-<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class for the spooler. So it is not just a scheme, but it also contains some common logic.</span>
 <span class="sd">    So it should most likely live in another file at some point.</span>
@@ -9377,8 +9394,13 @@ So it should most likely live in another file at some point.</p>
 <span class="sd">        It performs several checks for the job to see if it is properly working.</span>
 <span class="sd">        If things are fine the job gets added the list of things that should be executed.</span>
 
-<span class="sd">        json_dict: The job dictonary of all the instructions.</span>
-<span class="sd">        status_msg_dict: the status dictionary of the job we are treating.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            json_dict: The job dictonary of all the instructions.</span>
+<span class="sd">            status_msg_dict: the status dictionary of the job we are treating.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            result_dict: The dictionary with the results of the job.</span>
+<span class="sd">            status_msg_dict: The status dictionary of the job.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">job_id</span> <span class="o">=</span> <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;job_id&quot;</span><span class="p">]</span>
 
@@ -9581,8 +9603,84 @@ It can be basically anything that allows the execution of the circuit.</p>
       <p>The function that translates the json with the instructions into some circuit and executes it.
 It performs several checks for the job to see if it is properly working.
 If things are fine the job gets added the list of things that should be executed.</p>
-<p>json_dict: The job dictonary of all the instructions.
-status_msg_dict: the status dictionary of the job we are treating.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>json_dict</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The job dictonary of all the instructions.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>status_msg_dict</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the status dictionary of the job we are treating.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+<th>Name</th>        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+<td><code>result_dict</code></td>          <td>
+                <code><a class="autorefs autorefs-internal" title="src.sqooler.schemes.ResultDict" href="#src.sqooler.schemes.ResultDict">ResultDict</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The dictionary with the results of the job.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+<td><code>status_msg_dict</code></td>          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The status dictionary of the job.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
@@ -9645,7 +9743,12 @@ status_msg_dict: the status dictionary of the job we are treating.</p>
 <span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
-<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">:</span> <span class="nb">dict</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ResultDict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -9653,8 +9756,13 @@ status_msg_dict: the status dictionary of the job we are treating.</p>
 <span class="sd">    It performs several checks for the job to see if it is properly working.</span>
 <span class="sd">    If things are fine the job gets added the list of things that should be executed.</span>
 
-<span class="sd">    json_dict: The job dictonary of all the instructions.</span>
-<span class="sd">    status_msg_dict: the status dictionary of the job we are treating.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        json_dict: The job dictonary of all the instructions.</span>
+<span class="sd">        status_msg_dict: the status dictionary of the job we are treating.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        result_dict: The dictionary with the results of the job.</span>
+<span class="sd">        status_msg_dict: The status dictionary of the job.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">job_id</span> <span class="o">=</span> <span class="n">status_msg_dict</span><span class="p">[</span><span class="s2">&quot;job_id&quot;</span><span class="p">]</span>
 
@@ -10204,12 +10312,7 @@ with proprer formatting.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
@@ -10225,7 +10328,12 @@ with proprer formatting.</p>
 <span class="normal">357</span>
 <span class="normal">358</span>
 <span class="normal">359</span>
-<span class="normal">360</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
     <span class="n">shots_array</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_shots</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperimentDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -10271,11 +10379,11 @@ with proprer formatting.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a list into an appropiate dictionnary for instructions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
