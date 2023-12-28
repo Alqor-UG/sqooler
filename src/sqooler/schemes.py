@@ -119,6 +119,7 @@ class Spooler:
         n_max_experiments: int = 15,
         wire_order: str = "interleaved",
         num_species: int = 1,
+        operational: bool = True,
     ):
         """
         The constructor of the class.
@@ -133,6 +134,7 @@ class Spooler:
         self.wire_order = wire_order
         self.num_species = num_species
         self._display_name: str = ""
+        self.operational = operational
 
     def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
@@ -165,6 +167,7 @@ class Spooler:
             "num_wires": self.n_wires,
             "wire_order": self.wire_order,
             "num_species": self.num_species,
+            "operational": self.operational,
         }
 
     def check_instructions(self, ins_list: list) -> tuple[str, bool]:
