@@ -36,7 +36,6 @@ class TestMongodbProvider:
         Test that it is possible to upload a file.
         """
         login_dict = self.get_login()
-        print(login_dict)
         storage_provider = MongodbProvider(login_dict)
         # upload a file and get it back
         test_content = {"experiment_0": "Nothing happened here."}

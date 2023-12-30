@@ -66,6 +66,19 @@ class LocalLoginInformation(BaseModel):
     base_path: str
 
 
+class BackendStatusSchemaOut(BaseModel):
+    """
+    The schema for the status of a backend. Follows the conventions of the
+    `qiskit.providers.models.BackendStatus`.
+    """
+
+    backend_name: str
+    backend_version: str
+    operational: bool
+    pending_jobs: int
+    status_msg: str
+
+
 class GateInstruction(BaseModel):
     """
     The basic class for all the gate intructions of a backend.
