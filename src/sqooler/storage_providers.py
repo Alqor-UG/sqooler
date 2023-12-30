@@ -7,7 +7,7 @@ import uuid
 from abc import ABC, abstractmethod
 import json
 
-from typing import Mapping, Callable, Any
+from typing import Mapping, Callable, Any, cast
 import functools
 
 # necessary for the local provider
@@ -297,10 +297,6 @@ class StorageProvider(ABC):
         backend_config_dict["open_pulse"] = False
         backend_config_dict["memory"] = True
         backend_config_dict["coupling_map"] = "linear"
-
-        # and the url
-        base_url = config("BASE_URL")
-        backend_config_dict["url"] = base_url + f"/api/{version}/" + backend_name + "/"
         return backend_config_dict
 
     def backend_dict_to_qiskit_status(
