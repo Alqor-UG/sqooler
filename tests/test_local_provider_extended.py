@@ -67,10 +67,9 @@ class TestLocalProviderExtended:
         """
         Test that we cannot work with the provider if it is not active.
         """
-        entry = StorageProviderDb.objects.get(name="localtest")
-        entry.is_active = False
+        # create a storageprovider object
         storage_provider = LocalProviderExtended(
-            entry.login, entry.name, entry.is_active
+            self.get_login(), db_name, is_active=False
         )
 
         # make sure that we cannot upload if it is not active
@@ -79,13 +78,13 @@ class TestLocalProviderExtended:
 
         job_id = uuid.uuid4().hex[:24]
         second_path = "test/subcollection_2"
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             storage_provider.upload(test_content, storage_path, job_id)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             storage_provider.get_file_content(storage_path, job_id)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             storage_provider.move_file(storage_path, second_path, job_id)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             storage_provider.delete_file(second_path, job_id)
 
     def test_upload_etc(self) -> None:
@@ -248,7 +247,7 @@ class TestLocalProviderExtended:
         storage_provider.delete_file(config_path, backend_name)
 
         # and make sure that we raise an error if the backend is not there
-        with self.assertRaises(FileNotFoundError):
+        with pytest.raises(FileNotFoundError):
             status_schema = storage_provider.get_backend_status(backend_name)
 
     def test_jobs(self) -> None:

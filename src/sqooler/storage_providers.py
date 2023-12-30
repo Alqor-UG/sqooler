@@ -982,6 +982,7 @@ class LocalProviderExtended(StorageProvider):
         super().__init__(name, is_active)
         self.base_path = login_dict.base_path
 
+    @validate_active
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
@@ -1000,6 +1001,7 @@ class LocalProviderExtended(StorageProvider):
         with open(full_json_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file)
 
+    @validate_active
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage
@@ -1057,6 +1059,7 @@ class LocalProviderExtended(StorageProvider):
         with open(full_json_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file)
 
+    @validate_active
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from `start_path` to `final_path`
@@ -1071,6 +1074,7 @@ class LocalProviderExtended(StorageProvider):
         # Move the file
         shutil.move(source_file, final_path)
 
+    @validate_active
     def delete_file(self, storage_path: str, job_id: str) -> None:
         """
         Delete the file from the storage
