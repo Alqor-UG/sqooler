@@ -13,26 +13,13 @@ import pytest
 from sqooler.storage_providers import LocalProviderExtended
 from sqooler.schemes import LocalLoginInformation
 
-db_name = "localtest"
+DB_NAME = "localtest"
 
 
 class TestLocalProviderExtended:
     """
     The class that contains all the tests for the dropbox provider.
     """
-
-    def setUp(self) -> None:
-        """
-        set up the test.
-        """
-        # load the credentials from the environment through decouple
-
-        # put together the login information
-        base_path = "storage"
-
-        login_dict = {
-            "base_path": base_path,
-        }
 
     @classmethod
     def teardown_class(cls) -> None:
@@ -51,7 +38,7 @@ class TestLocalProviderExtended:
         """
         Test that we can create a MongoDB object.
         """
-        mongodb_provider = LocalProviderExtended(self.get_login(), db_name)
+        mongodb_provider = LocalProviderExtended(self.get_login(), DB_NAME)
         assert not mongodb_provider is None
 
         # test that we cannot create a dropbox object a poor login dict structure
@@ -61,7 +48,7 @@ class TestLocalProviderExtended:
             "refresh_token": "test",
         }
         with pytest.raises(ValidationError):
-            LocalProviderExtended(LocalLoginInformation(**poor_login_dict), db_name)
+            LocalProviderExtended(LocalLoginInformation(**poor_login_dict), DB_NAME)
 
     def test_not_active(self) -> None:
         """
@@ -69,7 +56,7 @@ class TestLocalProviderExtended:
         """
         # create a storageprovider object
         storage_provider = LocalProviderExtended(
-            self.get_login(), db_name, is_active=False
+            self.get_login(), DB_NAME, is_active=False
         )
 
         # make sure that we cannot upload if it is not active
@@ -92,7 +79,7 @@ class TestLocalProviderExtended:
         Test that it is possible to upload a file.
         """
         # create a storageprovider object
-        storage_provider = LocalProviderExtended(self.get_login(), db_name)
+        storage_provider = LocalProviderExtended(self.get_login(), DB_NAME)
 
         # upload a file and get it back
         test_content = {"experiment_0": "Nothing happened here."}
@@ -119,7 +106,7 @@ class TestLocalProviderExtended:
         Test that we are able to obtain a list of backends.
         """
         # create a storageprovider object
-        storage_provider = LocalProviderExtended(self.get_login(), db_name)
+        storage_provider = LocalProviderExtended(self.get_login(), DB_NAME)
 
         # create a dummy config
         dummy_id = uuid.uuid4().hex[:5]
@@ -154,7 +141,7 @@ class TestLocalProviderExtended:
         Test that we are able to obtain the status of the backend.
         """
         # create a storageprovider object
-        storage_provider = LocalProviderExtended(self.get_login(), db_name)
+        storage_provider = LocalProviderExtended(self.get_login(), DB_NAME)
 
         # create a dummy config
         dummy_id = uuid.uuid4().hex[:5]
@@ -200,7 +187,7 @@ class TestLocalProviderExtended:
         Test status if the backend is not well updated yet.
         """
         # create a storageprovider object
-        storage_provider = LocalProviderExtended(self.get_login(), db_name)
+        storage_provider = LocalProviderExtended(self.get_login(), DB_NAME)
 
         # create a dummy config
         dummy_id = uuid.uuid4().hex[:5]
@@ -248,7 +235,7 @@ class TestLocalProviderExtended:
         # pylint: disable=R0914
 
         # create a storageprovider object
-        storage_provider = LocalProviderExtended(self.get_login(), db_name)
+        storage_provider = LocalProviderExtended(self.get_login(), DB_NAME)
 
         # create a dummy config
         dummy_id = uuid.uuid4().hex[:5]
