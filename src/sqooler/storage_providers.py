@@ -1594,8 +1594,9 @@ class LocalProviderExtended(StorageProvider):
         """
         result_json_dir = "results/" + display_name
         result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
-        backend_config_dict = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_dict["backend_name"]
+
+        backend_config_info = self.get_backend_dict(display_name)
+        result_dict["backend_name"] = backend_config_info.backend_name
 
         typed_result = cast(ResultDict, result_dict)
         return typed_result
