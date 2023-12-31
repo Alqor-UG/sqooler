@@ -86,13 +86,12 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_backend_dict(self, display_name: str, version: str) -> dict:
+    def get_backend_dict(self, display_name: str) -> dict:
         """
         The configuration of the backend.
 
         Args:
             display_name: The identifier of the backend
-            version: the version of the API you are using
 
         Returns:
             The full schema of the backend.
@@ -263,16 +262,13 @@ class StorageProvider(ABC):
             the path towards the job
         """
 
-    def backend_dict_to_qiskit(
-        self, backend_config_dict: dict, version: str = "v2"
-    ) -> dict:
+    def backend_dict_to_qiskit(self, backend_config_dict: dict) -> dict:
         """
         This function transforms the dictionary that is safed in the storage provider
         into a qiskit backend dictionnary.
 
         Args:
             backend_config_dict: The dictionary that contains the configuration of the backend
-            version: the version of the API you are using
 
         Returns:
             The qiskit backend dictionary
@@ -309,7 +305,7 @@ class StorageProvider(ABC):
         into a qiskit backend status dictionnary.
 
         Args:
-            backend_config_dict: The dictionary that contains the configuration of the backend
+            backend_dict: The dictionary that contains the configuration of the backend
 
         Returns:
             The qiskit backend dictionary
@@ -665,7 +661,7 @@ class DropboxProviderExtended(StorageProvider):
                 backend_names.append(entry.name)
         return backend_names
 
-    def get_backend_dict(self, display_name: str, version: str = "v2") -> dict:
+    def get_backend_dict(self, display_name: str) -> dict:
         """
         The configuration of the backend.
 
@@ -794,7 +790,7 @@ class DropboxProviderExtended(StorageProvider):
         result_dict = self.get_file_content(
             storage_path=result_json_dir, job_id=result_json_name
         )
-        backend_config_dict = self.get_backend_dict(display_name, "v2")
+        backend_config_dict = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_dict["backend_name"]
 
         typed_result = cast(ResultDict, result_dict)
@@ -1018,14 +1014,13 @@ class MongodbProviderExtended(StorageProvider):
         return backend_names
 
     @validate_active
-    def get_backend_dict(self, display_name: str, version: str = "v2") -> dict:
+    def get_backend_dict(self, display_name: str) -> dict:
         """
         The configuration dictionary of the backend such that it can be sent out to the API to
         the common user. We make sure that it is compatible with QISKIT within this function.
 
         Args:
             display_name: The identifier of the backend
-            version: the version of the API you are using
 
         Returns:
             The full schema of the backend.
@@ -1042,7 +1037,7 @@ class MongodbProviderExtended(StorageProvider):
             return {}
 
         backend_config_dict.pop("_id")
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict, version)
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
         return qiskit_backend_dict
 
     def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
@@ -1194,7 +1189,7 @@ class MongodbProviderExtended(StorageProvider):
         """
         result_json_dir = "results/" + display_name
         result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
-        backend_config_dict = self.get_backend_dict(display_name, "v2")
+        backend_config_dict = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_dict["backend_name"]
 
         typed_result = cast(ResultDict, result_dict)
@@ -1464,14 +1459,13 @@ class LocalProviderExtended(StorageProvider):
         return backend_names
 
     @validate_active
-    def get_backend_dict(self, display_name: str, version: str = "v2") -> dict:
+    def get_backend_dict(self, display_name: str) -> dict:
         """
         The configuration dictionary of the backend such that it can be sent out to the API to
         the common user. We make sure that it is compatible with QISKIT within this function.
 
         Args:
             display_name: The identifier of the backend
-            version: the version of the API you are using
 
         Returns:
             The full schema of the backend.
@@ -1597,7 +1591,7 @@ class LocalProviderExtended(StorageProvider):
         """
         result_json_dir = "results/" + display_name
         result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
-        backend_config_dict = self.get_backend_dict(display_name, "v2")
+        backend_config_dict = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_dict["backend_name"]
 
         typed_result = cast(ResultDict, result_dict)
