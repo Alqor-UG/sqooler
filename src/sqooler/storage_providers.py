@@ -14,6 +14,8 @@ import functools
 import shutil
 import os
 
+# necessary for the dropbox provider
+import datetime
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
@@ -341,15 +343,22 @@ class StorageProvider(ABC):
         return BackendStatusSchemaOut(**backend_status_dict)
 
 
-class DropboxProvider(StorageProvider):
+class DropboxProviderExtended(StorageProvider):
     """
     The class that implements the dropbox storage provider.
     """
 
-    def __init__(self, login_dict: DropboxLoginInformation) -> None:
+    def __init__(
+        self, login_dict: DropboxLoginInformation, name: str, is_active: bool = True
+    ) -> None:
         """
-        Set up the neccessary keys.
+        Args:
+            login_dict: The dictionary that contains the login information
+            name: The name of the storage provider
+            is_active: Is the storage provider active.
         """
+
+        super().__init__(name, is_active)
         self.app_key = login_dict.app_key
         self.app_secret = login_dict.app_secret
         self.refresh_token = login_dict.refresh_token
@@ -631,6 +640,165 @@ class DropboxProvider(StorageProvider):
             except Exception as err:
                 print(err)
         return file_list
+
+    @validate_active
+    def get_backends(self) -> list[str]:
+        """
+        Get a list of all the backends that the provider offers.
+        """
+        backend_config_path = "/Backend_files/Config/"
+        with dropbox.Dropbox(
+            app_key=self.app_key,
+            app_secret=self.app_secret,
+            oauth2_refresh_token=self.refresh_token,
+        ) as dbx:
+            # Check that the access token is valid
+            try:
+                dbx.users_get_current_account()
+            except AuthError:
+                sys.exit("ERROR: Invalid access token.")
+
+            folders_results = dbx.files_list_folder(path=backend_config_path)
+            entries = folders_results.entries
+            backend_names = []
+            for entry in entries:
+                backend_names.append(entry.name)
+        return backend_names
+
+    def get_backend_dict(self, display_name: str, version: str = "v2") -> dict:
+        """
+        The configuration of the backend.
+
+        Args:
+            display_name: The identifier of the backend
+
+        Returns:
+            The full schema of the backend.
+        """
+        backend_json_path = f"Backend_files/Config/{display_name}"
+        backend_config_dict = self.get_file_content(
+            storage_path=backend_json_path, job_id="config"
+        )
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
+        return qiskit_backend_dict
+
+    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+        """
+        Get the status of the backend. This follows the qiskit logic.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The status dict of the backend
+        """
+        backend_json_path = f"Backend_files/Config/{display_name}"
+        backend_config_dict = self.get_file_content(
+            storage_path=backend_json_path, job_id="config"
+        )
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_dict)
+        return qiskit_backend_dict
+
+    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+        """
+        This function uploads a job to the backend and creates the job_id.
+
+        Args:
+            job_dict: The job dictionary that should be uploaded
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+
+        Returns:
+            The job_id of the uploaded job
+        """
+        job_id = (
+            (datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
+            + "-"
+            + display_name
+            + "-"
+            + username
+            + "-"
+            + (uuid.uuid4().hex)[:5]
+        )
+        # now we upload the job to the backend
+        # this is currently very much backend specific
+        job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
+        job_json_name = "job-" + job_id
+
+        self.upload(
+            content_dict=job_dict, storage_path=job_json_dir, job_id=job_json_name
+        )
+        return job_id
+
+    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function uploads a status file to the backend and creates the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
+        status_json_name = "status-" + job_id
+        status_dict = {
+            "job_id": job_id,
+            "status": "INITIALIZING",
+            "detail": "Got your json.",
+            "error_message": "None",
+        }
+        self.upload(
+            content_dict=status_dict,
+            storage_path=status_json_dir,
+            job_id=status_json_name,
+        )
+        return status_dict
+
+    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function gets the status file from the backend and returns the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
+        status_json_name = "status-" + job_id
+
+        status_dict = self.get_file_content(
+            storage_path=status_json_dir, job_id=status_json_name
+        )
+        return status_dict
+
+    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+        """
+        This function gets the result file from the backend and returns the result dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The result dict of the job
+        """
+        result_json_dir = "Backend_files/Result/" + display_name + "/" + username
+        result_json_name = "result-" + job_id
+        result_dict = self.get_file_content(
+            storage_path=result_json_dir, job_id=result_json_name
+        )
+        backend_config_dict = self.get_backend_dict(display_name, "v2")
+        result_dict["backend_name"] = backend_config_dict["backend_name"]
+
+        typed_result = cast(ResultDict, result_dict)
+        return typed_result
 
     def get_next_job_in_queue(self, backend_name: str) -> dict:
         """
@@ -1563,4 +1731,20 @@ class MongodbProvider(MongodbProviderExtended):
         """
         Set up the neccessary keys and create the client through which all the connections will run.
         """
+        super().__init__(login_dict, name="default", is_active=True)
+
+
+class DropboxProvider(DropboxProviderExtended):
+    """
+    The class that implements the dropbox storage provider.
+    """
+
+    def __init__(self, login_dict: DropboxLoginInformation) -> None:
+        """
+        Args:
+            login_dict: The dictionary that contains the login information
+            name: The name of the storage provider
+            is_active: Is the storage provider active.
+        """
+
         super().__init__(login_dict, name="default", is_active=True)
