@@ -140,7 +140,9 @@ class TestLocalProviderExtended:
             backend_dict["backend_name"]
             == f"localtest_{dummy_dict['display_name']}_simulator"
         )
-
+        # make sure that we raise an error if we try to get a backend that does not exist
+        with pytest.raises(FileNotFoundError):
+            storage_provider.get_backend_dict("dummy_non_existing")
         storage_provider.delete_file(config_path, backend_name)
 
     def test_status(self) -> None:

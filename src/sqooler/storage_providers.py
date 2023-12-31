@@ -1037,7 +1037,7 @@ class MongodbProviderExtended(StorageProvider):
         backend_config_dict = config_collection.find_one(document_to_find)
 
         if not backend_config_dict:
-            return {}
+            raise FileNotFoundError("The backend does not exist for the given storage.")
 
         backend_config_dict.pop("_id")
         qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
@@ -1462,7 +1462,7 @@ class LocalProviderExtended(StorageProvider):
         return backend_names
 
     @validate_active
-    def get_backend_dict(self, display_name: str) -> dict:
+    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
         """
         The configuration dictionary of the backend such that it can be sent out to the API to
         the common user. We make sure that it is compatible with QISKIT within this function.
@@ -1472,6 +1472,9 @@ class LocalProviderExtended(StorageProvider):
 
         Returns:
             The full schema of the backend.
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
         """
         # path of the configs
         config_path = self.base_path + "/backends/configs"
@@ -1481,7 +1484,7 @@ class LocalProviderExtended(StorageProvider):
             backend_config_dict = json.load(json_file)
 
         if not backend_config_dict:
-            return {}
+            raise FileNotFoundError("The backend does not exist for the given storage.")
 
         qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
         return qiskit_backend_dict
