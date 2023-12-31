@@ -30,6 +30,7 @@ from .schemes import (
     DropboxLoginInformation,
     LocalLoginInformation,
     BackendStatusSchemaOut,
+    BackendConfigSchemaOut,
 )
 
 
@@ -86,7 +87,7 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_backend_dict(self, display_name: str) -> dict:
+    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
         """
         The configuration of the backend.
 
@@ -262,7 +263,9 @@ class StorageProvider(ABC):
             the path towards the job
         """
 
-    def backend_dict_to_qiskit(self, backend_config_dict: dict) -> dict:
+    def backend_dict_to_qiskit(
+        self, backend_config_dict: dict
+    ) -> BackendConfigSchemaOut:
         """
         This function transforms the dictionary that is safed in the storage provider
         into a qiskit backend dictionnary.
@@ -295,7 +298,7 @@ class StorageProvider(ABC):
         backend_config_dict["open_pulse"] = False
         backend_config_dict["memory"] = True
         backend_config_dict["coupling_map"] = "linear"
-        return backend_config_dict
+        return BackendConfigSchemaOut(**backend_config_dict)
 
     def backend_dict_to_qiskit_status(
         self, backend_dict: dict
@@ -661,7 +664,7 @@ class DropboxProviderExtended(StorageProvider):
                 backend_names.append(entry.name)
         return backend_names
 
-    def get_backend_dict(self, display_name: str) -> dict:
+    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
         """
         The configuration of the backend.
 
@@ -790,8 +793,8 @@ class DropboxProviderExtended(StorageProvider):
         result_dict = self.get_file_content(
             storage_path=result_json_dir, job_id=result_json_name
         )
-        backend_config_dict = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_dict["backend_name"]
+        backend_config_info = self.get_backend_dict(display_name)
+        result_dict["backend_name"] = backend_config_info.backend_name
 
         typed_result = cast(ResultDict, result_dict)
         return typed_result
@@ -1014,7 +1017,7 @@ class MongodbProviderExtended(StorageProvider):
         return backend_names
 
     @validate_active
-    def get_backend_dict(self, display_name: str) -> dict:
+    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
         """
         The configuration dictionary of the backend such that it can be sent out to the API to
         the common user. We make sure that it is compatible with QISKIT within this function.
@@ -1034,7 +1037,7 @@ class MongodbProviderExtended(StorageProvider):
         backend_config_dict = config_collection.find_one(document_to_find)
 
         if not backend_config_dict:
-            return {}
+            raise FileNotFoundError("The backend does not exist for the given storage.")
 
         backend_config_dict.pop("_id")
         qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
@@ -1189,8 +1192,8 @@ class MongodbProviderExtended(StorageProvider):
         """
         result_json_dir = "results/" + display_name
         result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
-        backend_config_dict = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_dict["backend_name"]
+        backend_config_info = self.get_backend_dict(display_name)
+        result_dict["backend_name"] = backend_config_info.backend_name
 
         typed_result = cast(ResultDict, result_dict)
         return typed_result
@@ -1459,7 +1462,7 @@ class LocalProviderExtended(StorageProvider):
         return backend_names
 
     @validate_active
-    def get_backend_dict(self, display_name: str) -> dict:
+    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
         """
         The configuration dictionary of the backend such that it can be sent out to the API to
         the common user. We make sure that it is compatible with QISKIT within this function.
@@ -1469,6 +1472,9 @@ class LocalProviderExtended(StorageProvider):
 
         Returns:
             The full schema of the backend.
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
         """
         # path of the configs
         config_path = self.base_path + "/backends/configs"
@@ -1478,7 +1484,7 @@ class LocalProviderExtended(StorageProvider):
             backend_config_dict = json.load(json_file)
 
         if not backend_config_dict:
-            return {}
+            raise FileNotFoundError("The backend does not exist for the given storage.")
 
         qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
         return qiskit_backend_dict
@@ -1591,8 +1597,9 @@ class LocalProviderExtended(StorageProvider):
         """
         result_json_dir = "results/" + display_name
         result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
-        backend_config_dict = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_dict["backend_name"]
+
+        backend_config_info = self.get_backend_dict(display_name)
+        result_dict["backend_name"] = backend_config_info.backend_name
 
         typed_result = cast(ResultDict, result_dict)
         return typed_result

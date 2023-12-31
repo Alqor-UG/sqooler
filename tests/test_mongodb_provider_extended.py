@@ -152,10 +152,18 @@ class TestMongodbProviderExtended:
         dummy_id = uuid.uuid4().hex[:5]
         dummy_dict: dict = {}
         dummy_dict["gates"] = []
+        dummy_dict["supported_instructions"] = []
         dummy_dict["name"] = "Dummy"
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
         dummy_dict["simulator"] = True
+        dummy_dict["cold_atom_type"] = "fermion"
+        dummy_dict["num_species"] = 1
+        dummy_dict["wire_order"] = "interleaved"
+        dummy_dict["max_shots"] = 5
+        dummy_dict["max_experiments"] = 5
+        dummy_dict["description"] = "Dummy simulator for testing"
+
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
 
@@ -168,11 +176,15 @@ class TestMongodbProviderExtended:
         assert f"dummy{dummy_id}" in backends
 
         # can we get the config of the backend ?
-        backend_dict = storage_provider.get_backend_dict(backend_name)
+        backend_info = storage_provider.get_backend_dict(backend_name)
+        backend_dict = backend_info.model_dump()
         assert (
             backend_dict["backend_name"]
             == f"mongodbtest_{dummy_dict['display_name']}_simulator"
         )
+        # make sure that we raise an error if we try to get a backend that does not exist
+        with pytest.raises(FileNotFoundError):
+            storage_provider.get_backend_dict("dummy_non_existing")
 
         storage_provider.delete_file(config_path, mongo_id)
 
@@ -234,9 +246,16 @@ class TestMongodbProviderExtended:
         dummy_id = uuid.uuid4().hex[:5]
         dummy_dict: dict = {}
         dummy_dict["gates"] = []
+        dummy_dict["supported_instructions"] = []
         dummy_dict["name"] = "Dummy"
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
+        dummy_dict["cold_atom_type"] = "fermion"
+        dummy_dict["num_species"] = 1
+        dummy_dict["wire_order"] = "interleaved"
+        dummy_dict["max_shots"] = 5
+        dummy_dict["max_experiments"] = 5
+        dummy_dict["description"] = "Dummy simulator for testing"
 
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
