@@ -874,7 +874,7 @@ class MongodbProviderExtended(StorageProvider):
         collection_name = ".".join(storage_splitted[1:])
         collection = database[collection_name]
 
-        content_dict["_id"] = ObjectId(job_id)  # type: ignore
+        content_dict["_id"] = ObjectId(job_id)
         collection.insert_one(content_dict)
 
         # remove the id from the content dict for further use
