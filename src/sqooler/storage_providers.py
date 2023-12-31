@@ -7,12 +7,15 @@ import uuid
 from abc import ABC, abstractmethod
 import json
 
-from typing import Mapping
+from typing import Mapping, Callable, Any, cast
+import functools
 
 # necessary for the local provider
 import shutil
 import os
 
+# necessary for the dropbox provider
+import datetime
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
@@ -26,13 +29,43 @@ from .schemes import (
     MongodbLoginInformation,
     DropboxLoginInformation,
     LocalLoginInformation,
+    BackendStatusSchemaOut,
 )
+
+
+def validate_active(func: Callable) -> Callable:
+    """
+    Decorator to check if the storage provider is active.
+    """
+
+    @functools.wraps(func)
+    def wrapper(self: Any, *args: Any, **kwargs: Any) -> Callable:
+        """
+        Wrapper around the function that checks if the storage provider is active."""
+        if not self.is_active:
+            raise ValueError("The storage provider is not active.")
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 class StorageProvider(ABC):
     """
     The template for accessing any storage providers like dropbox, mongodb, amazon S3 etc.
     """
+
+    def __init__(self, name: str, is_active: bool = True) -> None:
+        """
+        Any storage provide must have a name that is not empty.
+
+        Args:
+            name: The name of the storage provider
+            is_active: Is the storage provider active.
+        """
+        if not name:
+            raise ValueError("The name of the storage provider cannot be empty.")
+        self.name = name
+        self.is_active = is_active
 
     @abstractmethod
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
@@ -47,6 +80,50 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def get_backends(self) -> list[str]:
+        """
+        Get a list of all the backends that the provider offers.
+        """
+
+    @abstractmethod
+    def get_backend_dict(self, display_name: str) -> dict:
+        """
+        The configuration of the backend.
+
+        Args:
+            display_name: The identifier of the backend
+
+        Returns:
+            The full schema of the backend.
+        """
+
+    @abstractmethod
+    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+        """
+        Get the status of the backend. This follows the qiskit logic.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The status dict of the backend
+        """
+
+    @abstractmethod
+    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+        """
+        Upload the job to the storage provider.
+
+        Args:
+            job_dict: the full job dict
+            display_name: the name of the backend
+            username: the name of the user that submitted the job
+
+        Returns:
+            The job id of the uploaded job.
+        """
+
+    @abstractmethod
     def get_job_content(self, storage_path: str, job_id: str) -> dict:
         """
         Get the content of the job from the storage. This is a wrapper around get_file_content
@@ -57,6 +134,48 @@ class StorageProvider(ABC):
 
         Returns:
             The content of the job
+        """
+
+    @abstractmethod
+    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function uploads a status file to the backend and creates the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+
+    @abstractmethod
+    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function gets the status file from the backend and returns the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+
+    @abstractmethod
+    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+        """
+        This function gets the result file from the backend and returns the result dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The result dict of the job
         """
 
     @abstractmethod
@@ -143,16 +262,99 @@ class StorageProvider(ABC):
             the path towards the job
         """
 
+    def backend_dict_to_qiskit(self, backend_config_dict: dict) -> dict:
+        """
+        This function transforms the dictionary that is safed in the storage provider
+        into a qiskit backend dictionnary.
 
-class DropboxProvider(StorageProvider):
+        Args:
+            backend_config_dict: The dictionary that contains the configuration of the backend
+
+        Returns:
+            The qiskit backend dictionary
+        """
+        display_name = backend_config_dict["display_name"]
+        # for comaptibility with qiskit
+        backend_config_dict["basis_gates"] = []
+        for gate in backend_config_dict["gates"]:
+            backend_config_dict["basis_gates"].append(gate["name"])
+
+        # if the name is already in the dict, we should set the backend_name to the name
+        # otherwise we calculate it.
+        if backend_config_dict["simulator"]:
+            backend_name = f"{self.name}_{display_name}_simulator"
+        else:
+            backend_name = f"{self.name}_{display_name}_hardware"
+
+        backend_config_dict["backend_name"] = backend_name
+        backend_config_dict["n_qubits"] = backend_config_dict["num_wires"]
+        backend_config_dict["backend_version"] = backend_config_dict["version"]
+
+        backend_config_dict["conditional"] = False
+        backend_config_dict["local"] = False
+        backend_config_dict["open_pulse"] = False
+        backend_config_dict["memory"] = True
+        backend_config_dict["coupling_map"] = "linear"
+        return backend_config_dict
+
+    def backend_dict_to_qiskit_status(
+        self, backend_dict: dict
+    ) -> BackendStatusSchemaOut:
+        """
+        This function transforms the dictionary that is safed in the storage provider
+        into a qiskit backend status dictionnary.
+
+        Args:
+            backend_dict: The dictionary that contains the configuration of the backend
+
+        Returns:
+            The qiskit backend dictionary
+        """
+        backend_status_dict = {
+            "backend_name": "",
+            "backend_version": "",
+            "operational": True,
+            "pending_jobs": 0,
+            "status_msg": "",
+        }
+
+        display_name = backend_dict["display_name"]
+
+        # if the name is already in the dict, we should set the backend_name to the name
+        # otherwise we calculate it.
+        if backend_dict["simulator"]:
+            backend_name = f"{self.name}_{display_name}_simulator"
+        else:
+            backend_name = f"{self.name}_{display_name}_hardware"
+
+        backend_status_dict["backend_name"] = backend_name
+        backend_status_dict["backend_version"] = backend_dict["version"]
+
+        # now I also need to obtain the operational status from the backend.
+        backend_status_dict["operational"] = backend_dict.get("operational", True)
+        # would be nice to attempt to get the pending jobs too, if possible easily.
+        backend_status_dict["pending_jobs"] = backend_dict.get("pending_jobs", 0)
+
+        backend_status_dict["status_msg"] = backend_dict.get("status_msg", "")
+        return BackendStatusSchemaOut(**backend_status_dict)
+
+
+class DropboxProviderExtended(StorageProvider):
     """
     The class that implements the dropbox storage provider.
     """
 
-    def __init__(self, login_dict: DropboxLoginInformation) -> None:
+    def __init__(
+        self, login_dict: DropboxLoginInformation, name: str, is_active: bool = True
+    ) -> None:
         """
-        Set up the neccessary keys.
+        Args:
+            login_dict: The dictionary that contains the login information
+            name: The name of the storage provider
+            is_active: Is the storage provider active.
         """
+
+        super().__init__(name, is_active)
         self.app_key = login_dict.app_key
         self.app_secret = login_dict.app_secret
         self.refresh_token = login_dict.refresh_token
@@ -261,6 +463,7 @@ class DropboxProvider(StorageProvider):
                 dump_str.encode("utf-8"), full_path, mode=WriteMode("overwrite")
             )
 
+    @validate_active
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
@@ -288,6 +491,7 @@ class DropboxProvider(StorageProvider):
             full_final_path = "/" + final_path + "/" + job_id + ".json"
             dbx.files_move_v2(full_start_path, full_final_path)
 
+    @validate_active
     def delete_file(self, storage_path: str, job_id: str) -> None:
         """
         Remove the file from the dropbox
@@ -433,6 +637,165 @@ class DropboxProvider(StorageProvider):
                 print(err)
         return file_list
 
+    @validate_active
+    def get_backends(self) -> list[str]:
+        """
+        Get a list of all the backends that the provider offers.
+        """
+        backend_config_path = "/Backend_files/Config/"
+        with dropbox.Dropbox(
+            app_key=self.app_key,
+            app_secret=self.app_secret,
+            oauth2_refresh_token=self.refresh_token,
+        ) as dbx:
+            # Check that the access token is valid
+            try:
+                dbx.users_get_current_account()
+            except AuthError:
+                sys.exit("ERROR: Invalid access token.")
+
+            folders_results = dbx.files_list_folder(path=backend_config_path)
+            entries = folders_results.entries
+            backend_names = []
+            for entry in entries:
+                backend_names.append(entry.name)
+        return backend_names
+
+    def get_backend_dict(self, display_name: str) -> dict:
+        """
+        The configuration of the backend.
+
+        Args:
+            display_name: The identifier of the backend
+
+        Returns:
+            The full schema of the backend.
+        """
+        backend_json_path = f"Backend_files/Config/{display_name}"
+        backend_config_dict = self.get_file_content(
+            storage_path=backend_json_path, job_id="config"
+        )
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
+        return qiskit_backend_dict
+
+    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+        """
+        Get the status of the backend. This follows the qiskit logic.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The status dict of the backend
+        """
+        backend_json_path = f"Backend_files/Config/{display_name}"
+        backend_config_dict = self.get_file_content(
+            storage_path=backend_json_path, job_id="config"
+        )
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_dict)
+        return qiskit_backend_dict
+
+    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+        """
+        This function uploads a job to the backend and creates the job_id.
+
+        Args:
+            job_dict: The job dictionary that should be uploaded
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+
+        Returns:
+            The job_id of the uploaded job
+        """
+        job_id = (
+            (datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
+            + "-"
+            + display_name
+            + "-"
+            + username
+            + "-"
+            + (uuid.uuid4().hex)[:5]
+        )
+        # now we upload the job to the backend
+        # this is currently very much backend specific
+        job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
+        job_json_name = "job-" + job_id
+
+        self.upload(
+            content_dict=job_dict, storage_path=job_json_dir, job_id=job_json_name
+        )
+        return job_id
+
+    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function uploads a status file to the backend and creates the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
+        status_json_name = "status-" + job_id
+        status_dict = {
+            "job_id": job_id,
+            "status": "INITIALIZING",
+            "detail": "Got your json.",
+            "error_message": "None",
+        }
+        self.upload(
+            content_dict=status_dict,
+            storage_path=status_json_dir,
+            job_id=status_json_name,
+        )
+        return status_dict
+
+    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function gets the status file from the backend and returns the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
+        status_json_name = "status-" + job_id
+
+        status_dict = self.get_file_content(
+            storage_path=status_json_dir, job_id=status_json_name
+        )
+        return status_dict
+
+    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+        """
+        This function gets the result file from the backend and returns the result dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The result dict of the job
+        """
+        result_json_dir = "Backend_files/Result/" + display_name + "/" + username
+        result_json_name = "result-" + job_id
+        result_dict = self.get_file_content(
+            storage_path=result_json_dir, job_id=result_json_name
+        )
+        backend_config_dict = self.get_backend_dict(display_name)
+        result_dict["backend_name"] = backend_config_dict["backend_name"]
+
+        typed_result = cast(ResultDict, result_dict)
+        return typed_result
+
     def get_next_job_in_queue(self, backend_name: str) -> dict:
         """
         A function that obtains the next job in the queue.
@@ -459,15 +822,28 @@ class DropboxProvider(StorageProvider):
         return job_dict
 
 
-class MongodbProvider(StorageProvider):
+class MongodbProviderExtended(StorageProvider):
     """
     The access to the mongodb
     """
 
-    def __init__(self, login_dict: MongodbLoginInformation) -> None:
+    def __init__(
+        self, login_dict: MongodbLoginInformation, name: str, is_active: bool = True
+    ) -> None:
         """
         Set up the neccessary keys and create the client through which all the connections will run.
+
+        Args:
+            login_dict: The login dict that contains the neccessary
+                        information to connect to the mongodb
+            name: The name of the storage provider
+            is_active: Is the storage provider active.
+
+
+        Raises:
+            ValidationError: If the login_dict is not valid
         """
+        super().__init__(name, is_active)
         mongodb_username = login_dict.mongodb_username
         mongodb_password = login_dict.mongodb_password
         mongodb_database_url = login_dict.mongodb_database_url
@@ -480,7 +856,8 @@ class MongodbProvider(StorageProvider):
         # Send a ping to confirm a successful connection
         self.client.admin.command("ping")
 
-    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
+    @validate_active
+    def upload(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
 
@@ -497,9 +874,13 @@ class MongodbProvider(StorageProvider):
         collection_name = ".".join(storage_splitted[1:])
         collection = database[collection_name]
 
-        content_dict["_id"] = ObjectId(job_id)  # type: ignore
+        content_dict["_id"] = ObjectId(job_id)
         collection.insert_one(content_dict)
 
+        # remove the id from the content dict for further use
+        content_dict.pop("_id", None)
+
+    @validate_active
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage
@@ -520,6 +901,9 @@ class MongodbProvider(StorageProvider):
 
         if not result_found:
             return {}
+
+        # remove the id from the result dict for further use
+        result_found.pop("_id", None)
         return result_found
 
     def get_job_content(self, storage_path: str, job_id: str) -> dict:
@@ -561,6 +945,7 @@ class MongodbProvider(StorageProvider):
         newvalues = {"$set": content_dict}
         collection.update_one(filter_dict, newvalues)
 
+    @validate_active
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
@@ -591,6 +976,7 @@ class MongodbProvider(StorageProvider):
         collection = database[collection_name]
         collection.insert_one(result_found)
 
+    @validate_active
     def delete_file(self, storage_path: str, job_id: str) -> None:
         """
         Remove the file from the mongodb database
@@ -611,6 +997,78 @@ class MongodbProvider(StorageProvider):
 
         document_to_find = {"_id": ObjectId(job_id)}
         collection.delete_one(document_to_find)
+
+    @validate_active
+    def get_backends(self) -> list[str]:
+        """
+        Get a list of all the backends that the provider offers.
+        """
+
+        # get the database on which we work
+        database = self.client["backends"]
+        config_collection = database["configs"]
+        # get all the documents in the collection configs and save the disply_name in a list
+        backend_names: list[str] = []
+        for config_dict in config_collection.find():
+            backend_names.append(config_dict["display_name"])
+        return backend_names
+
+    @validate_active
+    def get_backend_dict(self, display_name: str) -> dict:
+        """
+        The configuration dictionary of the backend such that it can be sent out to the API to
+        the common user. We make sure that it is compatible with QISKIT within this function.
+
+        Args:
+            display_name: The identifier of the backend
+
+        Returns:
+            The full schema of the backend.
+        """
+        # get the database on which we work
+        database = self.client["backends"]
+        config_collection = database["configs"]
+
+        # create the filter for the document with display_name that is equal to display_name
+        document_to_find = {"display_name": display_name}
+        backend_config_dict = config_collection.find_one(document_to_find)
+
+        if not backend_config_dict:
+            return {}
+
+        backend_config_dict.pop("_id")
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
+        return qiskit_backend_dict
+
+    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+        """
+        Get the status of the backend. This follows the qiskit logic.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The status dict of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
+        """
+        # get the database on which we work
+        database = self.client["backends"]
+        config_collection = database["configs"]
+
+        # create the filter for the document with display_name that is equal to display_name
+        document_to_find = {"display_name": display_name}
+        backend_config_dict = config_collection.find_one(document_to_find)
+
+        if not backend_config_dict:
+            raise FileNotFoundError(
+                f"The backend {display_name} does not exist for the given storageprovider."
+            )
+
+        backend_config_dict.pop("_id")
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_dict)
+        return qiskit_backend_dict
 
     def upload_config(self, config_dict: dict, backend_name: str) -> None:
         """
@@ -650,6 +1108,92 @@ class MongodbProvider(StorageProvider):
 
         config_id = uuid.uuid4().hex[:24]
         self.upload(config_dict, config_path, config_id)
+
+    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+        """
+        Upload the job to the storage provider.
+
+        Args:
+            job_dict: the full job dict
+            display_name: the name of the backend
+            username: the name of the user that submitted the job
+
+        Returns:
+            The job id of the uploaded job.
+        """
+
+        storage_path = "jobs/queued/" + display_name
+        job_id = (uuid.uuid4().hex)[:24]
+
+        self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
+        return job_id
+
+    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function uploads a status file to the backend and creates the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        storage_path = "status/" + display_name
+        status_dict = {
+            "job_id": job_id,
+            "status": "INITIALIZING",
+            "detail": "Got your json.",
+            "error_message": "None",
+        }
+
+        # should we also upload the username into the dict ?
+
+        # now upload the status dict
+        self.upload(
+            content_dict=status_dict,
+            storage_path=storage_path,
+            job_id=job_id,
+        )
+        return status_dict
+
+    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function gets the status file from the backend and returns the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        status_json_dir = "status/" + display_name
+
+        status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
+        return status_dict
+
+    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+        """
+        This function gets the result file from the backend and returns the result dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The result dict of the job
+        """
+        result_json_dir = "results/" + display_name
+        result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
+        backend_config_dict = self.get_backend_dict(display_name)
+        result_dict["backend_name"] = backend_config_dict["backend_name"]
+
+        typed_result = cast(ResultDict, result_dict)
+        return typed_result
 
     def update_in_database(
         self,
@@ -758,17 +1302,30 @@ class MongodbProvider(StorageProvider):
         return job_dict
 
 
-class LocalProvider(StorageProvider):
+class LocalProviderExtended(StorageProvider):
     """
     Create a file storage that works on the local machine.
     """
 
-    def __init__(self, login_dict: LocalLoginInformation) -> None:
+    def __init__(
+        self, login_dict: LocalLoginInformation, name: str, is_active: bool = True
+    ) -> None:
         """
         Set up the neccessary keys and create the client through which all the connections will run.
+
+        Args:
+            login_dict: The login dict that contains the neccessary
+                        information to connect to the local storage
+            name: The name of the storage provider
+            is_active: Is the storage provider active.
+
+        Raises:
+            ValidationError: If the login_dict is not valid
         """
+        super().__init__(name, is_active)
         self.base_path = login_dict.base_path
 
+    @validate_active
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
@@ -787,6 +1344,7 @@ class LocalProvider(StorageProvider):
         with open(full_json_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file)
 
+    @validate_active
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage
@@ -844,6 +1402,7 @@ class LocalProvider(StorageProvider):
         with open(full_json_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file)
 
+    @validate_active
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from `start_path` to `final_path`
@@ -858,6 +1417,7 @@ class LocalProvider(StorageProvider):
         # Move the file
         shutil.move(source_file, final_path)
 
+    @validate_active
     def delete_file(self, storage_path: str, job_id: str) -> None:
         """
         Delete the file from the storage
@@ -872,6 +1432,170 @@ class LocalProvider(StorageProvider):
         storage_path = storage_path.strip("/")
         source_file = self.base_path + "/" + storage_path + "/" + job_id + ".json"
         os.remove(source_file)
+
+    @validate_active
+    def get_backends(self) -> list[str]:
+        """
+        Get a list of all the backends that the provider offers.
+        """
+        # path of the configs
+        config_path = self.base_path + "/backends/configs"
+        backend_names: list[str] = []
+
+        # If the folder does not exist, return an empty list
+        if not os.path.exists(config_path):
+            return backend_names
+
+        # Get a list of all items in the folder
+        all_items = os.listdir(config_path)
+        # Filter out only the JSON files
+        json_files = [item for item in all_items if item.endswith(".json")]
+
+        for file_name in json_files:
+            full_json_path = config_path + "/" + file_name
+            with open(full_json_path, "r", encoding="utf-8") as json_file:
+                config_dict = json.load(json_file)
+                backend_names.append(config_dict["display_name"])
+        return backend_names
+
+    @validate_active
+    def get_backend_dict(self, display_name: str) -> dict:
+        """
+        The configuration dictionary of the backend such that it can be sent out to the API to
+        the common user. We make sure that it is compatible with QISKIT within this function.
+
+        Args:
+            display_name: The identifier of the backend
+
+        Returns:
+            The full schema of the backend.
+        """
+        # path of the configs
+        config_path = self.base_path + "/backends/configs"
+
+        full_json_path = config_path + "/" + display_name + ".json"
+        with open(full_json_path, "r", encoding="utf-8") as json_file:
+            backend_config_dict = json.load(json_file)
+
+        if not backend_config_dict:
+            return {}
+
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
+        return qiskit_backend_dict
+
+    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+        """
+        Get the status of the backend. This follows the qiskit logic.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The status dict of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
+        """
+        # path of the configs
+        config_path = self.base_path + "/backends/configs"
+
+        full_json_path = config_path + "/" + display_name + ".json"
+        with open(full_json_path, "r", encoding="utf-8") as json_file:
+            backend_config_dict = json.load(json_file)
+
+        if not backend_config_dict:
+            raise FileNotFoundError(
+                f"The backend {display_name} does not exist for the given storageprovider."
+            )
+
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_dict)
+        return qiskit_backend_dict
+
+    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+        """
+        Upload the job to the storage provider.
+
+        Args:
+            job_dict: the full job dict
+            display_name: the name of the backend
+            username: the name of the user that submitted the job
+
+        Returns:
+            The job id of the uploaded job.
+        """
+
+        storage_path = "jobs/queued/" + display_name
+        job_id = (uuid.uuid4().hex)[:24]
+
+        self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
+        return job_id
+
+    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function uploads a status file to the backend and creates the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        storage_path = "status/" + display_name
+        status_dict = {
+            "job_id": job_id,
+            "status": "INITIALIZING",
+            "detail": "Got your json.",
+            "error_message": "None",
+        }
+
+        # should we also upload the username into the dict ?
+
+        # now upload the status dict
+        self.upload(
+            content_dict=status_dict,
+            storage_path=storage_path,
+            job_id=job_id,
+        )
+        return status_dict
+
+    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function gets the status file from the backend and returns the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        status_json_dir = "status/" + display_name
+
+        status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
+        return status_dict
+
+    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+        """
+        This function gets the result file from the backend and returns the result dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The result dict of the job
+        """
+        result_json_dir = "results/" + display_name
+        result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
+        backend_config_dict = self.get_backend_dict(display_name)
+        result_dict["backend_name"] = backend_config_dict["backend_name"]
+
+        typed_result = cast(ResultDict, result_dict)
+        return typed_result
 
     def upload_config(self, config_dict: dict, backend_name: str) -> None:
         """
@@ -978,3 +1702,43 @@ class LocalProvider(StorageProvider):
             self.move_file(queue_dir, "jobs/running", job_id)
             job_dict["job_json_path"] = "jobs/running"
         return job_dict
+
+
+class LocalProvider(LocalProviderExtended):
+    """
+    Create a file storage that works on the local machine.
+    """
+
+    def __init__(self, login_dict: LocalLoginInformation) -> None:
+        """
+        Set up the neccessary keys and create the client through which all the connections will run.
+        """
+        super().__init__(login_dict, name="default", is_active=True)
+
+
+class MongodbProvider(MongodbProviderExtended):
+    """
+    The access to the mongodb. This is the simplified version for people that are running devices.
+    """
+
+    def __init__(self, login_dict: MongodbLoginInformation) -> None:
+        """
+        Set up the neccessary keys and create the client through which all the connections will run.
+        """
+        super().__init__(login_dict, name="default", is_active=True)
+
+
+class DropboxProvider(DropboxProviderExtended):
+    """
+    The class that implements the dropbox storage provider.
+    """
+
+    def __init__(self, login_dict: DropboxLoginInformation) -> None:
+        """
+        Args:
+            login_dict: The dictionary that contains the login information
+            name: The name of the storage provider
+            is_active: Is the storage provider active.
+        """
+
+        super().__init__(login_dict, name="default", is_active=True)
