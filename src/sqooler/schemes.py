@@ -4,6 +4,7 @@ There is no obvious need, why this code should be touch in a new back-end.
 """
 
 from collections.abc import Callable
+from typing import Optional
 from pydantic import ValidationError, BaseModel
 
 from typing_extensions import NotRequired, TypedDict
@@ -77,6 +78,37 @@ class BackendStatusSchemaOut(BaseModel):
     operational: bool
     pending_jobs: int
     status_msg: str
+
+
+class BackendConfigSchemaOut(BaseModel):
+    """
+    The schema send out to detail the configuration of the backend. We follow the
+    conventions of the qiskit configuration dictionary here.
+
+    Will becomes compatible with qiskit.providers.models.BackendConfiguration
+    """
+
+    display_name: str
+    conditional: bool = False
+    coupling_map: str = "linear"
+    dynamic_reprate_enabled: bool = False
+    local: bool = False
+    memory: bool = True
+    open_pulse: bool = False
+    backend_version: str
+    n_qubits: int
+    backend_name: str
+    basis_gates: list[str]
+    description: str
+    cold_atom_type: str
+    max_experiments: int
+    max_shots: int
+    simulator: bool
+    wire_order: str
+    num_species: int
+    gates: list
+    supported_instructions: list
+    url: Optional[str] = None
 
 
 class GateInstruction(BaseModel):
