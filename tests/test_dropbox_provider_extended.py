@@ -41,7 +41,7 @@ class TestDropboxProviderExtended:
         Test that we can create a dropbox object.
         """
         dropbox_provider = DropboxProviderExtended(self.get_login(), DB_NAME)
-        assert not dropbox_provider == None
+        assert not dropbox_provider is None
 
         # test that we cannot create a dropbox object a poor login dict structure
         poor_login_dict = {
@@ -68,7 +68,7 @@ class TestDropboxProviderExtended:
         storage_provider.upload(test_content, storage_path, job_id)
 
         # make sure that this did not add the _id field to the dict
-        assert not "_id" in test_content
+        assert "_id" not in test_content
 
         test_result = storage_provider.get_file_content(storage_path, job_id)
 

@@ -80,7 +80,7 @@ class TestMongodbProviderExtended:
         Test that we can create a MongoDB object.
         """
         mongodb_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-        assert not mongodb_provider == None
+        assert not mongodb_provider is None
 
         # test that we cannot create a dropbox object a poor login dict structure
         poor_login_dict = {
@@ -280,7 +280,7 @@ class TestMongodbProviderExtended:
             username=username,
             job_id=job_id,
         )
-        assert not "_id" in job_status.keys()
+        assert "_id" not in job_status.keys()
         assert job_status["job_id"] == job_id
 
         # test that we can get a job result
@@ -295,7 +295,7 @@ class TestMongodbProviderExtended:
             username=username,
             job_id=job_id,
         )
-        assert not "_id" in result.keys()
+        assert "_id" not in result.keys()
         assert dummy_result["results"] == result["results"]
 
         # remove the obsolete job from the storage
