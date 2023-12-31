@@ -458,6 +458,7 @@ class DropboxProvider(StorageProvider):
                 dump_str.encode("utf-8"), full_path, mode=WriteMode("overwrite")
             )
 
+    @validate_active
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
@@ -485,6 +486,7 @@ class DropboxProvider(StorageProvider):
             full_final_path = "/" + final_path + "/" + job_id + ".json"
             dbx.files_move_v2(full_start_path, full_final_path)
 
+    @validate_active
     def delete_file(self, storage_path: str, job_id: str) -> None:
         """
         Remove the file from the dropbox
@@ -656,15 +658,28 @@ class DropboxProvider(StorageProvider):
         return job_dict
 
 
-class MongodbProvider(StorageProvider):
+class MongodbProviderExtended(StorageProvider):
     """
     The access to the mongodb
     """
 
-    def __init__(self, login_dict: MongodbLoginInformation) -> None:
+    def __init__(
+        self, login_dict: MongodbLoginInformation, name: str, is_active: bool = True
+    ) -> None:
         """
         Set up the neccessary keys and create the client through which all the connections will run.
+
+        Args:
+            login_dict: The login dict that contains the neccessary
+                        information to connect to the mongodb
+            name: The name of the storage provider
+            is_active: Is the storage provider active.
+
+
+        Raises:
+            ValidationError: If the login_dict is not valid
         """
+        super().__init__(name, is_active)
         mongodb_username = login_dict.mongodb_username
         mongodb_password = login_dict.mongodb_password
         mongodb_database_url = login_dict.mongodb_database_url
@@ -677,7 +692,8 @@ class MongodbProvider(StorageProvider):
         # Send a ping to confirm a successful connection
         self.client.admin.command("ping")
 
-    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
+    @validate_active
+    def upload(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
 
@@ -697,6 +713,10 @@ class MongodbProvider(StorageProvider):
         content_dict["_id"] = ObjectId(job_id)  # type: ignore
         collection.insert_one(content_dict)
 
+        # remove the id from the content dict for further use
+        content_dict.pop("_id", None)
+
+    @validate_active
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage
@@ -717,6 +737,9 @@ class MongodbProvider(StorageProvider):
 
         if not result_found:
             return {}
+
+        # remove the id from the result dict for further use
+        result_found.pop("_id", None)
         return result_found
 
     def get_job_content(self, storage_path: str, job_id: str) -> dict:
@@ -758,6 +781,7 @@ class MongodbProvider(StorageProvider):
         newvalues = {"$set": content_dict}
         collection.update_one(filter_dict, newvalues)
 
+    @validate_active
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
@@ -788,6 +812,7 @@ class MongodbProvider(StorageProvider):
         collection = database[collection_name]
         collection.insert_one(result_found)
 
+    @validate_active
     def delete_file(self, storage_path: str, job_id: str) -> None:
         """
         Remove the file from the mongodb database
@@ -808,6 +833,79 @@ class MongodbProvider(StorageProvider):
 
         document_to_find = {"_id": ObjectId(job_id)}
         collection.delete_one(document_to_find)
+
+    @validate_active
+    def get_backends(self) -> list[str]:
+        """
+        Get a list of all the backends that the provider offers.
+        """
+
+        # get the database on which we work
+        database = self.client["backends"]
+        config_collection = database["configs"]
+        # get all the documents in the collection configs and save the disply_name in a list
+        backend_names: list[str] = []
+        for config_dict in config_collection.find():
+            backend_names.append(config_dict["display_name"])
+        return backend_names
+
+    @validate_active
+    def get_backend_dict(self, display_name: str, version: str = "v2") -> dict:
+        """
+        The configuration dictionary of the backend such that it can be sent out to the API to
+        the common user. We make sure that it is compatible with QISKIT within this function.
+
+        Args:
+            display_name: The identifier of the backend
+            version: the version of the API you are using
+
+        Returns:
+            The full schema of the backend.
+        """
+        # get the database on which we work
+        database = self.client["backends"]
+        config_collection = database["configs"]
+
+        # create the filter for the document with display_name that is equal to display_name
+        document_to_find = {"display_name": display_name}
+        backend_config_dict = config_collection.find_one(document_to_find)
+
+        if not backend_config_dict:
+            return {}
+
+        backend_config_dict.pop("_id")
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict, version)
+        return qiskit_backend_dict
+
+    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+        """
+        Get the status of the backend. This follows the qiskit logic.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The status dict of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
+        """
+        # get the database on which we work
+        database = self.client["backends"]
+        config_collection = database["configs"]
+
+        # create the filter for the document with display_name that is equal to display_name
+        document_to_find = {"display_name": display_name}
+        backend_config_dict = config_collection.find_one(document_to_find)
+
+        if not backend_config_dict:
+            raise FileNotFoundError(
+                f"The backend {display_name} does not exist for the given storageprovider."
+            )
+
+        backend_config_dict.pop("_id")
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_dict)
+        return qiskit_backend_dict
 
     def upload_config(self, config_dict: dict, backend_name: str) -> None:
         """
@@ -847,6 +945,92 @@ class MongodbProvider(StorageProvider):
 
         config_id = uuid.uuid4().hex[:24]
         self.upload(config_dict, config_path, config_id)
+
+    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+        """
+        Upload the job to the storage provider.
+
+        Args:
+            job_dict: the full job dict
+            display_name: the name of the backend
+            username: the name of the user that submitted the job
+
+        Returns:
+            The job id of the uploaded job.
+        """
+
+        storage_path = "jobs/queued/" + display_name
+        job_id = (uuid.uuid4().hex)[:24]
+
+        self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
+        return job_id
+
+    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function uploads a status file to the backend and creates the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        storage_path = "status/" + display_name
+        status_dict = {
+            "job_id": job_id,
+            "status": "INITIALIZING",
+            "detail": "Got your json.",
+            "error_message": "None",
+        }
+
+        # should we also upload the username into the dict ?
+
+        # now upload the status dict
+        self.upload(
+            content_dict=status_dict,
+            storage_path=storage_path,
+            job_id=job_id,
+        )
+        return status_dict
+
+    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+        """
+        This function gets the status file from the backend and returns the status dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The status dict of the job
+        """
+        status_json_dir = "status/" + display_name
+
+        status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
+        return status_dict
+
+    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+        """
+        This function gets the result file from the backend and returns the result dict.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The result dict of the job
+        """
+        result_json_dir = "results/" + display_name
+        result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
+        backend_config_dict = self.get_backend_dict(display_name, "v2")
+        result_dict["backend_name"] = backend_config_dict["backend_name"]
+
+        typed_result = cast(ResultDict, result_dict)
+        return typed_result
 
     def update_in_database(
         self,
@@ -1364,6 +1548,18 @@ class LocalProvider(LocalProviderExtended):
     """
 
     def __init__(self, login_dict: LocalLoginInformation) -> None:
+        """
+        Set up the neccessary keys and create the client through which all the connections will run.
+        """
+        super().__init__(login_dict, name="default", is_active=True)
+
+
+class MongodbProvider(MongodbProviderExtended):
+    """
+    The access to the mongodb. This is the simplified version for people that are running devices.
+    """
+
+    def __init__(self, login_dict: MongodbLoginInformation) -> None:
         """
         Set up the neccessary keys and create the client through which all the connections will run.
         """

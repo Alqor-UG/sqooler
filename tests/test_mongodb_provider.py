@@ -31,6 +31,46 @@ class TestMongodbProvider:
         }
         return MongodbLoginInformation(**login_dict)
 
+    @classmethod
+    def teardown_class(cls) -> None:
+        """
+        Remove the `storage` folder.
+        """
+
+        # put together the login information
+        mongodb_username = config("MONGODB_USERNAME")
+        mongodb_password = config("MONGODB_PASSWORD")
+        mongodb_database_url = config("MONGODB_DATABASE_URL")
+
+        login_dict = {
+            "mongodb_username": mongodb_username,
+            "mongodb_password": mongodb_password,
+            "mongodb_database_url": mongodb_database_url,
+        }
+        login_info = MongodbLoginInformation(**login_dict)
+
+        # Remove all the collections that start with queued.
+        storage_provider = MongodbProvider(login_info)
+        database = storage_provider.client["jobs"]
+        for collection_name in database.list_collection_names():
+            if collection_name.startswith("queued.dummy"):
+                collection = database[collection_name]
+                collection.drop()
+
+        # Remove all the collections from results that start with dummy
+        database = storage_provider.client["results"]
+        for collection_name in database.list_collection_names():
+            if collection_name.startswith("dummy"):
+                collection = database[collection_name]
+                collection.drop()
+
+        # Remove all the collections from status that start with dummy
+        database = storage_provider.client["status"]
+        for collection_name in database.list_collection_names():
+            if collection_name.startswith("dummy"):
+                collection = database[collection_name]
+                collection.drop()
+
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
