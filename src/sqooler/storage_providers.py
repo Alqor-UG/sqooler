@@ -1342,9 +1342,11 @@ class LocalProviderExtended(StorageProvider):
             os.makedirs(folder_path)
 
         # create the full path
-        full_json_path = folder_path + "/" + job_id + ".json"
+        file_name = job_id + ".json"
+        full_json_path = os.path.join(folder_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
 
-        with open(full_json_path, "w", encoding="utf-8") as json_file:
+        with open(secure_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file)
 
     @validate_active
@@ -1356,9 +1358,11 @@ class LocalProviderExtended(StorageProvider):
         storage_path = storage_path.strip("/")
 
         # create the full path
-        full_json_path = self.base_path + "/" + storage_path + "/" + job_id + ".json"
+        file_name = job_id + ".json"
+        full_json_path = os.path.join(self.base_path, storage_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
 
-        with open(full_json_path, "r", encoding="utf-8") as json_file:
+        with open(secure_path, "r", encoding="utf-8") as json_file:
             loaded_data_dict = json.load(json_file)
         return loaded_data_dict
 
@@ -1392,17 +1396,16 @@ class LocalProviderExtended(StorageProvider):
         storage_path = storage_path.strip("/")
 
         # json folder
-        folder_path = self.base_path + "/" + storage_path
-
-        # create the full path
-        full_json_path = folder_path + "/" + job_id + ".json"
+        file_name = job_id + ".json"
+        full_json_path = os.path.join(self.base_path, storage_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
 
         # does the file already exist ?
-        if not os.path.exists(full_json_path):
+        if not os.path.exists(secure_path):
             raise FileNotFoundError(
-                f"The file {full_json_path} does not exist and cannot be updated."
+                f"The file {secure_path} does not exist and cannot be updated."
             )
-        with open(full_json_path, "w", encoding="utf-8") as json_file:
+        with open(secure_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file)
 
     @validate_active
@@ -1413,6 +1416,7 @@ class LocalProviderExtended(StorageProvider):
         start_path = start_path.strip("/")
 
         source_file = self.base_path + "/" + start_path + "/" + job_id + ".json"
+
         final_path = self.base_path + "/" + final_path + "/"
         if not os.path.exists(final_path):
             os.makedirs(final_path)
@@ -1455,8 +1459,10 @@ class LocalProviderExtended(StorageProvider):
         json_files = [item for item in all_items if item.endswith(".json")]
 
         for file_name in json_files:
-            full_json_path = config_path + "/" + file_name
-            with open(full_json_path, "r", encoding="utf-8") as json_file:
+            full_json_path = os.path.join(config_path, file_name)
+            secure_path = os.path.normpath(full_json_path)
+
+            with open(secure_path, "r", encoding="utf-8") as json_file:
                 config_dict = json.load(json_file)
                 backend_names.append(config_dict["display_name"])
         return backend_names
@@ -1478,9 +1484,10 @@ class LocalProviderExtended(StorageProvider):
         """
         # path of the configs
         config_path = self.base_path + "/backends/configs"
-
-        full_json_path = config_path + "/" + display_name + ".json"
-        with open(full_json_path, "r", encoding="utf-8") as json_file:
+        file_name = display_name + ".json"
+        full_json_path = os.path.join(config_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "r", encoding="utf-8") as json_file:
             backend_config_dict = json.load(json_file)
 
         if not backend_config_dict:
@@ -1503,10 +1510,11 @@ class LocalProviderExtended(StorageProvider):
             FileNotFoundError: If the backend does not exist
         """
         # path of the configs
+        file_name = display_name + ".json"
         config_path = self.base_path + "/backends/configs"
-
-        full_json_path = config_path + "/" + display_name + ".json"
-        with open(full_json_path, "r", encoding="utf-8") as json_file:
+        full_json_path = os.path.join(config_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "r", encoding="utf-8") as json_file:
             backend_config_dict = json.load(json_file)
 
         if not backend_config_dict:
@@ -1616,13 +1624,16 @@ class LocalProviderExtended(StorageProvider):
             None
         """
         # path of the configs
-        config_path = self.base_path + "/backends/configs"
+        config_path = os.path.join(self.base_path, "backends/configs")
+        config_path = os.path.normpath(os.path.join(self.base_path, "backends/configs"))
         # test if the config path already exists. If it does not, create it
         if not os.path.exists(config_path):
             os.makedirs(config_path)
 
-        full_json_path = config_path + "/" + backend_name + ".json"
-        with open(full_json_path, "w", encoding="utf-8") as json_file:
+        file_name = backend_name + ".json"
+        full_json_path = os.path.join(config_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "w", encoding="utf-8") as json_file:
             json.dump(config_dict, json_file)
 
     def update_in_database(
