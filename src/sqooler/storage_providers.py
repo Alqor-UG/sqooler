@@ -7,7 +7,7 @@ import uuid
 from abc import ABC, abstractmethod
 import json
 
-from typing import Mapping, Callable, Any, cast
+from typing import Mapping, Callable, Any
 import functools
 
 # necessary for the local provider
@@ -593,7 +593,7 @@ class DropboxProviderExtended(StorageProvider):
                 "/Backend_files/Result/" + backend_name + "/" + extracted_username + "/"
             )
             result_json_name = "result-" + job_id
-            self.upload(result_dict, result_json_dir, result_json_name)
+            self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = (
@@ -812,7 +812,7 @@ class DropboxProviderExtended(StorageProvider):
         backend_config_info = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_info.backend_name
 
-        typed_result = cast(ResultDict, result_dict)
+        typed_result = ResultDict(**result_dict)
         return typed_result
 
     def get_next_job_in_queue(self, backend_name: str) -> dict:
@@ -1215,7 +1215,7 @@ class MongodbProviderExtended(StorageProvider):
         backend_config_info = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_info.backend_name
 
-        typed_result = cast(ResultDict, result_dict)
+        typed_result = ResultDict(**result_dict)
         return typed_result
 
     def update_in_database(
@@ -1255,7 +1255,7 @@ class MongodbProviderExtended(StorageProvider):
                 )
             # let us create the result json file
             result_json_dir = "results/" + backend_name
-            self.upload(result_dict, result_json_dir, job_id)
+            self.upload(result_dict.model_dump(), result_json_dir, job_id)
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + backend_name
@@ -1630,8 +1630,7 @@ class LocalProviderExtended(StorageProvider):
 
         backend_config_info = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_info.backend_name
-
-        typed_result = cast(ResultDict, result_dict)
+        typed_result = ResultDict(**result_dict)
         return typed_result
 
     def upload_config(
@@ -1689,7 +1688,7 @@ class LocalProviderExtended(StorageProvider):
                 )
             # let us create the result json file
             result_json_dir = "results/" + backend_name
-            self.upload(result_dict, result_json_dir, job_id)
+            self.upload(result_dict.model_dump(), result_json_dir, job_id)
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + backend_name

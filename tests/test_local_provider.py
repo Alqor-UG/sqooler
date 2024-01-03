@@ -153,7 +153,8 @@ class TestLocalProvider:
         assert "_id" not in job_json_dict.keys()
 
         # we now also need to test the update_in_database part of the storage provider
-        result_dict: ResultDict = {
+        result_draft = {
+            "backend_name": backend_name,
             "display_name": backend_name,
             "backend_version": "0.0.1",
             "job_id": next_job["job_id"],
@@ -163,7 +164,7 @@ class TestLocalProvider:
             "header": {},
             "results": [],
         }
-
+        result_dict = ResultDict(**result_draft)
         # upload the status dict without other status.
         status_msg_dict = {"status": "INITIALIZING"}
         status_json_dir = "status/" + backend_name

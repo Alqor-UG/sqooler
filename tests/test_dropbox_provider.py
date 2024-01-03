@@ -132,7 +132,7 @@ class TestDropboxProvider:
         assert next_job["job_id"] == job_id
 
         # we now also need to test the update_in_database part of the storage provider
-        result_dict: ResultDict = {
+        result_draft = {
             "display_name": backend_name,
             "backend_version": "0.0.1",
             "job_id": next_job["job_id"],
@@ -142,6 +142,8 @@ class TestDropboxProvider:
             "header": {},
             "results": [],
         }
+
+        result_dict = ResultDict(**result_draft)
         status_msg_dict = {"status": "INITIALIZING"}
         # upload the status dict without other status.
 

@@ -21,20 +21,25 @@ class ExperimentDict(TypedDict):
     data: dict
 
 
-class ResultDict(TypedDict):
+class ResultDict(BaseModel):
     """
-    A class that defines the structure of results.
+    A class that defines the structure of results. It is closely related to the
+    qiskit class qiskit.result.Result.
     """
 
-    display_name: str
-    backend_version: str
-    job_id: str
-    qobj_id: str | None
-    success: bool
-    status: str
-    header: dict
-    results: list
-    backend_name: NotRequired[str]
+    backend_name: Optional[str] = Field(
+        default=None, description="The name of the backend"
+    )
+    display_name: str = Field(description="alternate name field for the backend")
+    backend_version: str = Field(description="backend version, in the form X.Y.Z.")
+    job_id: str = Field(description="unique execution id from the backend.")
+    qobj_id: Optional[str] = Field(default=None, description="user-generated Qobj id.")
+    success: bool = Field(description="True if complete input qobj executed correctly.")
+    status: str = Field(description="status of job execution.")
+    header: dict = Field(description="Contains centralized information about the job.")
+    results: list = Field(
+        description="corresponding results for array of experiments of the input qobj"
+    )
 
 
 class DropboxLoginInformation(BaseModel):
@@ -115,8 +120,12 @@ class BackendConfigSchemaIn(BaseModel):
     )
     num_species: int = Field(description="The number of species in the system.")
     operational: bool = Field(description="True if the backend is operational")
-    pending_jobs: int = Field(description="The number of pending jobs on the backend")
-    status_msg: str = Field(description="The status message for the backend")
+    pending_jobs: Optional[int] = Field(
+        default=None, description="The number of pending jobs on the backend"
+    )
+    status_msg: Optional[str] = Field(
+        default=None, description="The status message for the backend"
+    )
 
 
 class BackendConfigSchemaOut(BaseModel):
