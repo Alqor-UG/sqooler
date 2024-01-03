@@ -11,7 +11,7 @@ from pydantic import ValidationError
 import pytest
 
 from sqooler.storage_providers import LocalProviderExtended
-from sqooler.schemes import LocalLoginInformation
+from sqooler.schemes import LocalLoginInformation, BackendConfigSchemaIn
 
 DB_NAME = "localtest"
 
@@ -123,11 +123,14 @@ class TestLocalProviderExtended:
         dummy_dict["max_shots"] = 5
         dummy_dict["max_experiments"] = 5
         dummy_dict["description"] = "Dummy simulator for testing"
+        dummy_dict["operational"] = True
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
 
         config_path = "backends/configs"
-        storage_provider.upload(dummy_dict, config_path, job_id=backend_name)
+
+        backend_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(backend_info, backend_name)
 
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
@@ -159,6 +162,13 @@ class TestLocalProviderExtended:
         dummy_dict["name"] = "Dummy"
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
+        dummy_dict["cold_atom_type"] = "fermion"
+        dummy_dict["num_species"] = 1
+        dummy_dict["wire_order"] = "interleaved"
+        dummy_dict["max_shots"] = 5
+        dummy_dict["max_experiments"] = 5
+        dummy_dict["description"] = "Dummy simulator for testing"
+        dummy_dict["supported_instructions"] = []
 
         # create the necessary status entries
         dummy_dict["operational"] = True
@@ -170,7 +180,8 @@ class TestLocalProviderExtended:
         dummy_dict["simulator"] = True
 
         config_path = "backends/configs"
-        storage_provider.upload(dummy_dict, config_path, job_id=backend_name)
+        backend_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(backend_info, backend_name)
 
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
@@ -205,13 +216,21 @@ class TestLocalProviderExtended:
         dummy_dict["name"] = "Dummy"
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
-
+        dummy_dict["cold_atom_type"] = "fermion"
+        dummy_dict["num_species"] = 1
+        dummy_dict["wire_order"] = "interleaved"
+        dummy_dict["max_shots"] = 5
+        dummy_dict["max_experiments"] = 5
+        dummy_dict["description"] = "Dummy simulator for testing"
+        dummy_dict["supported_instructions"] = []
+        dummy_dict["operational"] = True
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
         dummy_dict["simulator"] = True
 
         config_path = "backends/configs"
-        storage_provider.upload(dummy_dict, config_path, job_id=backend_name)
+        config_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(config_info, backend_name)
 
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
@@ -260,7 +279,7 @@ class TestLocalProviderExtended:
         dummy_dict["max_shots"] = 5
         dummy_dict["max_experiments"] = 5
         dummy_dict["description"] = "Dummy simulator for testing"
-
+        dummy_dict["operational"] = True
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
         dummy_dict["simulator"] = True

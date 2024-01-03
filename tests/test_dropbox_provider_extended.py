@@ -9,7 +9,7 @@ from decouple import config
 import pytest
 
 from sqooler.storage_providers import DropboxProviderExtended
-from sqooler.schemes import DropboxLoginInformation
+from sqooler.schemes import DropboxLoginInformation, BackendConfigSchemaIn
 
 DB_NAME = "dropboxtest"
 
@@ -109,7 +109,10 @@ class TestDropboxProviderExtended:
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
         dummy_path = f"Backend_files/Config/{backend_name}"
-        storage_provider.upload(dummy_dict, dummy_path, job_id="config")
+        dummy_dict["operational"] = True
+
+        config_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(config_info, backend_name)
 
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
@@ -150,9 +153,10 @@ class TestDropboxProviderExtended:
         dummy_dict["description"] = "Dummy simulator for testing"
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
+        dummy_dict["operational"] = True
 
-        dummy_path = f"Backend_files/Config/{backend_name}"
-        storage_provider.upload(dummy_dict, dummy_path, job_id="config")
+        config_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(config_info, backend_name)
 
         # let us first test the we can upload a dummy job
         job_payload = {
