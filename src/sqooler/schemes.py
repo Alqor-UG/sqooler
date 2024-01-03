@@ -60,11 +60,11 @@ class MongodbLoginInformation(BaseModel):
 class LocalLoginInformation(BaseModel):
     """
     The login information for a local storage provider.
-
-    base_path: The base path of the storage provider on your local file system.
     """
 
-    base_path: str
+    base_path: str = Field(
+        description="The base path of the storage provider on your local file system."
+    )
 
 
 class BackendStatusSchemaOut(BaseModel):
@@ -73,33 +73,50 @@ class BackendStatusSchemaOut(BaseModel):
     `qiskit.providers.models.BackendStatus`.
     """
 
-    backend_name: str
-    backend_version: str
-    operational: bool
-    pending_jobs: int
-    status_msg: str
+    backend_name: str = Field(description="The name of the backend")
+    backend_version: str = Field(
+        description="The version of the backend. Of the form X.Y.Z"
+    )
+    operational: bool = Field(description="True if the backend is operational")
+    pending_jobs: int = Field(description="The number of pending jobs on the backend")
+    status_msg: str = Field(description="The status message for the backend")
 
 
 class BackendConfigSchemaIn(BaseModel):
     """
     The schema send in to detail the configuration of the backend.
+    This is uploaded to the storage provider.
     """
 
-    description: str
-    version: str
-    display_name: Optional[str]
-    cold_atom_type: str
-    gates: list
-    max_experiments: int
-    max_shots: int
-    simulator: bool
-    supported_instructions: list
-    num_wires: int
-    wire_order: str
-    num_species: int
-    operational: bool
-    pending_jobs: Optional[int] = None
-    status_msg: Optional[str] = None
+    description: str = Field(description="A description for the backend")
+    version: str = Field(description="The backend version in the form X.Y.Z")
+    display_name: Optional[str] = Field(
+        description=" Alternate name field for the backend"
+    )
+    cold_atom_type: str = Field(
+        description="The type of cold atom system that is simulated. Non standard qiskit field."
+    )
+    gates: list = Field(
+        description="The list of GateConfig objects for the basis gates of the backend"
+    )
+    max_experiments: int = Field(
+        description="The maximum number of experiments per job"
+    )
+    max_shots: int = Field(
+        description="The maximum number of shots allowed on the backend"
+    )
+    simulator: bool = Field(description="True if the backend is a simulator")
+    supported_instructions: list[str] = Field(
+        description="Instructions supported by the backend."
+    )
+    num_wires: int = Field(description="The number of qubits / wires for the backend")
+    wire_order: str = Field(
+        description="The wire order of the backend. Either linear or interleaved."
+    )
+    num_species: int = Field(description="The number of species in the system.")
+    operational: bool = Field(description="True if the backend is operational")
+    pending_jobs: int = Field(description="The number of pending jobs on the backend")
+    status_msg: str = Field(description="The status message for the backend")
 
 
 class BackendConfigSchemaOut(BaseModel):
@@ -150,12 +167,15 @@ class BackendConfigSchemaOut(BaseModel):
         description="The type of cold atom system that is simulated. Non standard qiskit field."
     )
     wire_order: str = Field(
-        description="The wire order of the backend. Either linear or interleaved. Non standard qiskit field."
+        description=(
+            "The wire order of the backend. Either linear or interleaved."
+            " Non standard qiskit field."
+        )
     )
     num_species: int = Field(
         description="The number of species in the system. Non standard qiskit field."
     )
-    url: Optional[str] = None
+    url: Optional[str] = Field(default=None, description="The url of the backend")
 
 
 class GateInstruction(BaseModel):
