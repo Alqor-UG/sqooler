@@ -7,7 +7,7 @@ import uuid
 from decouple import config
 
 from sqooler.storage_providers import MongodbProvider
-from sqooler.schemes import ResultDict, MongodbLoginInformation
+from sqooler.schemes import ResultDict, MongodbLoginInformation, BackendConfigSchemaIn
 
 
 class TestMongodbProvider:
@@ -122,8 +122,18 @@ class TestMongodbProvider:
         dummy_dict["display_name"] = backend_name
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
+        dummy_dict["description"] = "This is a dummy backend."
+        dummy_dict["cold_atom_type"] = "fermions"
+        dummy_dict["max_experiments"] = 1
+        dummy_dict["max_shots"] = 1
+        dummy_dict["simulator"] = True
+        dummy_dict["supported_instructions"] = []
+        dummy_dict["wire_order"] = "interleaved"
+        dummy_dict["num_species"] = 1
+        dummy_dict["operational"] = True
 
-        storage_provider.upload_config(dummy_dict, backend_name)
+        backend_config_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(backend_config_info, backend_name)
 
         # can we get the backend in the list ?
         # get the database on which we work
@@ -137,8 +147,8 @@ class TestMongodbProvider:
         assert result_found["display_name"] == dummy_dict["display_name"]
 
         # make sure that the upload of the same backend does only update it.
-        dummy_dict["num_wires"] = 4
-        storage_provider.upload_config(dummy_dict, backend_name)
+        backend_config_info.num_wires = 4
+        storage_provider.upload_config(backend_config_info, backend_name)
         results_found = configs.find(document_to_find)
         assert len(list(results_found)) == 1
 

@@ -12,8 +12,8 @@ def test_spooler_config() -> None:
     test_spooler = Spooler(ins_schema_dict={}, n_wires=2)
 
     spooler_config = test_spooler.get_configuration()
-    assert spooler_config["num_wires"] == 2
-    assert spooler_config["operational"]
+    assert spooler_config.num_wires == 2
+    assert spooler_config.operational
 
 
 def test_spooler_operational() -> None:
@@ -23,5 +23,5 @@ def test_spooler_operational() -> None:
     test_spooler = Spooler(ins_schema_dict={}, n_wires=2, operational=False)
 
     spooler_config = test_spooler.get_configuration()
-    assert spooler_config["num_wires"] == 2
-    assert not spooler_config["operational"]
+    assert spooler_config.num_wires == 2
+    assert not spooler_config.operational

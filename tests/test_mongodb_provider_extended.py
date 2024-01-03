@@ -9,7 +9,7 @@ from pydantic import ValidationError
 import pytest
 
 from sqooler.storage_providers import MongodbProviderExtended
-from sqooler.schemes import MongodbLoginInformation
+from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
 
 DB_NAME = "mongodbtest"
 
@@ -163,13 +163,15 @@ class TestMongodbProviderExtended:
         dummy_dict["max_shots"] = 5
         dummy_dict["max_experiments"] = 5
         dummy_dict["description"] = "Dummy simulator for testing"
+        dummy_dict["operational"] = True
 
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
 
         config_path = "backends/configs"
         mongo_id = uuid.uuid4().hex[:24]
-        storage_provider.upload(dummy_dict, config_path, job_id=mongo_id)
+        backend_config_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(backend_config_info, backend_name)
 
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
@@ -203,6 +205,14 @@ class TestMongodbProviderExtended:
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
         dummy_dict["simulator"] = True
+        dummy_dict["cold_atom_type"] = "fermion"
+        dummy_dict["num_species"] = 1
+        dummy_dict["wire_order"] = "interleaved"
+        dummy_dict["max_shots"] = 5
+        dummy_dict["max_experiments"] = 5
+        dummy_dict["description"] = "Dummy simulator for testing"
+        dummy_dict["supported_instructions"] = []
+
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
 
@@ -213,7 +223,8 @@ class TestMongodbProviderExtended:
 
         config_path = "backends/configs"
         mongo_id = uuid.uuid4().hex[:24]
-        storage_provider.upload(dummy_dict, config_path, job_id=mongo_id)
+        config_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(config_info, backend_name)
 
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
@@ -256,13 +267,16 @@ class TestMongodbProviderExtended:
         dummy_dict["max_shots"] = 5
         dummy_dict["max_experiments"] = 5
         dummy_dict["description"] = "Dummy simulator for testing"
+        dummy_dict["operational"] = True
 
         backend_name = f"dummy{dummy_id}"
         dummy_dict["display_name"] = backend_name
         dummy_dict["simulator"] = True
         config_path = "backends/configs"
         mongo_id = uuid.uuid4().hex[:24]
-        storage_provider.upload(dummy_dict, config_path, job_id=mongo_id)
+
+        backend_config_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(backend_config_info, backend_name)
 
         # let us first test the we can upload a dummy job
         job_payload = {

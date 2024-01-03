@@ -30,6 +30,7 @@ from .schemes import (
     DropboxLoginInformation,
     LocalLoginInformation,
     BackendStatusSchemaOut,
+    BackendConfigSchemaIn,
     BackendConfigSchemaOut,
 )
 
@@ -206,12 +207,14 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def upload_config(self, config_dict: dict, backend_name: str) -> None:
+    def upload_config(
+        self, config_dict: BackendConfigSchemaIn, backend_name: str
+    ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
         Args:
-            config_dict: The dictionary containing the configuration
+            config_dict: The model containing the configuration
             backend_name (str): The name of the backend
 
         Returns:
@@ -264,18 +267,19 @@ class StorageProvider(ABC):
         """
 
     def backend_dict_to_qiskit(
-        self, backend_config_dict: dict
+        self, backend_config_info: BackendConfigSchemaIn
     ) -> BackendConfigSchemaOut:
         """
         This function transforms the dictionary that is safed in the storage provider
         into a qiskit backend dictionnary.
 
         Args:
-            backend_config_dict: The dictionary that contains the configuration of the backend
+            backend_config_info: The dictionary that contains the configuration of the backend
 
         Returns:
             The qiskit backend dictionary
         """
+        backend_config_dict = backend_config_info.model_dump()
         display_name = backend_config_dict["display_name"]
         # for comaptibility with qiskit
         backend_config_dict["basis_gates"] = []
@@ -301,7 +305,7 @@ class StorageProvider(ABC):
         return BackendConfigSchemaOut(**backend_config_dict)
 
     def backend_dict_to_qiskit_status(
-        self, backend_dict: dict
+        self, backend_dict: BackendConfigSchemaIn
     ) -> BackendStatusSchemaOut:
         """
         This function transforms the dictionary that is safed in the storage provider
@@ -321,24 +325,32 @@ class StorageProvider(ABC):
             "status_msg": "",
         }
 
-        display_name = backend_dict["display_name"]
+        display_name = backend_dict.display_name
 
         # if the name is already in the dict, we should set the backend_name to the name
         # otherwise we calculate it.
-        if backend_dict["simulator"]:
+        if backend_dict.simulator:
             backend_name = f"{self.name}_{display_name}_simulator"
         else:
             backend_name = f"{self.name}_{display_name}_hardware"
 
         backend_status_dict["backend_name"] = backend_name
-        backend_status_dict["backend_version"] = backend_dict["version"]
+        backend_status_dict["backend_version"] = backend_dict.version
 
         # now I also need to obtain the operational status from the backend.
-        backend_status_dict["operational"] = backend_dict.get("operational", True)
-        # would be nice to attempt to get the pending jobs too, if possible easily.
-        backend_status_dict["pending_jobs"] = backend_dict.get("pending_jobs", 0)
+        backend_status_dict["operational"] = backend_dict.operational
 
-        backend_status_dict["status_msg"] = backend_dict.get("status_msg", "")
+        # would be nice to attempt to get the pending jobs too, if possible easily.
+        if backend_dict.pending_jobs:
+            backend_status_dict["pending_jobs"] = backend_dict.pending_jobs
+        else:
+            backend_status_dict["pending_jobs"] = 0
+
+        # and also handle the status message which is currently optional BackendConfigSchemaIn
+        if backend_dict.status_msg:
+            backend_status_dict["status_msg"] = backend_dict.status_msg
+        else:
+            backend_status_dict["status_msg"] = ""
         return BackendStatusSchemaOut(**backend_status_dict)
 
 
@@ -525,7 +537,9 @@ class DropboxProviderExtended(StorageProvider):
             full_path = "/" + storage_path + "/" + job_id + ".json"
             _ = dbx.files_delete(path=full_path)
 
-    def upload_config(self, config_dict: dict, backend_name: str) -> None:
+    def upload_config(
+        self, config_dict: BackendConfigSchemaIn, backend_name: str
+    ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
@@ -541,7 +555,7 @@ class DropboxProviderExtended(StorageProvider):
         """
 
         config_path = "Backend_files/Config/" + backend_name
-        self.upload(config_dict, config_path, "config")
+        self.upload(config_dict.model_dump(), config_path, "config")
 
     def update_in_database(
         self,
@@ -678,7 +692,8 @@ class DropboxProviderExtended(StorageProvider):
         backend_config_dict = self.get_file_content(
             storage_path=backend_json_path, job_id="config"
         )
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
+        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
         return qiskit_backend_dict
 
     def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
@@ -695,7 +710,8 @@ class DropboxProviderExtended(StorageProvider):
         backend_config_dict = self.get_file_content(
             storage_path=backend_json_path, job_id="config"
         )
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_dict)
+        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 
     def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
@@ -921,7 +937,7 @@ class MongodbProviderExtended(StorageProvider):
 
         """
         job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
-        job_dict.pop("_id")
+        job_dict.pop("_id", None)
         return job_dict
 
     def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
@@ -1040,7 +1056,8 @@ class MongodbProviderExtended(StorageProvider):
             raise FileNotFoundError("The backend does not exist for the given storage.")
 
         backend_config_dict.pop("_id")
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
+        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
         return qiskit_backend_dict
 
     def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
@@ -1070,10 +1087,13 @@ class MongodbProviderExtended(StorageProvider):
             )
 
         backend_config_dict.pop("_id")
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_dict)
+        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 
-    def upload_config(self, config_dict: dict, backend_name: str) -> None:
+    def upload_config(
+        self, config_dict: BackendConfigSchemaIn, backend_name: str
+    ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
@@ -1097,11 +1117,11 @@ class MongodbProviderExtended(StorageProvider):
         collection = database["configs"]
 
         result_found = collection.find_one(document_to_find)
-        config_dict["display_name"] = backend_name
+        config_dict.display_name = backend_name
         if result_found:
             # update the file
             self.update_file(
-                content_dict=config_dict,
+                content_dict=config_dict.model_dump(),
                 storage_path=config_path,
                 job_id=result_found["_id"],
             )
@@ -1110,7 +1130,7 @@ class MongodbProviderExtended(StorageProvider):
         # if the device does not exist, we have to create it
 
         config_id = uuid.uuid4().hex[:24]
-        self.upload(config_dict, config_path, config_id)
+        self.upload(config_dict.model_dump(), config_path, config_id)
 
     def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
         """
@@ -1493,7 +1513,8 @@ class LocalProviderExtended(StorageProvider):
         if not backend_config_dict:
             raise FileNotFoundError("The backend does not exist for the given storage.")
 
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_dict)
+        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
         return qiskit_backend_dict
 
     def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
@@ -1522,7 +1543,8 @@ class LocalProviderExtended(StorageProvider):
                 f"The backend {display_name} does not exist for the given storageprovider."
             )
 
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_dict)
+        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 
     def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
@@ -1612,7 +1634,9 @@ class LocalProviderExtended(StorageProvider):
         typed_result = cast(ResultDict, result_dict)
         return typed_result
 
-    def upload_config(self, config_dict: dict, backend_name: str) -> None:
+    def upload_config(
+        self, config_dict: BackendConfigSchemaIn, backend_name: str
+    ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
@@ -1634,7 +1658,7 @@ class LocalProviderExtended(StorageProvider):
         full_json_path = os.path.join(config_path, file_name)
         secure_path = os.path.normpath(full_json_path)
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json.dump(config_dict, json_file)
+            json.dump(config_dict.model_dump(), json_file)
 
     def update_in_database(
         self,

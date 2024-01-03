@@ -5,7 +5,7 @@ There is no obvious need, why this code should be touch in a new back-end.
 
 from collections.abc import Callable
 from typing import Optional
-from pydantic import ValidationError, BaseModel
+from pydantic import ValidationError, BaseModel, Field
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -60,11 +60,11 @@ class MongodbLoginInformation(BaseModel):
 class LocalLoginInformation(BaseModel):
     """
     The login information for a local storage provider.
-
-    base_path: The base path of the storage provider on your local file system.
     """
 
-    base_path: str
+    base_path: str = Field(
+        description="The base path of the storage provider on your local file system."
+    )
 
 
 class BackendStatusSchemaOut(BaseModel):
@@ -73,11 +73,50 @@ class BackendStatusSchemaOut(BaseModel):
     `qiskit.providers.models.BackendStatus`.
     """
 
-    backend_name: str
-    backend_version: str
-    operational: bool
-    pending_jobs: int
-    status_msg: str
+    backend_name: str = Field(description="The name of the backend")
+    backend_version: str = Field(
+        description="The version of the backend. Of the form X.Y.Z"
+    )
+    operational: bool = Field(description="True if the backend is operational")
+    pending_jobs: int = Field(description="The number of pending jobs on the backend")
+    status_msg: str = Field(description="The status message for the backend")
+
+
+class BackendConfigSchemaIn(BaseModel):
+    """
+    The schema send in to detail the configuration of the backend.
+    This is uploaded to the storage provider.
+    """
+
+    description: str = Field(description="A description for the backend")
+    version: str = Field(description="The backend version in the form X.Y.Z")
+    display_name: Optional[str] = Field(
+        description=" Alternate name field for the backend"
+    )
+    cold_atom_type: str = Field(
+        description="The type of cold atom system that is simulated. Non standard qiskit field."
+    )
+    gates: list = Field(
+        description="The list of GateConfig objects for the basis gates of the backend"
+    )
+    max_experiments: int = Field(
+        description="The maximum number of experiments per job"
+    )
+    max_shots: int = Field(
+        description="The maximum number of shots allowed on the backend"
+    )
+    simulator: bool = Field(description="True if the backend is a simulator")
+    supported_instructions: list[str] = Field(
+        description="Instructions supported by the backend."
+    )
+    num_wires: int = Field(description="The number of qubits / wires for the backend")
+    wire_order: str = Field(
+        description="The wire order of the backend. Either linear or interleaved."
+    )
+    num_species: int = Field(description="The number of species in the system.")
+    operational: bool = Field(description="True if the backend is operational")
+    pending_jobs: int = Field(description="The number of pending jobs on the backend")
+    status_msg: str = Field(description="The status message for the backend")
 
 
 class BackendConfigSchemaOut(BaseModel):
@@ -88,27 +127,55 @@ class BackendConfigSchemaOut(BaseModel):
     Will becomes compatible with qiskit.providers.models.BackendConfiguration
     """
 
-    display_name: str
-    conditional: bool = False
-    coupling_map: str = "linear"
-    dynamic_reprate_enabled: bool = False
-    local: bool = False
-    memory: bool = True
-    open_pulse: bool = False
-    backend_version: str
-    n_qubits: int
-    backend_name: str
-    basis_gates: list[str]
-    description: str
-    cold_atom_type: str
-    max_experiments: int
-    max_shots: int
-    simulator: bool
-    wire_order: str
-    num_species: int
-    gates: list
-    supported_instructions: list
-    url: Optional[str] = None
+    description: str = Field(description="A description for the backend")
+    display_name: str = Field(description=" Alternate name field for the backend")
+    conditional: bool = Field(
+        default=False, description="True if the backend supports conditional operations"
+    )
+    coupling_map: str = Field(
+        default="linear", description="The coupling map for the device"
+    )
+    dynamic_reprate_enabled: bool = Field(
+        default=False,
+        description="whether delay between programs can be set dynamically ",
+    )
+    local: bool = Field(
+        default=False, description="True if the backend is local or False if remote"
+    )
+    memory: bool = Field(default=False, description="True if backend supports memory")
+    open_pulse: bool = Field(default=False, description="True if backend is OpenPulse")
+    backend_version: str = Field(description="The backend version in the form X.Y.Z")
+    n_qubits: int = Field(description="The number of qubits / wires for the backend")
+    backend_name: str = Field(description="The backend name")
+    basis_gates: list[str] = Field(
+        description="The list of strings for the basis gates of the backends"
+    )
+    max_experiments: int = Field(
+        description="The maximum number of experiments per job"
+    )
+    max_shots: int = Field(
+        description="The maximum number of shots allowed on the backend"
+    )
+    simulator: bool = Field(description="True if the backend is a simulator")
+    gates: list = Field(
+        description="The list of GateConfig objects for the basis gates of the backend"
+    )
+    supported_instructions: list[str] = Field(
+        description="Instructions supported by the backend."
+    )
+    cold_atom_type: str = Field(
+        description="The type of cold atom system that is simulated. Non standard qiskit field."
+    )
+    wire_order: str = Field(
+        description=(
+            "The wire order of the backend. Either linear or interleaved."
+            " Non standard qiskit field."
+        )
+    )
+    num_species: int = Field(
+        description="The number of species in the system. Non standard qiskit field."
+    )
+    url: Optional[str] = Field(default=None, description="The url of the backend")
 
 
 class GateInstruction(BaseModel):
@@ -192,7 +259,7 @@ class Spooler:
         """
         raise NotImplementedError("Subclasses should implement this!")
 
-    def get_configuration(self) -> dict:
+    def get_configuration(self) -> BackendConfigSchemaIn:
         """
         Sends back the configuration dictionary of the spooler.
         """
@@ -200,7 +267,7 @@ class Spooler:
         for _, ins_obj in self.ins_schema_dict.items():
             if "is_gate" in ins_obj.model_fields:
                 gate_list.append(ins_obj.config_dict())
-        return {
+        backend_config_dict = {
             "description": self.description,
             "version": self.version,
             "cold_atom_type": self.cold_atom_type,
@@ -213,7 +280,9 @@ class Spooler:
             "wire_order": self.wire_order,
             "num_species": self.num_species,
             "operational": self.operational,
+            "display_name": self.display_name,
         }
+        return BackendConfigSchemaIn(**backend_config_dict)
 
     def check_instructions(self, ins_list: list) -> tuple[str, bool]:
         """

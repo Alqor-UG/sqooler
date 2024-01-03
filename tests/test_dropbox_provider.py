@@ -8,7 +8,7 @@ import uuid
 from decouple import config
 
 from sqooler.storage_providers import DropboxProvider
-from sqooler.schemes import ResultDict, DropboxLoginInformation
+from sqooler.schemes import ResultDict, DropboxLoginInformation, BackendConfigSchemaIn
 
 
 class TestDropboxProvider:
@@ -74,8 +74,18 @@ class TestDropboxProvider:
         dummy_dict["gates"] = []
         dummy_dict["num_wires"] = 3
         dummy_dict["version"] = "0.0.1"
+        dummy_dict["cold_atom_type"] = "fermion"
+        dummy_dict["num_species"] = 1
+        dummy_dict["wire_order"] = "interleaved"
+        dummy_dict["max_shots"] = 5
+        dummy_dict["max_experiments"] = 5
+        dummy_dict["description"] = "Dummy simulator for testing"
+        dummy_dict["operational"] = True
+        dummy_dict["supported_instructions"] = []
+        dummy_dict["simulator"] = False
 
-        storage_provider.upload_config(dummy_dict, backend_name)
+        config_info = BackendConfigSchemaIn(**dummy_dict)
+        storage_provider.upload_config(config_info, backend_name)
 
         # can we get the backend in the list ?
         dummy_path = f"Backend_files/Config/{backend_name}"
