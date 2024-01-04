@@ -318,16 +318,27 @@ class TestMongodbProviderExtended:
 
         # test that we can get a job result
         # first upload a dummy result
-        dummy_result = {"results": "dummy"}
+        dummy_result = {
+            "backend_name": backend_name,
+            "display_name": backend_name,
+            "backend_version": "0.0.1",
+            "job_id": job_id,
+            "qobj_id": None,
+            "success": True,
+            "status": "finished",
+            "header": {},
+            "results": [],
+        }
         result_json_dir = "results/" + backend_name
         storage_provider.upload(dummy_result, result_json_dir, job_id)
 
         # now get the result
-        result = storage_provider.get_result(
+        result_info = storage_provider.get_result(
             display_name=backend_name,
             username=username,
             job_id=job_id,
         )
+        result = result_info.model_dump()
         assert "_id" not in result.keys()
         assert dummy_result["results"] == result["results"]
 
