@@ -1,9 +1,10 @@
 [tool.poetry]
 name = "sqooler"
 version = "0.3.0"
-description = "Code that enables cloud access to quantum hardware (simulators)"
+description = "Code that enables validated cloud access to quantum hardware (simulators)"
 authors = ["fretchen <fred.jendrzejewski@gmail.com>"]
-license = "Unlicence license"
+repository = "https://github.com/Alqor-UG/sqooler"
+license = "Unlicense"
 readme = "README.md"
 packages = [{include = "sqooler", from = "src"}]
 

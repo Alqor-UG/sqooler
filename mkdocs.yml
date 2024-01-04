@@ -13,7 +13,11 @@ theme:
 
 nav:
   - Introduction: "index.md"
-  - "utils.md"
+  - Contributing: contributing.md
+  - "Modules":
+    - "Schemes": "schemes.md"
+    - "Utils": "utils.md"
+    - "Storage providers": "storage_providers.md"
 
 repo_url: https://github.com/alqor-ug/sqooler
 edit_uri: edit/main/docs/

@@ -2,10 +2,9 @@
 comments: true
 ---
 
-# API documentation of utils
+# API documentation of schemes
 
-
-::: src.sqooler.utils
+::: src.sqooler.schemes
     handler: python 
     options:
       show_source: true
