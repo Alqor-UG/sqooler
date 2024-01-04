@@ -7,7 +7,7 @@ from collections.abc import Callable
 from typing import Optional
 from pydantic import ValidationError, BaseModel, Field
 
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import TypedDict
 
 
 class ExperimentDict(TypedDict):
@@ -338,6 +338,8 @@ class Spooler:
         Returns:
             bool: is the expression having the appropiate syntax ?
         """
+        err_code = "No instructions received."
+        exp_ok = False
         for expr in json_dict:
             err_code = "Wrong experiment name or too many experiments"
             # Fix this pylint issue whenever you have time, but be careful !
@@ -411,7 +413,7 @@ class Spooler:
         """
         job_id = status_msg_dict["job_id"]
 
-        result_dict: ResultDict = {
+        result_draft = {
             "display_name": self.display_name,
             "backend_version": self.version,
             "job_id": job_id,
@@ -429,12 +431,13 @@ class Spooler:
                 for exp in json_dict:
                     exp_dict = {exp: json_dict[exp]}
                     # Here we
-                    result_dict["results"].append(self.gen_circuit(exp_dict))
+                    result_draft["results"].append(self.gen_circuit(exp_dict))
 
                 status_msg_dict[
                     "detail"
                 ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
                 status_msg_dict["status"] = "DONE"
+                result_dict = ResultDict(**result_draft)
                 return result_dict, status_msg_dict
 
             status_msg_dict["detail"] += (
@@ -446,6 +449,7 @@ class Spooler:
                 + dim_err_msg
             )
             status_msg_dict["status"] = "ERROR"
+            result_dict = ResultDict(**result_draft)
             return result_dict, status_msg_dict
         else:
             status_msg_dict["detail"] += (
@@ -457,6 +461,8 @@ class Spooler:
                 + err_msg
             )
             status_msg_dict["status"] = "ERROR"
+
+        result_dict = ResultDict(**result_draft)
         return result_dict, status_msg_dict
 
 

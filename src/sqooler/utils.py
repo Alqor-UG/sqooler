@@ -71,7 +71,7 @@ def main(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
 
-        result_dict: ResultDict = {
+        result_draft: dict = {
             "display_name": "",
             "backend_version": "",
             "job_id": "",
@@ -82,6 +82,7 @@ def main(
             "results": [],
         }
 
+        result_dict = ResultDict(**result_draft)
         status_msg_dict = {
             "job_id": job_dict["job_id"],
             "status": "None",
