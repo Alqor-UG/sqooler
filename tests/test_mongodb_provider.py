@@ -201,12 +201,13 @@ class TestMongodbProvider:
             "results": [],
         }
         result_dict = ResultDict(**result_draft)
-        # upload the status dict without other status.
-        status_msg_dict = {"status": "INITIALIZING"}
-        status_json_dir = "status/" + backend_name
-        storage_provider.upload(status_msg_dict, status_json_dir, job_id)
 
-        status_msg_dict = {"status": "DONE"}
+        # upload the status dict without other status.
+        status_msg_dict = storage_provider.upload_status(
+            backend_name, "test_user", next_job["job_id"]
+        )
+
+        status_msg_dict.status = "DONE"
         storage_provider.update_in_database(
             result_dict, status_msg_dict, next_job["job_id"], backend_name
         )
@@ -218,6 +219,7 @@ class TestMongodbProvider:
         assert finshed_job["job_id"] == job_id
 
         # we check if the status was updated
+        status_json_dir = "status/" + backend_name
         status_dict = storage_provider.get_file_content(status_json_dir, job_id)
         assert status_dict["status"] == "DONE"
 

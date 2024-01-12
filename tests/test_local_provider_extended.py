@@ -310,12 +310,12 @@ class TestLocalProviderExtended:
         assert len(job_id) > 1
 
         # now also test that we can upload the status
-        job_response_dict = storage_provider.upload_status(
+        status_msg_dict = storage_provider.upload_status(
             display_name=backend_name,
             username=username,
             job_id=job_id,
         )
-        assert len(job_response_dict["job_id"]) > 1
+        assert len(status_msg_dict.job_id) > 1
         # now test that we can get the job status
         job_status = storage_provider.get_status(
             display_name=backend_name,

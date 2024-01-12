@@ -7,7 +7,7 @@ import time
 import traceback
 import regex as re
 
-from .schemes import Spooler, ResultDict
+from .schemes import Spooler, ResultDict, StatusMsgDict
 from .storage_providers import StorageProvider
 
 
@@ -83,13 +83,13 @@ def main(
         }
 
         result_dict = ResultDict(**result_draft)
-        status_msg_dict = {
+        status_msg_draft = {
             "job_id": job_dict["job_id"],
             "status": "None",
             "detail": "None",
             "error_message": "None",
         }
-
+        status_msg_dict = StatusMsgDict(**status_msg_draft)
         # Fix this pylint issue whenever you have time, but be careful !
         # pylint: disable=W0703
         try:
@@ -108,9 +108,9 @@ def main(
                 # bracketed expression which is obviously the filename.
             slimmed_tb = " ".join(tb_list)
             # Update status dict
-            status_msg_dict["status"] = "ERROR"
-            status_msg_dict["detail"] += "; " + slimmed_tb
-            status_msg_dict["error_message"] += "; " + slimmed_tb
+            status_msg_dict.status = "ERROR"
+            status_msg_dict.detail += "; " + slimmed_tb
+            status_msg_dict.error_message += "; " + slimmed_tb
 
         storage_provider.update_in_database(
             result_dict, status_msg_dict, job_dict["job_id"], requested_backend

@@ -2,7 +2,7 @@
 Here we test the spooler class and its functions.
 """
 
-from sqooler.schemes import Spooler
+from sqooler.schemes import Spooler, StatusMsgDict
 
 
 def test_spooler_config() -> None:
@@ -33,12 +33,13 @@ def test_spooler_add_job() -> None:
     """
 
     test_spooler = Spooler(ins_schema_dict={}, n_wires=2, operational=False)
-    status_msg_dict = {
+    status_msg_draft = {
         "job_id": "Test_ID",
         "status": "None",
         "detail": "None",
         "error_message": "None",
     }
+    status_msg_dict = StatusMsgDict(**status_msg_draft)
     result_dict, status_msg_dict = test_spooler.add_job({}, status_msg_dict)
 
     assert result_dict is not None
