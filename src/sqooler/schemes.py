@@ -444,7 +444,8 @@ class Spooler:
                     # Here we
                     result_draft["results"].append(self.gen_circuit(exp_dict))
 
-                status_msg_dict.detail += "; Passed json sanity check; Compilation done. Shots sent to solver."
+                status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
+                    Shots sent to solver."
                 status_msg_dict.status = "DONE"
                 result_dict = ResultDict(**result_draft)
                 return result_dict, status_msg_dict

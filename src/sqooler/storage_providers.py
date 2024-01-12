@@ -156,7 +156,9 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def get_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
 
@@ -778,7 +780,9 @@ class DropboxProviderExtended(StorageProvider):
         )
         return status_dict
 
-    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def get_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
 
@@ -796,7 +800,7 @@ class DropboxProviderExtended(StorageProvider):
         status_dict = self.get_file_content(
             storage_path=status_json_dir, job_id=status_json_name
         )
-        return status_dict
+        return StatusMsgDict(**status_dict)
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """
@@ -1189,7 +1193,9 @@ class MongodbProviderExtended(StorageProvider):
         )
         return status_dict
 
-    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def get_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
 
@@ -1204,7 +1210,7 @@ class MongodbProviderExtended(StorageProvider):
         status_json_dir = "status/" + display_name
 
         status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
-        return status_dict
+        return StatusMsgDict(**status_dict)
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """
@@ -1606,7 +1612,9 @@ class LocalProviderExtended(StorageProvider):
         )
         return status_dict
 
-    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def get_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
 
@@ -1621,7 +1629,7 @@ class LocalProviderExtended(StorageProvider):
         status_json_dir = "status/" + display_name
 
         status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
-        return status_dict
+        return StatusMsgDict(**status_dict)
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """

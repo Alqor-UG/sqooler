@@ -322,8 +322,7 @@ class TestLocalProviderExtended:
             username=username,
             job_id=job_id,
         )
-        assert not "_id" in job_status.keys()
-        assert job_status["job_id"] == job_id
+        assert job_status.job_id == job_id
 
         # test that we can get a job result
         # first upload a dummy result
