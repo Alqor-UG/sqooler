@@ -8,7 +8,7 @@ from typing import Iterator, Callable
 
 import pytest
 
-from sqooler.utils import update_backends, main
+from sqooler.utils import update_backends, main, create_memory_data
 from sqooler.schemes import LocalLoginInformation, Spooler
 from sqooler.storage_providers import LocalProvider
 
@@ -72,3 +72,14 @@ def test_main(utils_storage_setup_teardown: Callable) -> None:
     storage_provider.upload(status_dict, status_path, job_id=job_id)
 
     main(storage_provider, backends, num_iter=1)
+
+
+def test_create_memory_data(utils_storage_setup_teardown: Callable) -> None:
+    """
+    Test that it is possible to create the memory data.
+    """
+    shots_array = [1, 2, 3]
+    exp_name = "test"
+    n_shots = 3
+    exp_dict = create_memory_data(shots_array, exp_name, n_shots)
+    assert exp_dict.success is True
