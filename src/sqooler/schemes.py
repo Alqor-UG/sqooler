@@ -7,18 +7,16 @@ from collections.abc import Callable
 from typing import Optional
 from pydantic import ValidationError, BaseModel, Field
 
-from typing_extensions import TypedDict
 
-
-class ExperimentDict(TypedDict):
+class ExperimentDict(BaseModel):
     """
     A class that defines the structure of the experiments.
     """
 
-    header: dict
-    shots: int
-    success: bool
-    data: dict
+    header: dict = Field(description="Contains centralized information about the job.")
+    shots: int = Field(description="number of shots in the experiment.")
+    success: bool = Field(description="True if experiment ran successfully.")
+    data: dict = Field(description="dictionary of results for the experiment.")
 
 
 class StatusMsgDict(BaseModel):
@@ -481,27 +479,3 @@ def gate_dict_from_list(inst_list: list) -> dict:
     Transforms a list into an appropiate dictionnary for instructions.
     """
     return {"name": inst_list[0], "wires": inst_list[1], "params": inst_list[2]}
-
-
-def create_memory_data(
-    shots_array: list, exp_name: str, n_shots: int
-) -> ExperimentDict:
-    """
-    The function to create memory key in results dictionary
-    with proprer formatting.
-    """
-    exp_sub_dict: ExperimentDict = {
-        "header": {"name": "experiment_0", "extra metadata": "text"},
-        "shots": 3,
-        "success": True,
-        "data": {"memory": None},
-    }
-
-    exp_sub_dict["header"]["name"] = exp_name
-    exp_sub_dict["shots"] = n_shots
-    memory_list = [
-        str(shot).replace("[", "").replace("]", "").replace(",", "")
-        for shot in shots_array
-    ]
-    exp_sub_dict["data"]["memory"] = memory_list
-    return exp_sub_dict
