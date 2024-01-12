@@ -166,11 +166,12 @@ class TestLocalProvider:
         }
         result_dict = ResultDict(**result_draft)
         # upload the status dict without other status.
-        status_msg_dict = {"status": "INITIALIZING"}
         status_json_dir = "status/" + backend_name
-        storage_provider.upload(status_msg_dict, status_json_dir, job_id)
+        status_msg_dict = storage_provider.upload_status(
+            backend_name, "test_user", job_id
+        )
 
-        status_msg_dict = {"status": "DONE"}
+        status_msg_dict.status = "DONE"
         storage_provider.update_in_database(
             result_dict, status_msg_dict, next_job["job_id"], backend_name
         )

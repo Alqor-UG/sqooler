@@ -26,6 +26,7 @@ from bson.objectid import ObjectId
 
 from .schemes import (
     ResultDict,
+    StatusMsgDict,
     MongodbLoginInformation,
     DropboxLoginInformation,
     LocalLoginInformation,
@@ -139,7 +140,9 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def upload_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
 
@@ -153,7 +156,9 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def get_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
 
@@ -225,7 +230,7 @@ class StorageProvider(ABC):
     def update_in_database(
         self,
         result_dict: ResultDict,
-        status_msg_dict: dict,
+        status_msg_dict: StatusMsgDict,
         job_id: str,
         backend_name: str,
     ) -> None:
@@ -560,7 +565,7 @@ class DropboxProviderExtended(StorageProvider):
     def update_in_database(
         self,
         result_dict: ResultDict,
-        status_msg_dict: dict,
+        status_msg_dict: StatusMsgDict,
         job_id: str,
         backend_name: str,
     ) -> None:
@@ -587,7 +592,7 @@ class DropboxProviderExtended(StorageProvider):
         job_json_name = "job-" + job_id
         job_json_start_dir = "Backend_files/Running_Jobs"
 
-        if status_msg_dict["status"] == "DONE":
+        if status_msg_dict.status == "DONE":
             # let us create the result json file
             result_json_dir = (
                 "/Backend_files/Result/" + backend_name + "/" + extracted_username + "/"
@@ -605,13 +610,13 @@ class DropboxProviderExtended(StorageProvider):
             )
             self.move_file(job_json_start_dir, job_finished_json_dir, job_json_name)
 
-        elif status_msg_dict["status"] == "ERROR":
+        elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
             deleted_json_dir = "Backend_files/Deleted_Jobs"
             self.move_file(job_json_start_dir, deleted_json_dir, job_json_name)
 
         # and create the status json file
-        self.upload(status_msg_dict, status_json_dir, status_json_name)
+        self.upload(status_msg_dict.model_dump(), status_json_dir, status_json_name)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
@@ -745,7 +750,9 @@ class DropboxProviderExtended(StorageProvider):
         )
         return job_id
 
-    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def upload_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
 
@@ -759,20 +766,23 @@ class DropboxProviderExtended(StorageProvider):
         """
         status_json_dir = "Backend_files/Status/" + display_name + "/" + username
         status_json_name = "status-" + job_id
-        status_dict = {
+        status_draft = {
             "job_id": job_id,
             "status": "INITIALIZING",
             "detail": "Got your json.",
             "error_message": "None",
         }
+        status_dict = StatusMsgDict(**status_draft)
         self.upload(
-            content_dict=status_dict,
+            content_dict=status_dict.model_dump(),
             storage_path=status_json_dir,
             job_id=status_json_name,
         )
         return status_dict
 
-    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def get_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
 
@@ -790,7 +800,7 @@ class DropboxProviderExtended(StorageProvider):
         status_dict = self.get_file_content(
             storage_path=status_json_dir, job_id=status_json_name
         )
-        return status_dict
+        return StatusMsgDict(**status_dict)
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """
@@ -1151,7 +1161,9 @@ class MongodbProviderExtended(StorageProvider):
         self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
         return job_id
 
-    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def upload_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
 
@@ -1164,7 +1176,7 @@ class MongodbProviderExtended(StorageProvider):
             The status dict of the job
         """
         storage_path = "status/" + display_name
-        status_dict = {
+        status_draft = {
             "job_id": job_id,
             "status": "INITIALIZING",
             "detail": "Got your json.",
@@ -1172,16 +1184,18 @@ class MongodbProviderExtended(StorageProvider):
         }
 
         # should we also upload the username into the dict ?
-
+        status_dict = StatusMsgDict(**status_draft)
         # now upload the status dict
         self.upload(
-            content_dict=status_dict,
+            content_dict=status_dict.model_dump(),
             storage_path=storage_path,
             job_id=job_id,
         )
         return status_dict
 
-    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def get_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
 
@@ -1196,7 +1210,7 @@ class MongodbProviderExtended(StorageProvider):
         status_json_dir = "status/" + display_name
 
         status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
-        return status_dict
+        return StatusMsgDict(**status_dict)
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """
@@ -1221,7 +1235,7 @@ class MongodbProviderExtended(StorageProvider):
     def update_in_database(
         self,
         result_dict: ResultDict | None,
-        status_msg_dict: dict,
+        status_msg_dict: StatusMsgDict,
         job_id: str,
         backend_name: str,
     ) -> None:
@@ -1247,7 +1261,7 @@ class MongodbProviderExtended(StorageProvider):
 
         job_json_start_dir = "jobs/running"
         # check if the job is done or had an error
-        if status_msg_dict["status"] == "DONE":
+        if status_msg_dict.status == "DONE":
             # test if the result dict is None
             if result_dict is None:
                 raise ValueError(
@@ -1261,7 +1275,7 @@ class MongodbProviderExtended(StorageProvider):
             job_finished_json_dir = "jobs/finished/" + backend_name
             self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
 
-        elif status_msg_dict["status"] == "ERROR":
+        elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
             deleted_json_dir = "jobs/deleted"
             self.move_file(job_json_start_dir, deleted_json_dir, job_id)
@@ -1270,7 +1284,7 @@ class MongodbProviderExtended(StorageProvider):
 
         # and create the status json file
         status_json_dir = "status/" + backend_name
-        self.update_file(status_msg_dict, status_json_dir, job_id)
+        self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
@@ -1566,7 +1580,9 @@ class LocalProviderExtended(StorageProvider):
         self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
         return job_id
 
-    def upload_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def upload_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
 
@@ -1579,7 +1595,7 @@ class LocalProviderExtended(StorageProvider):
             The status dict of the job
         """
         storage_path = "status/" + display_name
-        status_dict = {
+        status_draft = {
             "job_id": job_id,
             "status": "INITIALIZING",
             "detail": "Got your json.",
@@ -1587,16 +1603,18 @@ class LocalProviderExtended(StorageProvider):
         }
 
         # should we also upload the username into the dict ?
-
+        status_dict = StatusMsgDict(**status_draft)
         # now upload the status dict
         self.upload(
-            content_dict=status_dict,
+            content_dict=status_dict.model_dump(),
             storage_path=storage_path,
             job_id=job_id,
         )
         return status_dict
 
-    def get_status(self, display_name: str, username: str, job_id: str) -> dict:
+    def get_status(
+        self, display_name: str, username: str, job_id: str
+    ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
 
@@ -1611,7 +1629,7 @@ class LocalProviderExtended(StorageProvider):
         status_json_dir = "status/" + display_name
 
         status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
-        return status_dict
+        return StatusMsgDict(**status_dict)
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """
@@ -1662,7 +1680,7 @@ class LocalProviderExtended(StorageProvider):
     def update_in_database(
         self,
         result_dict: ResultDict,
-        status_msg_dict: dict,
+        status_msg_dict: StatusMsgDict,
         job_id: str,
         backend_name: str,
     ) -> None:
@@ -1680,7 +1698,7 @@ class LocalProviderExtended(StorageProvider):
         """
         job_json_start_dir = "jobs/running"
         # check if the job is done or had an error
-        if status_msg_dict["status"] == "DONE":
+        if status_msg_dict.status == "DONE":
             # test if the result dict is None
             if result_dict is None:
                 raise ValueError(
@@ -1694,14 +1712,14 @@ class LocalProviderExtended(StorageProvider):
             job_finished_json_dir = "jobs/finished/" + backend_name
             self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
 
-        elif status_msg_dict["status"] == "ERROR":
+        elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
             deleted_json_dir = "jobs/deleted"
             self.move_file(job_json_start_dir, deleted_json_dir, job_id)
 
         # and create the status json file
         status_json_dir = "status/" + backend_name
-        self.update_file(status_msg_dict, status_json_dir, job_id)
+        self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """

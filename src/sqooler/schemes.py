@@ -21,6 +21,17 @@ class ExperimentDict(TypedDict):
     data: dict
 
 
+class StatusMsgDict(BaseModel):
+    """
+    A class that defines the structure of the status messages.
+    """
+
+    job_id: str = Field(description="unique execution id from the backend.")
+    status: str = Field(description="status of job execution.")
+    detail: str = Field(description="detailed status of job execution.")
+    error_message: str = Field(description="error message of job execution.")
+
+
 class ResultDict(BaseModel):
     """
     A class that defines the structure of results. It is closely related to the
@@ -396,8 +407,8 @@ class Spooler:
             raise ValueError("gen_circuit must be a callable function")
 
     def add_job(
-        self, json_dict: dict, status_msg_dict: dict
-    ) -> tuple[ResultDict, dict]:
+        self, json_dict: dict, status_msg_dict: StatusMsgDict
+    ) -> tuple[ResultDict, StatusMsgDict]:
         """
         The function that translates the json with the instructions into some circuit and executes it.
         It performs several checks for the job to see if it is properly working.
@@ -411,9 +422,9 @@ class Spooler:
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-        job_id = status_msg_dict["job_id"]
+        job_id = status_msg_dict.job_id
 
-        result_draft = {
+        result_draft: dict = {
             "display_name": self.display_name,
             "backend_version": self.version,
             "job_id": job_id,
@@ -433,34 +444,33 @@ class Spooler:
                     # Here we
                     result_draft["results"].append(self.gen_circuit(exp_dict))
 
-                status_msg_dict[
-                    "detail"
-                ] += "; Passed json sanity check; Compilation done. Shots sent to solver."
-                status_msg_dict["status"] = "DONE"
+                status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
+                    Shots sent to solver."
+                status_msg_dict.status = "DONE"
                 result_dict = ResultDict(**result_draft)
                 return result_dict, status_msg_dict
 
-            status_msg_dict["detail"] += (
+            status_msg_dict.detail += (
                 "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
                 + dim_err_msg
             )
-            status_msg_dict["error_message"] += (
+            status_msg_dict.error_message += (
                 "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
                 + dim_err_msg
             )
-            status_msg_dict["status"] = "ERROR"
+            status_msg_dict.status = "ERROR"
             result_dict = ResultDict(**result_draft)
             return result_dict, status_msg_dict
         else:
-            status_msg_dict["detail"] += (
+            status_msg_dict.detail += (
                 "; Failed json sanity check. File will be deleted. Error message : "
                 + err_msg
             )
-            status_msg_dict["error_message"] += (
+            status_msg_dict.error_message += (
                 "; Failed json sanity check. File will be deleted. Error message : "
                 + err_msg
             )
-            status_msg_dict["status"] = "ERROR"
+            status_msg_dict.status = "ERROR"
 
         result_dict = ResultDict(**result_draft)
         return result_dict, status_msg_dict
