@@ -394,6 +394,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#src.sqooler.utils.run_json_circuit" class="md-nav__link">
+    <span class="md-ellipsis">
+      run_json_circuit()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#src.sqooler.utils.update_backends" class="md-nav__link">
     <span class="md-ellipsis">
       update_backends()
@@ -487,6 +496,15 @@
   <a href="#src.sqooler.utils.main" class="md-nav__link">
     <span class="md-ellipsis">
       main()
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#src.sqooler.utils.run_json_circuit" class="md-nav__link">
+    <span class="md-ellipsis">
+      run_json_circuit()
     </span>
   </a>
   
@@ -854,6 +872,157 @@ will run forever.</p>
         <span class="p">)</span>
 
         <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+
+<h2 id="src.sqooler.utils.run_json_circuit" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">run_json_circuit</span><span class="p">(</span><span class="n">json_dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">,</span> <span class="n">spooler</span><span class="p">)</span></code>
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>A support function that executes the job. Should be only used for testing.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>json_dict</code></td>
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the job dict that will be treated</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>job_id</code></td>
+          <td>
+                <code>str</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the number of the job</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>spooler</code></td>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="src.sqooler.schemes.Spooler" href="../schemes/#src.sqooler.schemes.Spooler">Spooler</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the spooler that will be used</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the results dict</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>src/sqooler/utils.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">run_json_circuit</span><span class="p">(</span><span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spooler</span><span class="p">:</span> <span class="n">Spooler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A support function that executes the job. Should be only used for testing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        json_dict: the job dict that will be treated</span>
+<span class="sd">        job_id: the number of the job</span>
+<span class="sd">        spooler: the spooler that will be used</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        the results dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">status_msg_draft</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;error_message&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">status_msg_dict</span> <span class="o">=</span> <span class="n">StatusMsgDict</span><span class="p">(</span><span class="o">**</span><span class="n">status_msg_draft</span><span class="p">)</span>
+
+    <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span> <span class="o">=</span> <span class="n">spooler</span><span class="o">.</span><span class="n">add_job</span><span class="p">(</span><span class="n">json_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">status_msg_dict</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;DONE&quot;</span><span class="p">,</span> <span class="s2">&quot;Job failed&quot;</span>
+    <span class="k">return</span> <span class="n">result_dict</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
