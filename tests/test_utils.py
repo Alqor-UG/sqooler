@@ -82,4 +82,4 @@ def test_create_memory_data(utils_storage_setup_teardown: Callable) -> None:
     exp_name = "test"
     n_shots = 3
     exp_dict = create_memory_data(shots_array, exp_name, n_shots)
-    assert exp_dict.success == True
+    assert exp_dict.success is True
