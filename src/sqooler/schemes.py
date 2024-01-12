@@ -46,7 +46,7 @@ class ResultDict(BaseModel):
     success: bool = Field(description="True if complete input qobj executed correctly.")
     status: str = Field(description="status of job execution.")
     header: dict = Field(description="Contains centralized information about the job.")
-    results: list = Field(
+    results: list[ExperimentDict] = Field(
         description="corresponding results for array of experiments of the input qobj"
     )
 
@@ -274,6 +274,10 @@ class Spooler:
         Args:
             exper_dict: The dictionary that contains the logic and should
                 be verified.
+
+        Returns:
+            str: The error message
+            bool: Is the experiment ok ?
         """
         raise NotImplementedError("Subclasses should implement this!")
 

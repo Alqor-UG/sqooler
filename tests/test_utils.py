@@ -8,7 +8,7 @@ from typing import Iterator, Callable
 
 import pytest
 
-from sqooler.utils import update_backends, main, create_memory_data
+from sqooler.utils import update_backends, main, create_memory_data, run_json_circuit
 from sqooler.schemes import LocalLoginInformation, Spooler
 from sqooler.storage_providers import LocalProvider
 
@@ -16,7 +16,25 @@ from sqooler.storage_providers import LocalProvider
 local_login = LocalLoginInformation(base_path="utils_storage")
 storage_provider = LocalProvider(local_login)
 
-test_spooler = Spooler(ins_schema_dict={}, n_wires=2)
+
+class TestSpooler(Spooler):
+    """
+    A dummy spooler for testing.
+    """
+
+    def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
+        """
+        Check the validity of the experiment.
+        This has to be implement in each subclass extra.
+
+        Args:
+            exper_dict: The dictionary that contains the logic and should
+                be verified.
+        """
+        return "No error", True
+
+
+test_spooler = TestSpooler(ins_schema_dict={}, n_wires=2)
 
 backends = {"test": test_spooler}
 
@@ -83,3 +101,21 @@ def test_create_memory_data(utils_storage_setup_teardown: Callable) -> None:
     n_shots = 3
     exp_dict = create_memory_data(shots_array, exp_name, n_shots)
     assert exp_dict.success is True
+
+
+def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
+    """
+    Test that it is possible to create the memory data.
+    """
+    job_payload = {
+        "experiment_0": {
+            "instructions": [],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+
+    job_id = "1"
+    with pytest.raises(AssertionError):
+        run_json_circuit(job_payload, job_id, test_spooler)
