@@ -5,6 +5,23 @@ Here we test the spooler class and its functions.
 from sqooler.schemes import Spooler, StatusMsgDict
 
 
+class TestSpooler(Spooler):
+    """
+    A dummy spooler for testing.
+    """
+
+    def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
+        """
+        Check the validity of the experiment.
+        This has to be implement in each subclass extra.
+
+        Args:
+            exper_dict: The dictionary that contains the logic and should
+                be verified.
+        """
+        return "No error", True
+
+
 def test_spooler_config() -> None:
     """
     Test that it is possible to get the config of the spooler.
@@ -32,14 +49,22 @@ def test_spooler_add_job() -> None:
     Test that it is possible to add a job to the spooler.
     """
 
-    test_spooler = Spooler(ins_schema_dict={}, n_wires=2, operational=False)
+    test_spooler = TestSpooler(ins_schema_dict={}, n_wires=2, operational=False)
     status_msg_draft = {
         "job_id": "Test_ID",
         "status": "None",
         "detail": "None",
         "error_message": "None",
     }
-    status_msg_dict = StatusMsgDict(**status_msg_draft)
-    result_dict, status_msg_dict = test_spooler.add_job({}, status_msg_dict)
 
+    job_payload = {
+        "experiment_0": {
+            "instructions": [],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+    status_msg_dict = StatusMsgDict(**status_msg_draft)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert result_dict is not None

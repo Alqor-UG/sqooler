@@ -141,3 +141,28 @@ def create_memory_data(
     ]
     exp_sub_dict["data"]["memory"] = memory_list
     return ExperimentDict(**exp_sub_dict)
+
+
+def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
+    """
+    A support function that executes the job. Should be only used for testing.
+
+    Args:
+        json_dict: the job dict that will be treated
+        job_id: the number of the job
+        spooler: the spooler that will be used
+
+    Returns:
+        the results dict
+    """
+    status_msg_draft = {
+        "job_id": job_id,
+        "status": "None",
+        "detail": "None",
+        "error_message": "None",
+    }
+    status_msg_dict = StatusMsgDict(**status_msg_draft)
+
+    result_dict, status_msg_dict = spooler.add_job(json_dict, status_msg_dict)
+    assert status_msg_dict.status == "DONE", "Job failed"
+    return result_dict.model_dump()
