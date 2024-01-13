@@ -400,6 +400,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#src.sqooler.schemes.GateDict" class="md-nav__link">
+    <span class="md-ellipsis">
+      GateDict
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#src.sqooler.schemes.GateInstruction" class="md-nav__link">
     <span class="md-ellipsis">
       GateInstruction
@@ -697,6 +706,15 @@
   <a href="#src.sqooler.schemes.ExperimentDict" class="md-nav__link">
     <span class="md-ellipsis">
       ExperimentDict
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#src.sqooler.schemes.GateDict" class="md-nav__link">
+    <span class="md-ellipsis">
+      GateDict
     </span>
   </a>
   
@@ -1385,6 +1403,68 @@ conventions of the qiskit configuration dictionary here.</p>
 
 
 
+<h2 id="src.sqooler.schemes.GateDict" class="doc doc-heading">
+          <code>GateDict</code>
+
+
+</h2>
+
+
+  <div class="doc doc-contents ">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+  
+      <p>The most basic class for a gate as it is communicated in
+the json API.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">GateDict</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The most basic class for a gate as it is communicated in</span>
+<span class="sd">    the json API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The name of the gate&quot;</span><span class="p">)</span>
+    <span class="n">wires</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The wires on which the gate acts&quot;</span><span class="p">)</span>
+    <span class="n">params</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The parameters of the gate&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+
 <h2 id="src.sqooler.schemes.GateInstruction" class="doc doc-heading">
           <code>GateInstruction</code>
 
@@ -1402,18 +1482,7 @@ Any gate has to have the following attributes.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
@@ -1426,7 +1495,18 @@ Any gate has to have the following attributes.</p>
 <span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">GateInstruction</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">GateInstruction</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The basic class for all the gate intructions of a backend.</span>
 <span class="sd">    Any gate has to have the following attributes.</span>
@@ -1488,18 +1568,18 @@ Any gate has to have the following attributes.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span> <span class="nf">config_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Give back the properties of the instruction such as needed for the server.</span>
@@ -1832,18 +1912,7 @@ So it should most likely live in another file at some point.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
@@ -2084,7 +2153,27 @@ So it should most likely live in another file at some point.</p>
 <span class="normal">475</span>
 <span class="normal">476</span>
 <span class="normal">477</span>
-<span class="normal">478</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class for the spooler. So it is not just a scheme, but it also contains some common logic.</span>
 <span class="sd">    So it should most likely live in another file at some point.</span>
@@ -2169,14 +2258,23 @@ So it should most likely live in another file at some point.</p>
 
     <span class="k">def</span> <span class="nf">check_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Check all the instruction to make sure that they are valid.</span>
+<span class="sd">        Check all the instruction to make sure that they are valid and part</span>
+<span class="sd">        of the allowed instructions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">ins</span> <span class="ow">in</span> <span class="n">ins_list</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">gate_dict</span> <span class="o">=</span> <span class="n">gate_dict_from_list</span><span class="p">(</span><span class="n">ins</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="p">[</span><span class="n">ins</span><span class="p">[</span><span class="mi">0</span><span class="p">]](</span><span class="o">**</span><span class="n">gate_dict</span><span class="p">)</span>
+                <span class="n">gate_instr</span> <span class="o">=</span> <span class="n">gate_dict_from_list</span><span class="p">(</span><span class="n">ins</span><span class="p">)</span>
+                <span class="c1"># see if the instruction is part of the allowed instructions</span>
+                <span class="k">if</span> <span class="n">gate_instr</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;Instruction not allowed.&quot;</span>
+                    <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">return</span> <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span>
+
+                <span class="c1"># now verify that the parameters are ok</span>
+                <span class="n">gate_dict</span> <span class="o">=</span> <span class="n">gate_instr</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="p">[</span><span class="n">gate_instr</span><span class="o">.</span><span class="n">name</span><span class="p">](</span><span class="o">**</span><span class="n">gate_dict</span><span class="p">)</span>
                 <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
                 <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;Error in instruction &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
@@ -2417,18 +2515,7 @@ It can be basically anything that allows the execution of the circuit.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">252</span>
 <span class="normal">253</span>
 <span class="normal">254</span>
 <span class="normal">255</span>
@@ -2443,7 +2530,18 @@ It can be basically anything that allows the execution of the circuit.</p>
 <span class="normal">264</span>
 <span class="normal">265</span>
 <span class="normal">266</span>
-<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">ins_schema_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">n_wires</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -2574,27 +2672,7 @@ If things are fine the job gets added the list of things that should be executed
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">431</span>
 <span class="normal">432</span>
 <span class="normal">433</span>
 <span class="normal">434</span>
@@ -2641,7 +2719,27 @@ If things are fine the job gets added the list of things that should be executed
 <span class="normal">475</span>
 <span class="normal">476</span>
 <span class="normal">477</span>
-<span class="normal">478</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">:</span> <span class="n">StatusMsgDict</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ResultDict</span><span class="p">,</span> <span class="n">StatusMsgDict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2799,22 +2897,22 @@ So this is only a placeholder.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make sure that the Hilbert space dimension is not too large.</span>
 
@@ -2920,20 +3018,20 @@ be verified.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
 <span class="normal">281</span>
-<span class="normal">282</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exper_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exper_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check the validity of the experiment.</span>
 <span class="sd">    This has to be implement in each subclass extra.</span>
@@ -2967,36 +3065,55 @@ be verified.</p>
 
   <div class="doc doc-contents ">
   
-      <p>Check all the instruction to make sure that they are valid.</p>
+      <p>Check all the instruction to make sure that they are valid and part
+of the allowed instructions.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">320</span>
 <span class="normal">321</span>
 <span class="normal">322</span>
 <span class="normal">323</span>
 <span class="normal">324</span>
-<span class="normal">325</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Check all the instruction to make sure that they are valid.</span>
+<span class="sd">    Check all the instruction to make sure that they are valid and part</span>
+<span class="sd">    of the allowed instructions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">for</span> <span class="n">ins</span> <span class="ow">in</span> <span class="n">ins_list</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">gate_dict</span> <span class="o">=</span> <span class="n">gate_dict_from_list</span><span class="p">(</span><span class="n">ins</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="p">[</span><span class="n">ins</span><span class="p">[</span><span class="mi">0</span><span class="p">]](</span><span class="o">**</span><span class="n">gate_dict</span><span class="p">)</span>
+            <span class="n">gate_instr</span> <span class="o">=</span> <span class="n">gate_dict_from_list</span><span class="p">(</span><span class="n">ins</span><span class="p">)</span>
+            <span class="c1"># see if the instruction is part of the allowed instructions</span>
+            <span class="k">if</span> <span class="n">gate_instr</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;Instruction not allowed.&quot;</span>
+                <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">return</span> <span class="n">err_code</span><span class="p">,</span> <span class="n">exp_ok</span>
+
+            <span class="c1"># now verify that the parameters are ok</span>
+            <span class="n">gate_dict</span> <span class="o">=</span> <span class="n">gate_instr</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span><span class="p">[</span><span class="n">gate_instr</span><span class="o">.</span><span class="n">name</span><span class="p">](</span><span class="o">**</span><span class="n">gate_dict</span><span class="p">)</span>
             <span class="n">exp_ok</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">err_code</span> <span class="o">=</span> <span class="s2">&quot;Error in instruction &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
@@ -3082,27 +3199,7 @@ be verified.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
-<span class="normal">352</span>
-<span class="normal">353</span>
-<span class="normal">354</span>
-<span class="normal">355</span>
-<span class="normal">356</span>
-<span class="normal">357</span>
-<span class="normal">358</span>
-<span class="normal">359</span>
-<span class="normal">360</span>
-<span class="normal">361</span>
-<span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">364</span>
 <span class="normal">365</span>
 <span class="normal">366</span>
 <span class="normal">367</span>
@@ -3118,7 +3215,27 @@ be verified.</p>
 <span class="normal">377</span>
 <span class="normal">378</span>
 <span class="normal">379</span>
-<span class="normal">380</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if the json file has the appropiate syntax.</span>
 
@@ -3179,18 +3296,7 @@ be verified.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">295</span>
 <span class="normal">296</span>
 <span class="normal">297</span>
 <span class="normal">298</span>
@@ -3202,7 +3308,18 @@ be verified.</p>
 <span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
-<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sends back the configuration dictionary of the spooler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3316,19 +3433,90 @@ be verified.</p>
 
   <div class="doc doc-contents ">
   
-      <p>Transforms a list into an appropiate dictionnary for instructions.</p>
+      <p>Transforms a list into an appropiate dictionnary for instructions. The list
+is assumed to be in the format [name, wires, params].</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>inst_list</code></td>
+          <td>
+                <code>list</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The list that should be transformed.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="src.sqooler.schemes.GateDict" href="#src.sqooler.schemes.GateDict">GateDict</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A GateDict object.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
-<span class="normal">484</span>
-<span class="normal">485</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GateDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Transforms a list into an appropiate dictionnary for instructions.</span>
+<span class="sd">    Transforms a list into an appropiate dictionnary for instructions. The list</span>
+<span class="sd">    is assumed to be in the format [name, wires, params].</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        inst_list: The list that should be transformed.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A GateDict object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;wires&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
+    <span class="n">gate_draft</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;wires&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
+    <span class="k">return</span> <span class="n">GateDict</span><span class="p">(</span><span class="o">**</span><span class="n">gate_draft</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
