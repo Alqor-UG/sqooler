@@ -2,34 +2,36 @@
 Here we test the spooler class and its functions.
 """
 
-from pydantic import ValidationError
+from typing import Literal, Optional
+from pydantic import ValidationError, BaseModel, Field
+
+from typing_extensions import Annotated
 import pytest
 
 from sqooler.schemes import Spooler, StatusMsgDict, gate_dict_from_list
 
 
-class TestSpooler(Spooler):
+class TestExperiment(BaseModel):
     """
-    A dummy spooler for testing.
+    The class that defines some basic properties for a test experiment
     """
 
-    def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
-        """
-        Check the validity of the experiment.
-        This has to be implement in each subclass extra.
+    wire_order: Literal["interleaved", "sequential"] = "sequential"
 
-        Args:
-            exper_dict: The dictionary that contains the logic and should
-                be verified.
-        """
-        return "No error", True
+    # mypy keeps throwing errors here because it does not understand the type.
+    # not sure how to fix it, so we leave it as is for the moment
+    # HINT: Annotated does not work
+    shots: Annotated[int, Field(gt=0, le=5)]
+    num_wires: Annotated[int, Field(ge=1, le=5)]
+    instructions: list[list]
+    seed: Optional[int] = None
 
 
 def test_spooler_config() -> None:
     """
     Test that it is possible to get the config of the spooler.
     """
-    test_spooler = Spooler(ins_schema_dict={}, n_wires=2)
+    test_spooler = Spooler(ins_schema_dict={}, device_config=TestExperiment, n_wires=2)
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
@@ -40,7 +42,9 @@ def test_spooler_operational() -> None:
     """
     Test that it is possible to set the operational status of the spooler.
     """
-    test_spooler = Spooler(ins_schema_dict={}, n_wires=2, operational=False)
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=TestExperiment, n_wires=2, operational=False
+    )
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
@@ -52,7 +56,9 @@ def test_spooler_add_job() -> None:
     Test that it is possible to add a job to the spooler.
     """
 
-    test_spooler = TestSpooler(ins_schema_dict={}, n_wires=2, operational=False)
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=TestExperiment, n_wires=2, operational=False
+    )
     status_msg_draft = {
         "job_id": "Test_ID",
         "status": "None",
@@ -96,7 +102,9 @@ def test_spooler_instructions() -> None:
     """
     Test that it is possible to verify the validity of the instructions.
     """
-    test_spooler = TestSpooler(ins_schema_dict={}, n_wires=2, operational=False)
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=TestExperiment, n_wires=2, operational=False
+    )
 
     # test that it works if the instructions are not valid as the key is not known
     inst_list = [["test", [1, 2], [0.1, 0.2]]]

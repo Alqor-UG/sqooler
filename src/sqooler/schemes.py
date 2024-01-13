@@ -4,7 +4,7 @@ There is no obvious need, why this code should be touch in a new back-end.
 """
 
 from collections.abc import Callable
-from typing import Optional
+from typing import Optional, Type
 from pydantic import ValidationError, BaseModel, Field
 
 
@@ -240,18 +240,17 @@ class Spooler:
     So it should most likely live in another file at some point.
 
     Attributes:
-        n_max_wires: maximum number of wires for the spooler
-        n_max_shots: the maximum number of shots for the spooler
         ins_schema_dict : A dictionary the contains all the allowed instructions for this spooler.
+        device_config: A dictionary that some main config params for the experiment.
+        n_wires: maximum number of wires for the spooler
+        n_max_shots: the maximum number of shots for the spooler
 
-    Args:
-        exper_schema: Sets the `exper_schema` attribute of the class
-        ins_schema_dict : Sets the `ins_schema_dict` attribute of the class
     """
 
     def __init__(
         self,
         ins_schema_dict: dict,
+        device_config: Type[BaseModel],
         n_wires: int,
         description: str = "",
         n_max_shots: int = 1000,
@@ -266,6 +265,7 @@ class Spooler:
         The constructor of the class.
         """
         self.ins_schema_dict = ins_schema_dict
+        self.device_config = device_config
         self.n_max_shots = n_max_shots
         self.n_wires = n_wires
         self.description = description
@@ -290,7 +290,11 @@ class Spooler:
             str: The error message
             bool: Is the experiment ok ?
         """
-        raise NotImplementedError("Subclasses should implement this!")
+        try:
+            self.device_config(**exper_dict)
+            return "", True
+        except ValidationError as err:
+            return str(err), False
 
     def get_configuration(self) -> BackendConfigSchemaIn:
         """
