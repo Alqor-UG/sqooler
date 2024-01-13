@@ -7,7 +7,7 @@ import time
 import traceback
 import regex as re
 
-from .schemes import Spooler, ResultDict, StatusMsgDict, ExperimentDict
+from .schemes import Spooler, ResultDict, StatusMsgDict, ExperimentDict, GateDict
 from .storage_providers import StorageProvider
 
 
@@ -166,3 +166,18 @@ def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
     result_dict, status_msg_dict = spooler.add_job(json_dict, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job failed"
     return result_dict.model_dump()
+
+
+def gate_dict_from_list(inst_list: list) -> GateDict:
+    """
+    Transforms a list into an appropiate dictionnary for instructions. The list
+    is assumed to be in the format [name, wires, params].
+
+    Args:
+        inst_list: The list that should be transformed.
+
+    Returns:
+        A GateDict object.
+    """
+    gate_draft = {"name": inst_list[0], "wires": inst_list[1], "params": inst_list[2]}
+    return GateDict(**gate_draft)

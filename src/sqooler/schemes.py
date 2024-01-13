@@ -196,6 +196,17 @@ class BackendConfigSchemaOut(BaseModel):
     url: Optional[str] = Field(default=None, description="The url of the backend")
 
 
+class GateDict(BaseModel):
+    """
+    The most basic class for a gate as it is communicated in
+    the json API.
+    """
+
+    name: str = Field(description="The name of the gate")
+    wires: list[int] = Field(description="The wires on which the gate acts")
+    params: list[float] = Field(description="The parameters of the gate")
+
+
 class GateInstruction(BaseModel):
     """
     The basic class for all the gate intructions of a backend.
@@ -476,10 +487,3 @@ class Spooler:
 
         result_dict = ResultDict(**result_draft)
         return result_dict, status_msg_dict
-
-
-def gate_dict_from_list(inst_list: list) -> dict:
-    """
-    Transforms a list into an appropiate dictionnary for instructions.
-    """
-    return {"name": inst_list[0], "wires": inst_list[1], "params": inst_list[2]}
