@@ -8,7 +8,12 @@ from typing import Iterator, Callable
 
 import pytest
 
-from sqooler.utils import update_backends, main, create_memory_data, run_json_circuit
+from sqooler.utils import (
+    update_backends,
+    main,
+    create_memory_data,
+    run_json_circuit,
+)
 from sqooler.schemes import LocalLoginInformation, Spooler
 from sqooler.storage_providers import LocalProvider
 

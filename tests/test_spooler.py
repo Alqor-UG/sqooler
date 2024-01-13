@@ -2,7 +2,10 @@
 Here we test the spooler class and its functions.
 """
 
-from sqooler.schemes import Spooler, StatusMsgDict
+from pydantic import ValidationError
+import pytest
+
+from sqooler.schemes import Spooler, StatusMsgDict, gate_dict_from_list
 
 
 class TestSpooler(Spooler):
@@ -68,3 +71,37 @@ def test_spooler_add_job() -> None:
     status_msg_dict = StatusMsgDict(**status_msg_draft)
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert result_dict is not None
+
+
+def test_gate_dict() -> None:
+    """
+    Test that it is possible to create the a nice instruction.
+    """
+    inst_list = ["test", [1, 2], [0.1, 0.2]]
+    gate_dict = gate_dict_from_list(inst_list)
+    assert gate_dict.name == "test"
+
+    # test that it fails if the list is too short
+    inst_list = ["test", [1, 2]]
+    with pytest.raises(IndexError):
+        gate_dict_from_list(inst_list)
+
+    # test that it fails if the types doe not work out
+    inst_list = ["test", [1, 2], "test"]
+    with pytest.raises(ValidationError):
+        gate_dict_from_list(inst_list)
+
+
+def test_spooler_instructions() -> None:
+    """
+    Test that it is possible to verify the validity of the instructions.
+    """
+    test_spooler = TestSpooler(ins_schema_dict={}, n_wires=2, operational=False)
+
+    # test that it works if the instructions are not valid as the key is not known
+    inst_list = [["test", [1, 2], [0.1, 0.2]]]
+    err_code, exp_ok = test_spooler.check_instructions(inst_list)
+    assert exp_ok is not True
+    assert err_code == "Instruction not allowed."
+
+    # test that it works if the instructions are not valid
