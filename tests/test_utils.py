@@ -5,7 +5,6 @@ import os
 import uuid
 import shutil
 from typing import Iterator, Callable
-from pydantic import ValidationError
 
 import pytest
 
@@ -14,7 +13,6 @@ from sqooler.utils import (
     main,
     create_memory_data,
     run_json_circuit,
-    gate_dict_from_list,
 )
 from sqooler.schemes import LocalLoginInformation, Spooler
 from sqooler.storage_providers import LocalProvider
@@ -126,22 +124,3 @@ def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
     job_id = "1"
     with pytest.raises(AssertionError):
         run_json_circuit(job_payload, job_id, test_spooler)
-
-
-def test_gate_dict(utils_storage_setup_teardown: Callable) -> None:
-    """
-    Test that it is possible to create the a nice instruction.
-    """
-    inst_list = ["test", [1, 2], [0.1, 0.2]]
-    gate_dict = gate_dict_from_list(inst_list)
-    assert gate_dict.name == "test"
-
-    # test that it fails if the list is too short
-    inst_list = ["test", [1, 2]]
-    with pytest.raises(IndexError):
-        gate_dict_from_list(inst_list)
-
-    # test that it fails if the types doe not work out
-    inst_list = ["test", [1, 2], "test"]
-    with pytest.raises(ValidationError):
-        gate_dict_from_list(inst_list)

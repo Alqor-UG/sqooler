@@ -319,14 +319,23 @@ class Spooler:
 
     def check_instructions(self, ins_list: list) -> tuple[str, bool]:
         """
-        Check all the instruction to make sure that they are valid.
+        Check all the instruction to make sure that they are valid and part
+        of the allowed instructions.
         """
         err_code = ""
         exp_ok = False
         for ins in ins_list:
             try:
-                gate_dict = gate_dict_from_list(ins)
-                self.ins_schema_dict[ins[0]](**gate_dict)
+                gate_instr = gate_dict_from_list(ins)
+                # see if the instruction is part of the allowed instructions
+                if gate_instr.name not in self.ins_schema_dict.keys():
+                    err_code = "Instruction not allowed."
+                    exp_ok = False
+                    return err_code, exp_ok
+
+                # now verify that the parameters are ok
+                gate_dict = gate_instr.model_dump()
+                self.ins_schema_dict[gate_instr.name](**gate_dict)
                 exp_ok = True
             except ValidationError as err:
                 err_code = "Error in instruction " + str(err)
@@ -487,3 +496,18 @@ class Spooler:
 
         result_dict = ResultDict(**result_draft)
         return result_dict, status_msg_dict
+
+
+def gate_dict_from_list(inst_list: list) -> GateDict:
+    """
+    Transforms a list into an appropiate dictionnary for instructions. The list
+    is assumed to be in the format [name, wires, params].
+
+    Args:
+        inst_list: The list that should be transformed.
+
+    Returns:
+        A GateDict object.
+    """
+    gate_draft = {"name": inst_list[0], "wires": inst_list[1], "params": inst_list[2]}
+    return GateDict(**gate_draft)
