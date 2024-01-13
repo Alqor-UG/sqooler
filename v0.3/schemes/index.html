@@ -1836,7 +1836,27 @@ So it should most likely live in another file at some point.</p>
     </thead>
     <tbody>
         <tr>
-          <td><code>n_max_wires</code></td>
+          <td><code>ins_schema_dict</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A dictionary the contains all the allowed instructions for this spooler.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>device_config</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>A dictionary that some main config params for the experiment.</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><code>n_wires</code></td>
           <td>
           </td>
           <td>
@@ -1853,58 +1873,6 @@ So it should most likely live in another file at some point.</p>
             <div class="doc-md-description">
               <p>the maximum number of shots for the spooler</p>
             </div>
-          </td>
-        </tr>
-        <tr>
-          <td><code>ins_schema_dict</code></td>
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A dictionary the contains all the allowed instructions for this spooler.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-
-  <p><strong>Parameters:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>exper_schema</code></td>
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Sets the <code>exper_schema</code> attribute of the class</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr>
-          <td><code>ins_schema_dict</code></td>
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Sets the <code>ins_schema_dict</code> attribute of the class</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
           </td>
         </tr>
     </tbody>
@@ -2173,24 +2141,27 @@ So it should most likely live in another file at some point.</p>
 <span class="normal">495</span>
 <span class="normal">496</span>
 <span class="normal">497</span>
-<span class="normal">498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class for the spooler. So it is not just a scheme, but it also contains some common logic.</span>
 <span class="sd">    So it should most likely live in another file at some point.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        n_max_wires: maximum number of wires for the spooler</span>
-<span class="sd">        n_max_shots: the maximum number of shots for the spooler</span>
 <span class="sd">        ins_schema_dict : A dictionary the contains all the allowed instructions for this spooler.</span>
+<span class="sd">        device_config: A dictionary that some main config params for the experiment.</span>
+<span class="sd">        n_wires: maximum number of wires for the spooler</span>
+<span class="sd">        n_max_shots: the maximum number of shots for the spooler</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        exper_schema: Sets the `exper_schema` attribute of the class</span>
-<span class="sd">        ins_schema_dict : Sets the `ins_schema_dict` attribute of the class</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">ins_schema_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+        <span class="n">device_config</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
         <span class="n">n_wires</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">n_max_shots</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
@@ -2205,6 +2176,7 @@ So it should most likely live in another file at some point.</p>
 <span class="sd">        The constructor of the class.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span> <span class="o">=</span> <span class="n">ins_schema_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device_config</span> <span class="o">=</span> <span class="n">device_config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_max_shots</span> <span class="o">=</span> <span class="n">n_max_shots</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_wires</span> <span class="o">=</span> <span class="n">n_wires</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
@@ -2229,7 +2201,11 @@ So it should most likely live in another file at some point.</p>
 <span class="sd">            str: The error message</span>
 <span class="sd">            bool: Is the experiment ok ?</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this!&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device_config</span><span class="p">(</span><span class="o">**</span><span class="n">exper_dict</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2504,7 +2480,7 @@ It can be basically anything that allows the execution of the circuit.</p>
 
 
 <h3 id="src.sqooler.schemes.Spooler.__init__" class="doc doc-heading">
-          <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">ins_schema_dict</span><span class="p">,</span> <span class="n">n_wires</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">n_max_shots</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s1">&#39;0.0.1&#39;</span><span class="p">,</span> <span class="n">cold_atom_type</span><span class="o">=</span><span class="s1">&#39;spin&#39;</span><span class="p">,</span> <span class="n">n_max_experiments</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">wire_order</span><span class="o">=</span><span class="s1">&#39;interleaved&#39;</span><span class="p">,</span> <span class="n">num_species</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">operational</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+          <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">ins_schema_dict</span><span class="p">,</span> <span class="n">device_config</span><span class="p">,</span> <span class="n">n_wires</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">n_max_shots</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s1">&#39;0.0.1&#39;</span><span class="p">,</span> <span class="n">cold_atom_type</span><span class="o">=</span><span class="s1">&#39;spin&#39;</span><span class="p">,</span> <span class="n">n_max_experiments</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">wire_order</span><span class="o">=</span><span class="s1">&#39;interleaved&#39;</span><span class="p">,</span> <span class="n">num_species</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">operational</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
 
 </h3>
 
@@ -2515,7 +2491,9 @@ It can be basically anything that allows the execution of the circuit.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">252</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
 <span class="normal">253</span>
 <span class="normal">254</span>
 <span class="normal">255</span>
@@ -2544,6 +2522,7 @@ It can be basically anything that allows the execution of the circuit.</p>
 <span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">ins_schema_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">device_config</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
     <span class="n">n_wires</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">n_max_shots</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
@@ -2558,6 +2537,7 @@ It can be basically anything that allows the execution of the circuit.</p>
 <span class="sd">    The constructor of the class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ins_schema_dict</span> <span class="o">=</span> <span class="n">ins_schema_dict</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">device_config</span> <span class="o">=</span> <span class="n">device_config</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">n_max_shots</span> <span class="o">=</span> <span class="n">n_max_shots</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">n_wires</span> <span class="o">=</span> <span class="n">n_wires</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
@@ -2672,11 +2652,7 @@ If things are fine the job gets added the list of things that should be executed
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">435</span>
 <span class="normal">436</span>
 <span class="normal">437</span>
 <span class="normal">438</span>
@@ -2739,7 +2715,11 @@ If things are fine the job gets added the list of things that should be executed
 <span class="normal">495</span>
 <span class="normal">496</span>
 <span class="normal">497</span>
-<span class="normal">498</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">:</span> <span class="n">StatusMsgDict</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ResultDict</span><span class="p">,</span> <span class="n">StatusMsgDict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2897,11 +2877,7 @@ So this is only a placeholder.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
-<span class="normal">351</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">351</span>
 <span class="normal">352</span>
 <span class="normal">353</span>
 <span class="normal">354</span>
@@ -2912,7 +2888,11 @@ So this is only a placeholder.</p>
 <span class="normal">359</span>
 <span class="normal">360</span>
 <span class="normal">361</span>
-<span class="normal">362</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make sure that the Hilbert space dimension is not too large.</span>
 
@@ -3031,7 +3011,11 @@ be verified.</p>
 <span class="normal">290</span>
 <span class="normal">291</span>
 <span class="normal">292</span>
-<span class="normal">293</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exper_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exper_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check the validity of the experiment.</span>
 <span class="sd">    This has to be implement in each subclass extra.</span>
@@ -3044,7 +3028,11 @@ be verified.</p>
 <span class="sd">        str: The error message</span>
 <span class="sd">        bool: Is the experiment ok ?</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Subclasses should implement this!&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device_config</span><span class="p">(</span><span class="o">**</span><span class="n">exper_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="kc">False</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
@@ -3070,11 +3058,7 @@ of the allowed instructions.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
 <span class="normal">325</span>
 <span class="normal">326</span>
 <span class="normal">327</span>
@@ -3095,7 +3079,11 @@ of the allowed instructions.</p>
 <span class="normal">342</span>
 <span class="normal">343</span>
 <span class="normal">344</span>
-<span class="normal">345</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check all the instruction to make sure that they are valid and part</span>
 <span class="sd">    of the allowed instructions.</span>
@@ -3199,11 +3187,7 @@ of the allowed instructions.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">368</span>
 <span class="normal">369</span>
 <span class="normal">370</span>
 <span class="normal">371</span>
@@ -3235,7 +3219,11 @@ of the allowed instructions.</p>
 <span class="normal">397</span>
 <span class="normal">398</span>
 <span class="normal">399</span>
-<span class="normal">400</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">check_json_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if the json file has the appropiate syntax.</span>
 
@@ -3296,11 +3284,7 @@ of the allowed instructions.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">299</span>
 <span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
@@ -3319,7 +3303,11 @@ of the allowed instructions.</p>
 <span class="normal">315</span>
 <span class="normal">316</span>
 <span class="normal">317</span>
-<span class="normal">318</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sends back the configuration dictionary of the spooler.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -3492,11 +3480,7 @@ is assumed to be in the format [name, wires, params].</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">505</span>
 <span class="normal">506</span>
 <span class="normal">507</span>
 <span class="normal">508</span>
@@ -3504,7 +3488,11 @@ is assumed to be in the format [name, wires, params].</p>
 <span class="normal">510</span>
 <span class="normal">511</span>
 <span class="normal">512</span>
-<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GateDict</span><span class="p">:</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GateDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a list into an appropiate dictionnary for instructions. The list</span>
 <span class="sd">    is assumed to be in the format [name, wires, params].</span>
