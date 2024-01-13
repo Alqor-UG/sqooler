@@ -4,7 +4,11 @@ This is the test tool for the utils module.
 import os
 import uuid
 import shutil
-from typing import Iterator, Callable
+from typing import Iterator, Callable, Literal, Optional
+from pydantic import BaseModel, Field
+
+from typing_extensions import Annotated
+
 
 import pytest
 
@@ -22,24 +26,23 @@ local_login = LocalLoginInformation(base_path="utils_storage")
 storage_provider = LocalProvider(local_login)
 
 
-class TestSpooler(Spooler):
+class TestExperiment(BaseModel):
     """
-    A dummy spooler for testing.
+    The class that defines some basic properties for a test experiment
     """
 
-    def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
-        """
-        Check the validity of the experiment.
-        This has to be implement in each subclass extra.
+    wire_order: Literal["interleaved", "sequential"] = "sequential"
 
-        Args:
-            exper_dict: The dictionary that contains the logic and should
-                be verified.
-        """
-        return "No error", True
+    # mypy keeps throwing errors here because it does not understand the type.
+    # not sure how to fix it, so we leave it as is for the moment
+    # HINT: Annotated does not work
+    shots: Annotated[int, Field(gt=0, le=5)]
+    num_wires: Annotated[int, Field(ge=1, le=5)]
+    instructions: list[list]
+    seed: Optional[int] = None
 
 
-test_spooler = TestSpooler(ins_schema_dict={}, n_wires=2)
+test_spooler = Spooler(ins_schema_dict={}, device_config=TestExperiment, n_wires=2)
 
 backends = {"test": test_spooler}
 
