@@ -7,7 +7,7 @@ from pydantic import ValidationError, BaseModel, Field
 
 from typing_extensions import Annotated
 import pytest
-
+from icecream import ic
 from sqooler.schemes import Spooler, StatusMsgDict, gate_dict_from_list
 
 
@@ -51,6 +51,37 @@ def test_spooler_operational() -> None:
     assert not spooler_config.operational
 
 
+def test_spooler_add_job_fail() -> None:
+    """
+    Test that it is possible to add a job to the spooler.
+    """
+
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=TestExperiment, n_wires=2, operational=False
+    )
+    status_msg_draft = {
+        "job_id": "Test_ID",
+        "status": "None",
+        "detail": "None",
+        "error_message": "None",
+    }
+
+    job_payload = {
+        "experiment_0": {
+            "instructions": [],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+    status_msg_dict = StatusMsgDict(**status_msg_draft)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    assert status_msg_dict.status == "ERROR", "Job failed"
+    ic(result_dict)
+    ic(status_msg_dict)
+    assert result_dict is not None
+
+
 def test_spooler_add_job() -> None:
     """
     Test that it is possible to add a job to the spooler.
@@ -76,7 +107,9 @@ def test_spooler_add_job() -> None:
     }
     status_msg_dict = StatusMsgDict(**status_msg_draft)
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
-    assert result_dict is not None
+    assert status_msg_dict.status == "DONE", "Job failed"
+    ic(result_dict)
+    ic(status_msg_dict)
 
 
 def test_gate_dict() -> None:
