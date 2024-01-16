@@ -47,7 +47,9 @@ class DummyInstruction(BaseModel):
     ]
 
 
-def dummy_gen_circuit(experiment: dict) -> ExperimentDict:
+def dummy_gen_circuit(
+    experiment: dict,  # pylint: disable=unused-argument
+) -> ExperimentDict:
     """
     A dummy function to generate a circuit from the experiment dict.
     """
@@ -135,12 +137,12 @@ def test_spooler_add_job() -> None:
     }
     status_msg_dict = StatusMsgDict(**status_msg_draft)
     # should fail gracefully as no  gen_circuit function is defined
-    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert status_msg_dict.error_message == "None; gen_circuit must be set"
 
     test_spooler.gen_circuit = dummy_gen_circuit
-    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job failed"
 
 
@@ -184,7 +186,7 @@ def test_spooler_check_json() -> None:
     }
     # test that it works if the instructions are not valid as the key is not known
 
-    err_code, exp_ok = test_spooler.check_json_dict(job_payload)
+    _, exp_ok = test_spooler.check_json_dict(job_payload)
     assert exp_ok is True
 
     # test that it works if the instructions are not valid
@@ -198,7 +200,7 @@ def test_spooler_check_json() -> None:
     }
     # test that it works if the instructions are not valid as the key is not known
 
-    err_code, exp_ok = test_spooler.check_json_dict(job_payload)
+    _, exp_ok = test_spooler.check_json_dict(job_payload)
     assert exp_ok is not True
 
 
