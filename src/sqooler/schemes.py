@@ -277,9 +277,6 @@ class Spooler:
         self._display_name: str = ""
         self.operational = operational
 
-        # the function that generates the circuit
-        self._gen_circuit: Optional[Callable[[dict], ExperimentDict]] = None
-
     def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
         Check the validity of the experiment.
@@ -438,7 +435,7 @@ class Spooler:
         Raises:
             ValueError: if the gen_circuit is not a callable function
         """
-        if self._gen_circuit is None:
+        if not hasattr(self, "_gen_circuit"):
             raise ValueError("gen_circuit must be set")
         return self._gen_circuit
 
