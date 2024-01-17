@@ -328,6 +328,12 @@ class Spooler:
         """
         err_code = ""
         exp_ok = False
+        # first check that we actually have any instructions safed in the ins_schema_dict
+        if len(self.ins_schema_dict) == 0:
+            err_code = "No instructions allowed. Add instructions to the spooler."
+            exp_ok = False
+            return err_code, exp_ok
+
         for ins in ins_list:
             try:
                 gate_instr = gate_dict_from_list(ins)
@@ -422,11 +428,25 @@ class Spooler:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
+
+        Returns:
+            Callable[[dict], ExperimentDict]: The function that generates the circuit.
+
+        Raises:
+            ValueError: if the gen_circuit is not a callable function
         """
+        if not hasattr(self, "_gen_circuit"):
+            raise ValueError("gen_circuit must be set")
         return self._gen_circuit
 
     @gen_circuit.setter
     def gen_circuit(self, value: Callable[[dict], ExperimentDict]) -> None:
+        """
+        The setter for the gen_circuit function.
+
+        Args:
+            value: The function that generates the circuit.
+        """
         if callable(value):  # Check if the provided value is a callable (function)
             self._gen_circuit = value
         else:
@@ -468,8 +488,14 @@ class Spooler:
                 for exp in json_dict:
                     exp_dict = {exp: json_dict[exp]}
                     # Here we
-                    result_draft["results"].append(self.gen_circuit(exp_dict))
-
+                    try:
+                        result_draft["results"].append(self.gen_circuit(exp_dict))
+                    except ValueError as err:
+                        status_msg_dict.detail += "; " + str(err)
+                        status_msg_dict.error_message += "; " + str(err)
+                        status_msg_dict.status = "ERROR"
+                        result_dict = ResultDict(**result_draft)
+                        return result_dict, status_msg_dict
                 status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
                     Shots sent to solver."
                 status_msg_dict.status = "DONE"
