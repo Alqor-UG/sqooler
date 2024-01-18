@@ -7,8 +7,6 @@ from collections.abc import Callable
 from typing import Optional, Type, Any
 from pydantic import ValidationError, BaseModel, Field
 
-from icecream import ic
-
 
 class ExperimentDict(BaseModel):
     """
@@ -337,7 +335,6 @@ class Spooler:
             return err_code, exp_ok
 
         for ins in ins_list:
-            ic(ins)
             try:
                 gate_instr = gate_dict_from_list(ins)
                 # see if the instruction is part of the allowed instructions
@@ -355,7 +352,6 @@ class Spooler:
                 exp_ok = False
             if not exp_ok:
                 break
-        ic(err_code, exp_ok)
         return err_code, exp_ok
 
     def check_dimension(self, json_dict: dict) -> tuple[str, bool]:
@@ -388,7 +384,6 @@ class Spooler:
         err_code = "No instructions received."
         exp_ok = False
         for expr in json_dict:
-            ic(expr)
             err_code = "Wrong experiment name or too many experiments"
             # Fix this pylint issue whenever you have time, but be careful !
             # pylint: disable=W0702
@@ -404,17 +399,12 @@ class Spooler:
             if not exp_ok:
                 break
             # test the structure of the experiment
-            ic("start checking experiment")
             err_code, exp_ok = self.check_experiment(json_dict[expr])
-            ic(err_code)
             if not exp_ok:
                 break
-            ic("Check instructions")
             # time to check the structure of the instructions
             ins_list = json_dict[expr]["instructions"]
             err_code, exp_ok = self.check_instructions(ins_list)
-            ic(err_code)
-            ic(err_code, exp_ok)
             if not exp_ok:
                 break
         return err_code.replace("\n", ".."), exp_ok
@@ -434,13 +424,13 @@ class Spooler:
             raise ValueError("display_name must be a string")
 
     @property
-    def gen_circuit(self) -> Callable[[dict], ExperimentDict]:
+    def gen_circuit(self) -> Callable[[dict, str | None], ExperimentDict]:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
 
         Returns:
-            Callable[[dict], ExperimentDict]: The function that generates the circuit.
+            Callable[[dict, str | None], ExperimentDict]: The function that generates the circuit.
 
         Raises:
             ValueError: if the gen_circuit is not a callable function
@@ -450,7 +440,7 @@ class Spooler:
         return self._gen_circuit
 
     @gen_circuit.setter
-    def gen_circuit(self, value: Callable[[dict], ExperimentDict]) -> None:
+    def gen_circuit(self, value: Callable[[dict, str | None], ExperimentDict]) -> None:
         """
         The setter for the gen_circuit function.
 
@@ -491,7 +481,6 @@ class Spooler:
             "results": [],
         }
         err_msg, json_is_fine = self.check_json_dict(json_dict)
-        ic(err_msg)
         if json_is_fine:
             # check_hilbert_space_dimension
             dim_err_msg, dim_ok = self.check_dimension(json_dict)
@@ -608,7 +597,6 @@ class LabscriptSpooler(Spooler):
             # check_hilbert_space_dimension
             dim_err_msg, dim_ok = self.check_dimension(json_dict)
             if dim_ok:
-                ic("Passed dimensionality test")
                 for exp in json_dict:
                     exp_dict = {exp: json_dict[exp]}
                     # prepare the shots folder

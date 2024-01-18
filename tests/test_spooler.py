@@ -7,7 +7,13 @@ from pydantic import ValidationError, BaseModel, Field
 
 from typing_extensions import Annotated
 import pytest
-from sqooler.schemes import Spooler, StatusMsgDict, gate_dict_from_list, ExperimentDict
+from sqooler.schemes import (
+    Spooler,
+    StatusMsgDict,
+    gate_dict_from_list,
+    ExperimentDict,
+    LabscriptSpooler,
+)
 
 
 class DummyExperiment(BaseModel):
@@ -79,6 +85,7 @@ class DummyInstruction(BaseModel):
 
 def dummy_gen_circuit(
     experiment: dict,  # pylint: disable=unused-argument
+    job_id: Optional[str] = None,  # pylint: disable=unused-argument
 ) -> ExperimentDict:
     """
     A dummy function to generate a circuit from the experiment dict.
@@ -239,8 +246,8 @@ def test_spooler_instructions() -> None:
     Test that it is possible to verify the validity of the instructions.
     """
     test_spooler = Spooler(
-        ins_schema_dict={"test": TestInstruction},
-        device_config=TestExperiment,
+        ins_schema_dict={},
+        device_config=DummyExperiment,
         n_wires=2,
         operational=False,
     )
@@ -286,7 +293,7 @@ def test_labscript_spooler_config() -> None:
     """
     test_spooler = LabscriptSpooler(
         ins_schema_dict={},
-        device_config=TestExperiment,
+        device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
         n_wires=2,
     )
@@ -302,7 +309,7 @@ def test_labscript_spooler_operational() -> None:
     """
     test_spooler = LabscriptSpooler(
         ins_schema_dict={},
-        device_config=TestExperiment,
+        device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
         n_wires=2,
         operational=False,
@@ -319,8 +326,8 @@ def test_labscript_spooler_add_job() -> None:
     """
 
     test_spooler = LabscriptSpooler(
-        ins_schema_dict={"test": TestInstruction},
-        device_config=TestExperiment,
+        ins_schema_dict={"test": DummyInstruction},
+        device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
         n_wires=2,
         operational=False,
@@ -331,7 +338,6 @@ def test_labscript_spooler_add_job() -> None:
         "detail": "None",
         "error_message": "None",
     }
-    ic("Test payload")
     job_payload = {
         "experiment_0": {
             "instructions": [["test", [0], [1.0]]],
@@ -341,9 +347,14 @@ def test_labscript_spooler_add_job() -> None:
         },
     }
     status_msg_dict = StatusMsgDict(**status_msg_draft)
+
+    # should fail gracefully as no  gen_circuit function is defined
+    with pytest.raises(ValueError):
+        test_spooler.add_job(job_payload, status_msg_dict)
+
+    test_spooler.gen_circuit = dummy_gen_circuit
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
-    assert status_msg_dict.status == "ERROR", "Job should have failed"
-    ic(status_msg_dict.error_message)
+    assert status_msg_dict.status == "DONE", "Job should have failed"
     assert result_dict is not None
 
     # to make this test useful we need to have code that gets up to the point where
