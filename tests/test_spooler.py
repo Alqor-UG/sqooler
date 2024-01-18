@@ -7,7 +7,13 @@ from pydantic import ValidationError, BaseModel, Field
 
 from typing_extensions import Annotated
 import pytest
-from sqooler.schemes import Spooler, StatusMsgDict, gate_dict_from_list, ExperimentDict
+from sqooler.schemes import (
+    Spooler,
+    StatusMsgDict,
+    gate_dict_from_list,
+    ExperimentDict,
+    LabscriptSpooler,
+)
 
 
 class DummyExperiment(BaseModel):
@@ -24,6 +30,36 @@ class DummyExperiment(BaseModel):
     num_wires: Annotated[int, Field(ge=1, le=5)]
     instructions: list[list]
     seed: Optional[int] = None
+
+
+class DummyRemoteClient:
+    """
+    This is simply a dummy the implements the basic functionality of the remote client.
+    """
+
+    def __init__(self) -> None:
+        """
+        Initialize the dummy remote client.
+        """
+        self._shot_output_folder = "test"
+
+    def reset_shot_output_folder(self) -> None:
+        """
+        Reset the shot output folder.
+        """
+        self._shot_output_folder = "test"
+
+    def get_shot_output_folder(self) -> str:
+        """
+        Get the shot output folder.
+        """
+        return self._shot_output_folder
+
+    def set_shot_output_folder(self, folder_name: str) -> None:
+        """
+        Set the shot output folder.
+        """
+        self._shot_output_folder = folder_name
 
 
 class DummyInstruction(BaseModel):
@@ -49,6 +85,7 @@ class DummyInstruction(BaseModel):
 
 def dummy_gen_circuit(
     experiment: dict,  # pylint: disable=unused-argument
+    job_id: Optional[str] = None,  # pylint: disable=unused-argument
 ) -> ExperimentDict:
     """
     A dummy function to generate a circuit from the experiment dict.
@@ -209,11 +246,14 @@ def test_spooler_instructions() -> None:
     Test that it is possible to verify the validity of the instructions.
     """
     test_spooler = Spooler(
-        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
+        ins_schema_dict={},
+        device_config=DummyExperiment,
+        n_wires=2,
+        operational=False,
     )
 
     # test that it works if the instructions are not valid as the key is not known
-    inst_list = [["test", [1, 2], [0.1, 0.2]]]
+    inst_list = [["load", [0], [1]]]
     err_code, exp_ok = test_spooler.check_instructions(inst_list)
     assert exp_ok is not True
     assert err_code == "No instructions allowed. Add instructions to the spooler."
@@ -238,7 +278,84 @@ def test_spooler_instructions() -> None:
     assert exp_ok is True
     assert err_code == ""
 
-    # test that it works if the instructions are not valid
-    inst_list = [["test", [1], [1]]]
+    # test that it works if the instructions are valid
+    inst_list = [["test", [0], [1]]]
     err_code, exp_ok = test_spooler.check_instructions(inst_list)
-    assert exp_ok is False
+    assert exp_ok is True
+
+
+## Test the labscript spooler
+
+
+def test_labscript_spooler_config() -> None:
+    """
+    Test that it is possible to get the config of the spooler.
+    """
+    test_spooler = LabscriptSpooler(
+        ins_schema_dict={},
+        device_config=DummyExperiment,
+        remote_client=DummyRemoteClient(),
+        n_wires=2,
+    )
+
+    spooler_config = test_spooler.get_configuration()
+    assert spooler_config.num_wires == 2
+    assert spooler_config.operational
+
+
+def test_labscript_spooler_op() -> None:
+    """
+    Test that it is possible to set the operational status of the spooler.
+    """
+    test_spooler = LabscriptSpooler(
+        ins_schema_dict={},
+        device_config=DummyExperiment,
+        remote_client=DummyRemoteClient(),
+        n_wires=2,
+        operational=False,
+    )
+
+    spooler_config = test_spooler.get_configuration()
+    assert spooler_config.num_wires == 2
+    assert not spooler_config.operational
+
+
+def test_labscript_spooler_add_job() -> None:
+    """
+    Test that it is possible to add a job to the spooler.
+    """
+
+    test_spooler = LabscriptSpooler(
+        ins_schema_dict={"test": DummyInstruction},
+        device_config=DummyExperiment,
+        remote_client=DummyRemoteClient(),
+        n_wires=2,
+        operational=False,
+    )
+    status_msg_draft = {
+        "job_id": "Test_ID",
+        "status": "None",
+        "detail": "None",
+        "error_message": "None",
+    }
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [1.0]]],
+            "num_wires": 1,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+    status_msg_dict = StatusMsgDict(**status_msg_draft)
+
+    # should fail gracefully as no  gen_circuit function is defined
+    with pytest.raises(ValueError):
+        test_spooler.add_job(job_payload, status_msg_dict)
+
+    test_spooler.gen_circuit = dummy_gen_circuit
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    assert status_msg_dict.status == "DONE", "Job should have failed"
+    assert result_dict is not None
+
+    # to make this test useful we need to have code that gets up to the point where
+    # the remote_client is called

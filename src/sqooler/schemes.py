@@ -4,7 +4,7 @@ There is no obvious need, why this code should be touch in a new back-end.
 """
 
 from collections.abc import Callable
-from typing import Optional, Type
+from typing import Optional, Type, Any
 from pydantic import ValidationError, BaseModel, Field
 
 
@@ -424,13 +424,13 @@ class Spooler:
             raise ValueError("display_name must be a string")
 
     @property
-    def gen_circuit(self) -> Callable[[dict], ExperimentDict]:
+    def gen_circuit(self) -> Callable[[dict, Optional[str]], ExperimentDict]:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
 
         Returns:
-            Callable[[dict], ExperimentDict]: The function that generates the circuit.
+            Callable[[dict, str | None], ExperimentDict]: The function that generates the circuit.
 
         Raises:
             ValueError: if the gen_circuit is not a callable function
@@ -440,7 +440,9 @@ class Spooler:
         return self._gen_circuit
 
     @gen_circuit.setter
-    def gen_circuit(self, value: Callable[[dict], ExperimentDict]) -> None:
+    def gen_circuit(
+        self, value: Callable[[dict, Optional[str]], ExperimentDict]
+    ) -> None:
         """
         The setter for the gen_circuit function.
 
@@ -489,7 +491,8 @@ class Spooler:
                     exp_dict = {exp: json_dict[exp]}
                     # Here we
                     try:
-                        result_draft["results"].append(self.gen_circuit(exp_dict))
+                        # this assumes that we never have more than one argument here.
+                        result_draft["results"].append(self.gen_circuit(exp_dict))  # type: ignore
                     except ValueError as err:
                         status_msg_dict.detail += "; " + str(err)
                         status_msg_dict.error_message += "; " + str(err)
@@ -526,6 +529,131 @@ class Spooler:
 
         result_dict = ResultDict(**result_draft)
         return result_dict, status_msg_dict
+
+
+class LabscriptSpooler(Spooler):
+    """
+    A specialized spooler class that allows us to execute jobs in labscript directly.
+    The main changes are that we need to add the job in a different way and connect it to a
+     `runmanager.remoeClient`
+    """
+
+    def __init__(
+        self,
+        ins_schema_dict: dict,
+        device_config: Type[BaseModel],
+        n_wires: int,
+        remote_client: Any,  # it would be really nice to fix this type
+        description: str = "",
+        n_max_shots: int = 1000,
+        version: str = "0.0.1",
+        cold_atom_type: str = "spin",
+        n_max_experiments: int = 15,
+        wire_order: str = "interleaved",
+        num_species: int = 1,
+        operational: bool = True,
+    ):
+        """
+        The constructor of the class.
+        """
+        super().__init__(
+            ins_schema_dict,
+            device_config,
+            n_wires,
+            description,
+            n_max_shots,
+            version,
+            cold_atom_type,
+            n_max_experiments,
+            wire_order,
+            num_species,
+            operational,
+        )
+        self.remote_client = remote_client
+
+    def add_job(
+        self, json_dict: dict, status_msg_dict: StatusMsgDict
+    ) -> tuple[ResultDict, StatusMsgDict]:
+        """
+        The function that translates the json with the instructions into some circuit
+        and executes it. It performs several checks for the job to see if it is properly
+        working. If things are fine the job gets added the list of things that should be
+        executed.
+
+        Args:
+            json_dict: The job dictonary of all the instructions.
+            status_msg_dict: the status dictionary of the job we are treating.
+        """
+        job_id = status_msg_dict.job_id
+
+        result_draft: dict = {
+            "display_name": self.display_name,
+            "backend_version": self.version,
+            "job_id": job_id,
+            "qobj_id": None,
+            "success": True,
+            "status": "finished",
+            "header": {},
+            "results": [],
+        }
+        err_msg, json_is_fine = self.check_json_dict(json_dict)
+        if json_is_fine:
+            # check_hilbert_space_dimension
+            dim_err_msg, dim_ok = self.check_dimension(json_dict)
+            if dim_ok:
+                for exp in json_dict:
+                    exp_dict = {exp: json_dict[exp]}
+                    # prepare the shots folder
+                    self.remote_client.reset_shot_output_folder()
+                    self._modify_shot_output_folder(job_id + "/" + str(exp))
+
+                    # Here we generate the ciruit
+                    result_draft["results"].append(self.gen_circuit(exp_dict, job_id))
+
+                status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
+                    Shots sent to solver."
+                status_msg_dict.status = "DONE"
+                result_dict = ResultDict(**result_draft)
+                return result_dict, status_msg_dict
+
+            status_msg_dict.detail += (
+                ";Failed dimensionality test. Too many atoms. File will be deleted. Error message: "
+                + dim_err_msg
+            )
+            status_msg_dict.error_message += (
+                ";Failed dimensionality test. Too many atoms. File will be deleted. Error message: "
+                + dim_err_msg
+            )
+            status_msg_dict.status = "ERROR"
+
+            result_dict = ResultDict(**result_draft)
+            return result_dict, status_msg_dict
+
+        status_msg_dict.detail += (
+            "; Failed json sanity check. File will be deleted. Error message : "
+            + err_msg
+        )
+        status_msg_dict.error_message += (
+            "; Failed json sanity check. File will be deleted. Error message : "
+            + err_msg
+        )
+        status_msg_dict.status = "ERROR"
+
+        result_dict = ResultDict(**result_draft)
+        return result_dict, status_msg_dict
+
+    def _modify_shot_output_folder(self, new_dir: str) -> None:
+        """
+        I am not sure what this function does.
+
+        Args:
+            new_dir: The new directory under which we save the shots.
+        """
+        defaut_shot_folder = str(self.remote_client.get_shot_output_folder())
+        print(f"Default shot folder: {defaut_shot_folder}")
+        modified_shot_folder = (defaut_shot_folder.rsplit("\\", 1)[0]) + "/" + new_dir
+        print(f"Modified shot folder: {modified_shot_folder}")
+        self.remote_client.set_shot_output_folder(modified_shot_folder)
 
 
 def gate_dict_from_list(inst_list: list) -> GateDict:
