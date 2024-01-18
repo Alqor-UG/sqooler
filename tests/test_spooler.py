@@ -4,6 +4,8 @@ Here we test the spooler class and its functions.
 
 from typing import Literal, Optional
 from pydantic import ValidationError, BaseModel, Field
+import shutil
+import os
 
 from typing_extensions import Annotated
 import pytest
@@ -65,6 +67,18 @@ class DummyRemoteClient:
     def set_globals(self, globals_dict: dict) -> None:
         """
         Set the globals dict.
+        """
+        pass
+
+    def set_labscript_file(self, labscript_file: str) -> None:
+        """
+        Set the labscript file.
+        """
+        pass
+
+    def engage(self) -> None:
+        """
+        Engage the remote client.
         """
         pass
 
@@ -335,8 +349,7 @@ def test_labscript_spooler_add_job() -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
-
-    labsript_params = LabscriptParams(exp_script_folder="test", t_wait=2)
+    labsript_params = LabscriptParams(exp_script_folder="test_exp", t_wait=2)
     test_spooler = LabscriptSpooler(
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
@@ -364,6 +377,16 @@ def test_labscript_spooler_add_job() -> None:
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "ERROR", "Job should have failed"
     assert result_dict is not None
+    # now add the header at the right position by copying the dummy_header.py file into the exp_script_folder
+    # and then run the test again
 
-    # to make this test useful we need to have code that gets up to the point where
-    # the remote_client is called
+    # Define the source and destination paths
+    source_path = "tests/dummy_header.py"
+    destination_path = f"{labsript_params.exp_script_folder}/header.py"
+    # make sure that the destination folder exists
+    os.makedirs(labsript_params.exp_script_folder, exist_ok=True)
+    # Copy the file
+    shutil.copy(source_path, destination_path)
+    assert os.path.exists(destination_path)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    assert status_msg_dict.status == "DONE", "Job should have failed"

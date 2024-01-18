@@ -726,6 +726,7 @@ class LabscriptSpooler(Spooler):
         # typical functions that we require for each single sequence
         # first have a look if the file exists
         if not os.path.exists(HEADER_PATH):
+            ic(HEADER_PATH)
             raise FileNotFoundError("Header file not found.")
 
         with open(HEADER_PATH, "r", encoding="UTF-8") as header_file:
