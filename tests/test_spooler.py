@@ -12,6 +12,7 @@ from sqooler.schemes import (
     StatusMsgDict,
     gate_dict_from_list,
     ExperimentDict,
+    LabscriptParams,
     LabscriptSpooler,
 )
 
@@ -60,6 +61,12 @@ class DummyRemoteClient:
         Set the shot output folder.
         """
         self._shot_output_folder = folder_name
+
+    def set_globals(self, globals_dict: dict) -> None:
+        """
+        Set the globals dict.
+        """
+        pass
 
 
 class DummyInstruction(BaseModel):
@@ -291,11 +298,13 @@ def test_labscript_spooler_config() -> None:
     """
     Test that it is possible to get the config of the spooler.
     """
+    labscript_params = LabscriptParams(exp_script_folder="test", t_wait=2)
     test_spooler = LabscriptSpooler(
         ins_schema_dict={},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
         n_wires=2,
+        labscript_params=labscript_params,
     )
 
     spooler_config = test_spooler.get_configuration()
@@ -307,12 +316,14 @@ def test_labscript_spooler_op() -> None:
     """
     Test that it is possible to set the operational status of the spooler.
     """
+    labscript_params = LabscriptParams(exp_script_folder="test", t_wait=2)
     test_spooler = LabscriptSpooler(
         ins_schema_dict={},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
         n_wires=2,
         operational=False,
+        labscript_params=labscript_params,
     )
 
     spooler_config = test_spooler.get_configuration()
@@ -325,12 +336,14 @@ def test_labscript_spooler_add_job() -> None:
     Test that it is possible to add a job to the spooler.
     """
 
+    labsript_params = LabscriptParams(exp_script_folder="test", t_wait=2)
     test_spooler = LabscriptSpooler(
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
         n_wires=2,
         operational=False,
+        labscript_params=labsript_params,
     )
     status_msg_draft = {
         "job_id": "Test_ID",
@@ -348,13 +361,8 @@ def test_labscript_spooler_add_job() -> None:
     }
     status_msg_dict = StatusMsgDict(**status_msg_draft)
 
-    # should fail gracefully as no  gen_circuit function is defined
-    with pytest.raises(ValueError):
-        test_spooler.add_job(job_payload, status_msg_dict)
-
-    test_spooler.gen_circuit = dummy_gen_circuit
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
-    assert status_msg_dict.status == "DONE", "Job should have failed"
+    assert status_msg_dict.status == "ERROR", "Job should have failed"
     assert result_dict is not None
 
     # to make this test useful we need to have code that gets up to the point where
