@@ -303,7 +303,7 @@ def test_labscript_spooler_config() -> None:
     assert spooler_config.operational
 
 
-def test_labscript_spooler_operational() -> None:
+def test_labscript_spooler_op() -> None:
     """
     Test that it is possible to set the operational status of the spooler.
     """

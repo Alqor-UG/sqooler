@@ -424,7 +424,7 @@ class Spooler:
             raise ValueError("display_name must be a string")
 
     @property
-    def gen_circuit(self) -> Callable[[dict, str | None], ExperimentDict]:
+    def gen_circuit(self) -> Callable[[dict, Optional[str]], ExperimentDict]:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
@@ -440,7 +440,9 @@ class Spooler:
         return self._gen_circuit
 
     @gen_circuit.setter
-    def gen_circuit(self, value: Callable[[dict, str | None], ExperimentDict]) -> None:
+    def gen_circuit(
+        self, value: Callable[[dict, Optional[str]], ExperimentDict]
+    ) -> None:
         """
         The setter for the gen_circuit function.
 
@@ -489,7 +491,8 @@ class Spooler:
                     exp_dict = {exp: json_dict[exp]}
                     # Here we
                     try:
-                        result_draft["results"].append(self.gen_circuit(exp_dict))
+                        # this assumes that we never have more than one argument here.
+                        result_draft["results"].append(self.gen_circuit(exp_dict))  # type: ignore
                     except ValueError as err:
                         status_msg_dict.detail += "; " + str(err)
                         status_msg_dict.error_message += "; " + str(err)
@@ -553,19 +556,20 @@ class LabscriptSpooler(Spooler):
         """
         The constructor of the class.
         """
-        self.ins_schema_dict = ins_schema_dict
-        self.device_config = device_config
-        self.n_max_shots = n_max_shots
+        super().__init__(
+            ins_schema_dict,
+            device_config,
+            n_wires,
+            description,
+            n_max_shots,
+            version,
+            cold_atom_type,
+            n_max_experiments,
+            wire_order,
+            num_species,
+            operational,
+        )
         self.remote_client = remote_client
-        self.n_wires = n_wires
-        self.description = description
-        self.version = version
-        self.cold_atom_type = cold_atom_type
-        self.n_max_experiments = n_max_experiments
-        self.wire_order = wire_order
-        self.num_species = num_species
-        self._display_name: str = ""
-        self.operational = operational
 
     def add_job(
         self, json_dict: dict, status_msg_dict: StatusMsgDict
