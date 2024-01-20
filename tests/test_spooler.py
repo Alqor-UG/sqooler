@@ -84,6 +84,27 @@ class DummyRemoteClient:
         pass
 
 
+class DummyRun:
+    """
+    This is simply a dummy the implements the basic functionality of the lyse Run class.
+    """
+
+    def __init__(self, run_file: str) -> None:
+        """
+        Initialize the dummy run.
+
+        Args:
+            run_file: The path for the file that should be used for the run.
+        """
+        self.run_file = run_file
+
+    def get_results(self, group: str, name: str) -> int:
+        """
+        Get the results from the run.
+        """
+        return 5
+
+
 class DummyInstruction(BaseModel):
     """
     The test instruction for testing the whole system.
@@ -331,6 +352,7 @@ def test_labscript_spooler_config(labscript_storage_setup_teardown: Callable) ->
         ins_schema_dict={},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
+        run=DummyRun,
         n_wires=2,
         labscript_params=labscript_params,
     )
@@ -349,6 +371,7 @@ def test_labscript_spooler_op(labscript_storage_setup_teardown: Callable) -> Non
         ins_schema_dict={},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
+        run=DummyRun,
         n_wires=2,
         operational=False,
         labscript_params=labscript_params,
@@ -368,6 +391,7 @@ def test_labscript_spooler_modify(labscript_storage_setup_teardown: Callable) ->
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
+        run=DummyRun,
         n_wires=2,
         operational=False,
         labscript_params=labsript_params,
@@ -388,6 +412,7 @@ def test_labscript_spooler_add_job(labscript_storage_setup_teardown: Callable) -
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
+        run=DummyRun,
         n_wires=2,
         operational=False,
         labscript_params=labsript_params,

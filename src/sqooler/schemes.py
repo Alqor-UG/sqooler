@@ -10,7 +10,6 @@ from time import sleep
 
 from pydantic import ValidationError, BaseModel, Field
 from icecream import ic
-from .spooler_utils import create_memory_data
 
 
 class ExperimentDict(BaseModel):
@@ -561,6 +560,7 @@ class LabscriptSpooler(Spooler):
         n_wires: int,
         remote_client: Any,  # it would be really nice to fix this type
         labscript_params: LabscriptParams,
+        run: Any,  # it would be really nice to fix this type
         description: str = "",
         n_max_shots: int = 1000,
         version: str = "0.0.1",
@@ -576,7 +576,8 @@ class LabscriptSpooler(Spooler):
 
         Args:
             remote_client: The remote client that is used to connect to the labscript server.
-            folder_params: The parameters that are used to generate the folder for the shots.
+            labscript_params: The parameters that are used to generate the folder for the shots.
+            run: The run object that is used to execute the labscript file.
         """
         super().__init__(
             ins_schema_dict,
@@ -593,6 +594,7 @@ class LabscriptSpooler(Spooler):
         )
         self.remote_client = remote_client
         self.labscript_params = labscript_params
+        self.run = run
 
     def add_job(
         self, json_dict: dict, status_msg_dict: StatusMsgDict
@@ -803,7 +805,7 @@ class LabscriptSpooler(Spooler):
         shots_array = []
         # once the files are there we can read them
         for file in hdf5_files:
-            run = Run(current_shot_folder + "/" + file)
+            this_run = self.run(current_shot_folder + "/" + file)
             got_nat = False
             n_tries = 0
             # sometimes the file is not ready yet. We need to wait a bit
@@ -813,9 +815,9 @@ class LabscriptSpooler(Spooler):
                 # it here.
                 # pylint: disable=W0718
                 try:
-                    print(run.get_results("/measure", "nat"))
+                    print(this_run.get_results("/measure", "nat"))
                     # append the result to the array
-                    shots_array.append(run.get_results("/measure", "nat"))
+                    shots_array.append(this_run.get_results("/measure", "nat"))
                     got_nat = True
                 except Exception as exc:
                     print(exc)
