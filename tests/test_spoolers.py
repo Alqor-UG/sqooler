@@ -19,6 +19,7 @@ from sqooler.schemes import (
 from sqooler.spoolers import (
     Spooler,
     gate_dict_from_list,
+    create_memory_data,
     LabscriptSpooler,
 )
 
@@ -464,3 +465,14 @@ def test_labscript_spooler_add_job(labscript_storage_setup_teardown: Callable) -
             file.write("test")
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job should have failed"
+
+
+def test_create_memory_data() -> None:
+    """
+    Test that it is possible to create the memory data.
+    """
+    shots_array = [1, 2, 3]
+    exp_name = "test"
+    n_shots = 3
+    exp_dict = create_memory_data(shots_array, exp_name, n_shots)
+    assert exp_dict.success is True

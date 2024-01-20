@@ -15,10 +15,11 @@ import pytest
 from sqooler.utils import (
     update_backends,
     main,
-    create_memory_data,
     run_json_circuit,
 )
-from sqooler.schemes import LocalLoginInformation, Spooler
+from sqooler.schemes import LocalLoginInformation
+
+from sqooler.spoolers import Spooler
 from sqooler.storage_providers import LocalProvider
 
 
@@ -26,7 +27,7 @@ local_login = LocalLoginInformation(base_path="utils_storage")
 storage_provider = LocalProvider(local_login)
 
 
-class TestExperiment(BaseModel):
+class DummyExperiment(BaseModel):
     """
     The class that defines some basic properties for a test experiment
     """
@@ -42,7 +43,7 @@ class TestExperiment(BaseModel):
     seed: Optional[int] = None
 
 
-test_spooler = Spooler(ins_schema_dict={}, device_config=TestExperiment, n_wires=2)
+test_spooler = Spooler(ins_schema_dict={}, device_config=DummyExperiment, n_wires=2)
 
 backends = {"test": test_spooler}
 
@@ -98,17 +99,6 @@ def test_main(utils_storage_setup_teardown: Callable) -> None:
     storage_provider.upload(status_dict, status_path, job_id=job_id)
 
     main(storage_provider, backends, num_iter=1)
-
-
-def test_create_memory_data(utils_storage_setup_teardown: Callable) -> None:
-    """
-    Test that it is possible to create the memory data.
-    """
-    shots_array = [1, 2, 3]
-    exp_name = "test"
-    n_shots = 3
-    exp_dict = create_memory_data(shots_array, exp_name, n_shots)
-    assert exp_dict.success is True
 
 
 def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
