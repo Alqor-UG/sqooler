@@ -6,9 +6,11 @@ There is no obvious need, why this code should be touch in a new back-end.
 import os
 from collections.abc import Callable
 from typing import Optional, Type, Any
-from pydantic import ValidationError, BaseModel, Field
+from time import sleep
 
+from pydantic import ValidationError, BaseModel, Field
 from icecream import ic
+from .spooler_utils import create_memory_data
 
 
 class ExperimentDict(BaseModel):
@@ -673,18 +675,27 @@ class LabscriptSpooler(Spooler):
         result_dict = ResultDict(**result_draft)
         return result_dict, status_msg_dict
 
-    def _modify_shot_output_folder(self, new_dir: str) -> None:
+    def _modify_shot_output_folder(self, new_dir: str) -> str:
         """
         I am not sure what this function does.
 
         Args:
             new_dir: The new directory under which we save the shots.
+
+        Returns:
+            The path to the new directory.
         """
+
+        # we should simplify this at some point
         defaut_shot_folder = str(self.remote_client.get_shot_output_folder())
-        print(f"Default shot folder: {defaut_shot_folder}")
+
         modified_shot_folder = (defaut_shot_folder.rsplit("\\", 1)[0]) + "/" + new_dir
-        print(f"Modified shot folder: {modified_shot_folder}")
+        # suggested better emthod whcih works the same way on all platforms
+        # modified_shot_folder = os.path.join(
+        #    os.path.dirname(defaut_shot_folder), new_dir
+        # )
         self.remote_client.set_shot_output_folder(modified_shot_folder)
+        return modified_shot_folder
 
     def gen_circuit(self, json_dict: dict, job_id: str) -> ExperimentDict:
         """
@@ -775,13 +786,18 @@ class LabscriptSpooler(Spooler):
 
         # we need to get the current shot output folder
         current_shot_folder = self.remote_client.get_shot_output_folder()
-
+        ic(current_shot_folder)
         # we need to get the list of files in the folder
+        ic("Get hdf5 files")
         hdf5_files = get_file_queue(current_shot_folder)
 
+        ic("Wait for them")
+        ic(hdf5_files)
+        ic(current_shot_folder)
         # we need to wait until we have the right number of files
         while len(hdf5_files) < n_shots:
-            sleep(self.labscript_params)
+            ic("Wait a bit")
+            sleep(self.labscript_params.t_wait)
             hdf5_files = get_file_queue(current_shot_folder)
 
         shots_array = []
@@ -803,7 +819,7 @@ class LabscriptSpooler(Spooler):
                     got_nat = True
                 except Exception as exc:
                     print(exc)
-                    sleep(T_WAIT)
+                    sleep(self.labscript_params.t_wait)
                     n_tries += 1
 
         exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
@@ -825,23 +841,26 @@ def gate_dict_from_list(inst_list: list) -> GateDict:
     return GateDict(**gate_draft)
 
 
-def get_file_queue(dir_path: str) -> list:
+def get_file_queue(dir_path: str) -> list[str]:
     """
     A function that returns the list of files in the directory.
-    """
-    files = list(fn for fn in next(os.walk(dir_path))[2])
-    return files
-
-
-def modify_shot_output_folder(new_dir: str, remote_client: Any) -> None:
-    """
-    I am not sure what this function does.
 
     Args:
-        new_dir: The new directory under which we save the shots.
+        dir_path: The path to the directory.
+
+    Returns:
+        A list of files in the directory. It excludes directories.
+
+    Raises:
+        ValueError: If the path is not a directory.
     """
-    defaut_shot_folder = str(remote_client.get_shot_output_folder())
-    print(f"Default shot folder: {defaut_shot_folder}")
-    modified_shot_folder = (defaut_shot_folder.rsplit("\\", 1)[0]) + "/" + new_dir
-    print(f"Modified shot folder: {modified_shot_folder}")
-    remote_client.set_shot_output_folder(modified_shot_folder)
+
+    # make sure that the path is an existing directory
+    if not os.path.isdir(dir_path):
+        raise ValueError(f"The path {dir_path} is not a directory.")
+    files = [
+        file
+        for file in os.listdir(dir_path)
+        if os.path.isfile(os.path.join(dir_path, file))
+    ]
+    return files
