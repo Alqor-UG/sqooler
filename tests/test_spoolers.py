@@ -11,11 +11,14 @@ from icecream import ic
 from typing_extensions import Annotated
 import pytest
 from sqooler.schemes import (
-    Spooler,
     StatusMsgDict,
-    gate_dict_from_list,
     ExperimentDict,
     LabscriptParams,
+)
+
+from sqooler.spoolers import (
+    Spooler,
+    gate_dict_from_list,
     LabscriptSpooler,
 )
 
