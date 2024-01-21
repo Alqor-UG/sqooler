@@ -4,8 +4,10 @@ This module contains the code for the Spooler classes and its helpers.
 
 import os
 from collections.abc import Callable
-from typing import Optional, Type, Any
+from typing import Type, Any
 from time import sleep
+
+from abc import ABC
 
 from pydantic import ValidationError, BaseModel
 
@@ -19,17 +21,15 @@ from .schemes import (
 )
 
 
-class Spooler:
+class BaseSpooler(ABC):
     """
-    The class for the spooler. So it is not just a scheme, but it also contains some common logic.
-    So it should most likely live in another file at some point.
+    Abstract base class for spoolers. They are the main logic of the back-end.
 
     Attributes:
         ins_schema_dict : A dictionary the contains all the allowed instructions for this spooler.
         device_config: A dictionary that some main config params for the experiment.
         n_wires: maximum number of wires for the spooler
         n_max_shots: the maximum number of shots for the spooler
-
     """
 
     def __init__(
@@ -208,8 +208,14 @@ class Spooler:
         else:
             raise ValueError("display_name must be a string")
 
+
+class Spooler(BaseSpooler):
+    """
+    The class for the spooler as it can be used for simulators.
+    """
+
     @property
-    def gen_circuit(self) -> Callable[[dict, Optional[str]], ExperimentDict]:
+    def gen_circuit(self) -> Callable[[dict], ExperimentDict]:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
@@ -225,9 +231,7 @@ class Spooler:
         return self._gen_circuit
 
     @gen_circuit.setter
-    def gen_circuit(
-        self, value: Callable[[dict, Optional[str]], ExperimentDict]
-    ) -> None:
+    def gen_circuit(self, value: Callable[[dict], ExperimentDict]) -> None:
         """
         The setter for the gen_circuit function.
 
@@ -277,7 +281,7 @@ class Spooler:
                     # Here we
                     try:
                         # this assumes that we never have more than one argument here.
-                        result_draft["results"].append(self.gen_circuit(exp_dict))  # type: ignore
+                        result_draft["results"].append(self.gen_circuit(exp_dict))
                     except ValueError as err:
                         status_msg_dict.detail += "; " + str(err)
                         status_msg_dict.error_message += "; " + str(err)
@@ -316,7 +320,7 @@ class Spooler:
         return result_dict, status_msg_dict
 
 
-class LabscriptSpooler(Spooler):
+class LabscriptSpooler(BaseSpooler):
     """
     A specialized spooler class that allows us to execute jobs in labscript directly.
     The main changes are that we need to add the job in a different way and connect it to a
