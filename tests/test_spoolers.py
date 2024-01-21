@@ -2,16 +2,24 @@
 Here we test the spooler class and its functions.
 """
 
-from typing import Literal, Optional
+import os
+import shutil
+
+from typing import Literal, Optional, Iterator, Callable
 from pydantic import ValidationError, BaseModel, Field
 
 from typing_extensions import Annotated
 import pytest
 from sqooler.schemes import (
-    Spooler,
     StatusMsgDict,
-    gate_dict_from_list,
     ExperimentDict,
+    LabscriptParams,
+)
+
+from sqooler.spoolers import (
+    Spooler,
+    gate_dict_from_list,
+    create_memory_data,
     LabscriptSpooler,
 )
 
@@ -60,6 +68,47 @@ class DummyRemoteClient:
         Set the shot output folder.
         """
         self._shot_output_folder = folder_name
+
+    def set_globals(self, globals_dict: dict) -> None:
+        """
+        Set the globals dict.
+        """
+        pass
+
+    def set_labscript_file(self, labscript_file: str) -> None:
+        """
+        Set the labscript file.
+        """
+        pass
+
+    def engage(self) -> None:
+        """
+        Engage the remote client.
+        """
+        pass
+
+
+class DummyRun:
+    """
+    This is simply a dummy the implements the basic functionality of the lyse Run class.
+    """
+
+    def __init__(self, run_file: str) -> None:
+        """
+        Initialize the dummy run.
+
+        Args:
+            run_file: The path for the file that should be used for the run.
+        """
+        self.run_file = run_file
+
+    def get_results(
+        self, group: str, name: str  # pylint: disable=unused-argument
+    ) -> int:
+        """
+        Get the results from the run.
+        """
+        return 5
 
 
 class DummyInstruction(BaseModel):
@@ -285,17 +334,34 @@ def test_spooler_instructions() -> None:
 
 
 ## Test the labscript spooler
+# pylint: disable=W0613, W0621
+@pytest.fixture
+def ls_storage_setup_td() -> Iterator[None]:
+    """
+    Make sure that the storage folder is empty before and after the test.
+    """
+    # setup code here if required one day
+    # ...
+
+    yield  # this is where the testing happens
+
+    # teardown code here
+    shutil.rmtree("test_exp", ignore_errors=True)
+    shutil.rmtree("test", ignore_errors=True)
 
 
-def test_labscript_spooler_config() -> None:
+def test_labscript_spooler_config(ls_storage_setup_td: Callable) -> None:
     """
     Test that it is possible to get the config of the spooler.
     """
+    labscript_params = LabscriptParams(exp_script_folder="test", t_wait=2)
     test_spooler = LabscriptSpooler(
         ins_schema_dict={},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
+        run=DummyRun,
         n_wires=2,
+        labscript_params=labscript_params,
     )
 
     spooler_config = test_spooler.get_configuration()
@@ -303,16 +369,19 @@ def test_labscript_spooler_config() -> None:
     assert spooler_config.operational
 
 
-def test_labscript_spooler_op() -> None:
+def test_labscript_spooler_op(ls_storage_setup_td: Callable) -> None:
     """
     Test that it is possible to set the operational status of the spooler.
     """
+    labscript_params = LabscriptParams(exp_script_folder="test", t_wait=2)
     test_spooler = LabscriptSpooler(
         ins_schema_dict={},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
+        run=DummyRun,
         n_wires=2,
         operational=False,
+        labscript_params=labscript_params,
     )
 
     spooler_config = test_spooler.get_configuration()
@@ -320,17 +389,39 @@ def test_labscript_spooler_op() -> None:
     assert not spooler_config.operational
 
 
-def test_labscript_spooler_add_job() -> None:
+def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
     """
-    Test that it is possible to add a job to the spooler.
+    Test that it is possible to modify the labscript folder.
     """
-
+    labsript_params = LabscriptParams(exp_script_folder="test_exp", t_wait=2)
     test_spooler = LabscriptSpooler(
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         remote_client=DummyRemoteClient(),
+        run=DummyRun,
         n_wires=2,
         operational=False,
+        labscript_params=labsript_params,
+    )
+    new_dir = "test_dir"
+
+    modified_path = test_spooler._modify_shot_output_folder(new_dir)
+    assert modified_path == "test/test_dir"
+
+
+def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
+    """
+    Test that it is possible to add a job to the spooler.
+    """
+    labsript_params = LabscriptParams(exp_script_folder="test_exp", t_wait=2)
+    test_spooler = LabscriptSpooler(
+        ins_schema_dict={"test": DummyInstruction},
+        device_config=DummyExperiment,
+        remote_client=DummyRemoteClient(),
+        run=DummyRun,
+        n_wires=2,
+        operational=False,
+        labscript_params=labsript_params,
     )
     status_msg_draft = {
         "job_id": "Test_ID",
@@ -338,24 +429,57 @@ def test_labscript_spooler_add_job() -> None:
         "detail": "None",
         "error_message": "None",
     }
+    n_shots = 4
     job_payload = {
         "experiment_0": {
             "instructions": [["test", [0], [1.0]]],
             "num_wires": 1,
-            "shots": 4,
+            "shots": n_shots,
             "wire_order": "interleaved",
         },
     }
     status_msg_dict = StatusMsgDict(**status_msg_draft)
 
-    # should fail gracefully as no  gen_circuit function is defined
-    with pytest.raises(ValueError):
-        test_spooler.add_job(job_payload, status_msg_dict)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    assert status_msg_dict.status == "ERROR", "Job should have failed"
+    assert result_dict is not None
+    # now add the header at the right position by copying
+    # the dummy_header.py file into the exp_script_folder
+    # and then run the test again
 
-    test_spooler.gen_circuit = dummy_gen_circuit
+    # Define the source and destination paths
+    source_path = "tests/dummy_header.py"
+    destination_path = f"{labsript_params.exp_script_folder}/header.py"
+    # make sure that the destination folder exists
+    os.makedirs(labsript_params.exp_script_folder, exist_ok=True)
+    # Copy the file
+    shutil.copy(source_path, destination_path)
+    assert os.path.exists(destination_path)
+
+    # now also make sure that the folder for the remote experiment exists
+    remote_experiments_path = f"{labsript_params.exp_script_folder}/remote_experiments"
+    os.makedirs(remote_experiments_path, exist_ok=True)
+
+    # now also make sure that the folder where we are looking for files exists
+    file_queue_path = "test/Test_ID/experiment_0"
+    os.makedirs(file_queue_path, exist_ok=True)
+    assert os.path.exists(file_queue_path)
+
+    # now also a mock files to the folder
+    for ii in range(n_shots):
+        file_path = f"{file_queue_path}/test_{ii}.py"
+        with open(file_path, "w", encoding="UTF-8") as file:
+            file.write("test")
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job should have failed"
-    assert result_dict is not None
 
-    # to make this test useful we need to have code that gets up to the point where
-    # the remote_client is called
+
+def test_create_memory_data() -> None:
+    """
+    Test that it is possible to create the memory data.
+    """
+    shots_array = [1, 2, 3]
+    exp_name = "test"
+    n_shots = 3
+    exp_dict = create_memory_data(shots_array, exp_name, n_shots)
+    assert exp_dict.success is True

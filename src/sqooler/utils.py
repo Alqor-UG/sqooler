@@ -7,7 +7,8 @@ import time
 import traceback
 import regex as re
 
-from .schemes import Spooler, ResultDict, StatusMsgDict, ExperimentDict, GateDict
+from .schemes import ResultDict, StatusMsgDict
+from .spoolers import Spooler
 from .storage_providers import StorageProvider
 
 
@@ -119,30 +120,6 @@ def main(
         counter += 1
 
 
-def create_memory_data(
-    shots_array: list, exp_name: str, n_shots: int
-) -> ExperimentDict:
-    """
-    The function to create memory key in results dictionary
-    with proprer formatting.
-    """
-    exp_sub_dict: dict = {
-        "header": {"name": "experiment_0", "extra metadata": "text"},
-        "shots": 3,
-        "success": True,
-        "data": {"memory": None},
-    }
-
-    exp_sub_dict["header"]["name"] = exp_name
-    exp_sub_dict["shots"] = n_shots
-    memory_list = [
-        str(shot).replace("[", "").replace("]", "").replace(",", "")
-        for shot in shots_array
-    ]
-    exp_sub_dict["data"]["memory"] = memory_list
-    return ExperimentDict(**exp_sub_dict)
-
-
 def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
     """
     A support function that executes the job. Should be only used for testing.
@@ -166,18 +143,3 @@ def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
     result_dict, status_msg_dict = spooler.add_job(json_dict, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job failed"
     return result_dict.model_dump()
-
-
-def gate_dict_from_list(inst_list: list) -> GateDict:
-    """
-    Transforms a list into an appropiate dictionnary for instructions. The list
-    is assumed to be in the format [name, wires, params].
-
-    Args:
-        inst_list: The list that should be transformed.
-
-    Returns:
-        A GateDict object.
-    """
-    gate_draft = {"name": inst_list[0], "wires": inst_list[1], "params": inst_list[2]}
-    return GateDict(**gate_draft)
