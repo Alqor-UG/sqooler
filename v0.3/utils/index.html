@@ -376,24 +376,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#src.sqooler.utils.create_memory_data" class="md-nav__link">
-    <span class="md-ellipsis">
-      create_memory_data()
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#src.sqooler.utils.gate_dict_from_list" class="md-nav__link">
-    <span class="md-ellipsis">
-      gate_dict_from_list()
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#src.sqooler.utils.main" class="md-nav__link">
     <span class="md-ellipsis">
       main()
@@ -493,24 +475,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#src.sqooler.utils.create_memory_data" class="md-nav__link">
-    <span class="md-ellipsis">
-      create_memory_data()
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#src.sqooler.utils.gate_dict_from_list" class="md-nav__link">
-    <span class="md-ellipsis">
-      gate_dict_from_list()
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#src.sqooler.utils.main" class="md-nav__link">
     <span class="md-ellipsis">
       main()
@@ -586,178 +550,6 @@ sqooler package.</p>
 
 
 
-<h2 id="src.sqooler.utils.create_memory_data" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">create_memory_data</span><span class="p">(</span><span class="n">shots_array</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">,</span> <span class="n">n_shots</span><span class="p">)</span></code>
-
-</h2>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>The function to create memory key in results dictionary
-with proprer formatting.</p>
-
-          <details class="quote">
-            <summary>Source code in <code>src/sqooler/utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
-    <span class="n">shots_array</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_shots</span><span class="p">:</span> <span class="nb">int</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperimentDict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The function to create memory key in results dictionary</span>
-<span class="sd">    with proprer formatting.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">exp_sub_dict</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;experiment_0&quot;</span><span class="p">,</span> <span class="s2">&quot;extra metadata&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">},</span>
-        <span class="s2">&quot;shots&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-        <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-        <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;memory&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
-    <span class="p">}</span>
-
-    <span class="n">exp_sub_dict</span><span class="p">[</span><span class="s2">&quot;header&quot;</span><span class="p">][</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp_name</span>
-    <span class="n">exp_sub_dict</span><span class="p">[</span><span class="s2">&quot;shots&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_shots</span>
-    <span class="n">memory_list</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">shot</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">shot</span> <span class="ow">in</span> <span class="n">shots_array</span>
-    <span class="p">]</span>
-    <span class="n">exp_sub_dict</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;memory&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">memory_list</span>
-    <span class="k">return</span> <span class="n">ExperimentDict</span><span class="p">(</span><span class="o">**</span><span class="n">exp_sub_dict</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-          </details>
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-
-<h2 id="src.sqooler.utils.gate_dict_from_list" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">)</span></code>
-
-</h2>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Transforms a list into an appropiate dictionnary for instructions. The list
-is assumed to be in the format [name, wires, params].</p>
-
-
-
-  <p><strong>Parameters:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>inst_list</code></td>
-          <td>
-                <code>list</code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The list that should be transformed.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-
-  <p><strong>Returns:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="src.sqooler.schemes.GateDict" href="../schemes/#src.sqooler.schemes.GateDict">GateDict</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>A GateDict object.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-          <details class="quote">
-            <summary>Source code in <code>src/sqooler/utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GateDict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Transforms a list into an appropiate dictionnary for instructions. The list</span>
-<span class="sd">    is assumed to be in the format [name, wires, params].</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        inst_list: The list that should be transformed.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        A GateDict object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">gate_draft</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;wires&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">inst_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]}</span>
-    <span class="k">return</span> <span class="n">GateDict</span><span class="p">(</span><span class="o">**</span><span class="n">gate_draft</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-          </details>
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-
 <h2 id="src.sqooler.utils.main" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">main</span><span class="p">(</span><span class="n">storage_provider</span><span class="p">,</span> <span class="n">backends</span><span class="p">,</span> <span class="n">num_iter</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
 
@@ -798,7 +590,7 @@ is assumed to be in the format [name, wires, params].</p>
         <tr>
           <td><code>backends</code></td>
           <td>
-                <code>dict[str, <a class="autorefs autorefs-internal" title="src.sqooler.schemes.Spooler" href="../schemes/#src.sqooler.schemes.Spooler">Spooler</a>]</code>
+                <code>dict[str, <span title="src.sqooler.spoolers.Spooler">Spooler</span>]</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -829,8 +621,7 @@ will run forever.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 37</span>
-<span class="normal"> 38</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 38</span>
 <span class="normal"> 39</span>
 <span class="normal"> 40</span>
 <span class="normal"> 41</span>
@@ -911,7 +702,8 @@ will run forever.</p>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
-<span class="normal">119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+<span class="normal">119</span>
+<span class="normal">120</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
     <span class="n">storage_provider</span><span class="p">:</span> <span class="n">StorageProvider</span><span class="p">,</span>
     <span class="n">backends</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Spooler</span><span class="p">],</span>
     <span class="n">num_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -1060,7 +852,7 @@ will run forever.</p>
         <tr>
           <td><code>spooler</code></td>
           <td>
-                <code><a class="autorefs autorefs-internal" title="src.sqooler.schemes.Spooler" href="../schemes/#src.sqooler.schemes.Spooler">Spooler</a></code>
+                <code><span title="src.sqooler.spoolers.Spooler">Spooler</span></code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -1100,29 +892,29 @@ will run forever.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span>
-<span class="normal">167</span>
-<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">run_json_circuit</span><span class="p">(</span><span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spooler</span><span class="p">:</span> <span class="n">Spooler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">run_json_circuit</span><span class="p">(</span><span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spooler</span><span class="p">:</span> <span class="n">Spooler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A support function that executes the job. Should be only used for testing.</span>
 
@@ -1197,7 +989,7 @@ will run forever.</p>
         <tr>
           <td><code>backends</code></td>
           <td>
-                <code>dict[str, <a class="autorefs autorefs-internal" title="src.sqooler.schemes.Spooler" href="../schemes/#src.sqooler.schemes.Spooler">Spooler</a>]</code>
+                <code>dict[str, <span title="src.sqooler.spoolers.Spooler">Spooler</span>]</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -1237,8 +1029,7 @@ will run forever.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">14</span>
-<span class="normal">15</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
 <span class="normal">18</span>
@@ -1257,7 +1048,8 @@ will run forever.</p>
 <span class="normal">31</span>
 <span class="normal">32</span>
 <span class="normal">33</span>
-<span class="normal">34</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_backends</span><span class="p">(</span>
+<span class="normal">34</span>
+<span class="normal">35</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_backends</span><span class="p">(</span>
     <span class="n">storage_provider</span><span class="p">:</span> <span class="n">StorageProvider</span><span class="p">,</span> <span class="n">backends</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Spooler</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
