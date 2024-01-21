@@ -7,8 +7,7 @@ from collections.abc import Callable
 from typing import Optional, Type, Any
 from time import sleep
 
-from pydantic import ValidationError, BaseModel, Field
-from icecream import ic
+from pydantic import ValidationError, BaseModel
 
 from .schemes import (
     BackendConfigSchemaIn,
@@ -409,10 +408,10 @@ class LabscriptSpooler(Spooler):
                             self.gen_circuit(exp_dict, job_id)
                         )
                     except FileNotFoundError as err:
-                        ic(err)
                         error_message = str(err)
                         status_msg_dict.detail += "; Failed to generate labscript file."
-                        status_msg_dict.error_message += f"; Failed to generate labscript file. Error: {error_message}"
+                        status_msg_dict.error_message += f"; Failed to generate labscript \
+                            file. Error: {error_message}"
                         status_msg_dict.status = "ERROR"
                         result_dict = ResultDict(**result_draft)
                         return result_dict, status_msg_dict
@@ -483,11 +482,11 @@ class LabscriptSpooler(Spooler):
         """
 
         # parameters for the function
-        EXP_SCRIPT_FOLDER = self.labscript_params.exp_script_folder
+        exp_script_folder = self.labscript_params.exp_script_folder
 
         # local files
-        HEADER_PATH = f"{EXP_SCRIPT_FOLDER}/header.py"
-        REMOTE_EXPERIMENTS_PATH = f"{EXP_SCRIPT_FOLDER}/remote_experiments"
+        header_path = f"{exp_script_folder}/header.py"
+        remote_experiments_path = f"{exp_script_folder}/remote_experiments"
 
         exp_name = next(iter(json_dict))
         ins_list = json_dict[next(iter(json_dict))]["instructions"]
@@ -502,28 +501,27 @@ class LabscriptSpooler(Spooler):
 
         self.remote_client.set_globals(globals_dict)
         script_name = f"experiment_{globals_dict['job_id']}.py"
-        exp_script = os.path.join(REMOTE_EXPERIMENTS_PATH, script_name)
+        exp_script = os.path.join(remote_experiments_path, script_name)
         ins_list = json_dict[next(iter(json_dict))]["instructions"]
         print(f"File path: {exp_script}")
         code = ""
         # this is the top part of the script it allows us to import the
         # typical functions that we require for each single sequence
         # first have a look if the file exists
-        if not os.path.exists(HEADER_PATH):
-            ic(HEADER_PATH)
+        if not os.path.exists(header_path):
             raise FileNotFoundError("Header file not found.")
 
-        with open(HEADER_PATH, "r", encoding="UTF-8") as header_file:
+        with open(header_path, "r", encoding="UTF-8") as header_file:
             code = header_file.read()
 
         # add a line break to the code
         code += "\n"
 
-        try:
-            with open(exp_script, "w", encoding="UTF-8") as script_file:
-                script_file.write(code)
-        except:
-            print("Something wrong. Does file path exists?")
+        if not os.path.exists(exp_script):
+            raise FileNotFoundError(f"{exp_script} file not found.")
+
+        with open(exp_script, "w", encoding="UTF-8") as script_file:
+            script_file.write(code)
 
         for inst in ins_list:
             # we can directly use the function name as we have already verified
@@ -559,17 +557,11 @@ class LabscriptSpooler(Spooler):
 
         # we need to get the current shot output folder
         current_shot_folder = self.remote_client.get_shot_output_folder()
-        ic(current_shot_folder)
         # we need to get the list of files in the folder
-        ic("Get hdf5 files")
         hdf5_files = get_file_queue(current_shot_folder)
 
-        ic("Wait for them")
-        ic(hdf5_files)
-        ic(current_shot_folder)
         # we need to wait until we have the right number of files
         while len(hdf5_files) < n_shots:
-            ic("Wait a bit")
             sleep(self.labscript_params.t_wait)
             hdf5_files = get_file_queue(current_shot_folder)
 
