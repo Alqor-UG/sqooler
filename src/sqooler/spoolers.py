@@ -10,7 +10,6 @@ from time import sleep
 from abc import ABC
 
 from pydantic import ValidationError, BaseModel
-
 from .schemes import (
     BackendConfigSchemaIn,
     ExperimentDict,
@@ -484,13 +483,17 @@ class LabscriptSpooler(BaseSpooler):
         Returns:
             The path to the labscript file.
         """
-
         # parameters for the function
         exp_script_folder = self.labscript_params.exp_script_folder
 
         # local files
         header_path = f"{exp_script_folder}/header.py"
         remote_experiments_path = f"{exp_script_folder}/remote_experiments"
+        # make sure that the folder exists
+        if not os.path.exists(remote_experiments_path):
+            raise FileNotFoundError(
+                f"The path {remote_experiments_path} does not exist."
+            )
 
         exp_name = next(iter(json_dict))
         ins_list = json_dict[next(iter(json_dict))]["instructions"]
@@ -507,22 +510,18 @@ class LabscriptSpooler(BaseSpooler):
         script_name = f"experiment_{globals_dict['job_id']}.py"
         exp_script = os.path.join(remote_experiments_path, script_name)
         ins_list = json_dict[next(iter(json_dict))]["instructions"]
-        print(f"File path: {exp_script}")
         code = ""
         # this is the top part of the script it allows us to import the
         # typical functions that we require for each single sequence
         # first have a look if the file exists
         if not os.path.exists(header_path):
-            raise FileNotFoundError("Header file not found.")
+            raise FileNotFoundError(f"Header file not found at {header_path}")
 
         with open(header_path, "r", encoding="UTF-8") as header_file:
             code = header_file.read()
 
         # add a line break to the code
         code += "\n"
-
-        if not os.path.exists(exp_script):
-            raise FileNotFoundError(f"{exp_script} file not found.")
 
         with open(exp_script, "w", encoding="UTF-8") as script_file:
             script_file.write(code)
@@ -582,7 +581,6 @@ class LabscriptSpooler(BaseSpooler):
                 # it here.
                 # pylint: disable=W0718
                 try:
-                    print(this_run.get_results("/measure", "nat"))
                     # append the result to the array
                     shots_array.append(this_run.get_results("/measure", "nat"))
                     got_nat = True

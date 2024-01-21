@@ -2,12 +2,12 @@
 Here we test the spooler class and its functions.
 """
 
+import os
+import shutil
+
 from typing import Literal, Optional, Iterator, Callable
 from pydantic import ValidationError, BaseModel, Field
-import shutil
-import os
 
-from icecream import ic
 from typing_extensions import Annotated
 import pytest
 from sqooler.schemes import (
@@ -102,7 +102,9 @@ class DummyRun:
         """
         self.run_file = run_file
 
-    def get_results(self, group: str, name: str) -> int:
+    def get_results(
+        self, group: str, name: str  # pylint: disable=unused-argument
+    ) -> int:
         """
         Get the results from the run.
         """
@@ -332,8 +334,9 @@ def test_spooler_instructions() -> None:
 
 
 ## Test the labscript spooler
+# pylint: disable=W0613, W0621
 @pytest.fixture
-def labscript_storage_setup_teardown() -> Iterator[None]:
+def ls_storage_setup_td() -> Iterator[None]:
     """
     Make sure that the storage folder is empty before and after the test.
     """
@@ -347,7 +350,7 @@ def labscript_storage_setup_teardown() -> Iterator[None]:
     shutil.rmtree("test", ignore_errors=True)
 
 
-def test_labscript_spooler_config(labscript_storage_setup_teardown: Callable) -> None:
+def test_labscript_spooler_config(ls_storage_setup_td: Callable) -> None:
     """
     Test that it is possible to get the config of the spooler.
     """
@@ -366,7 +369,7 @@ def test_labscript_spooler_config(labscript_storage_setup_teardown: Callable) ->
     assert spooler_config.operational
 
 
-def test_labscript_spooler_op(labscript_storage_setup_teardown: Callable) -> None:
+def test_labscript_spooler_op(ls_storage_setup_td: Callable) -> None:
     """
     Test that it is possible to set the operational status of the spooler.
     """
@@ -386,7 +389,7 @@ def test_labscript_spooler_op(labscript_storage_setup_teardown: Callable) -> Non
     assert not spooler_config.operational
 
 
-def test_labscript_spooler_modify(labscript_storage_setup_teardown: Callable) -> None:
+def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
     """
     Test that it is possible to modify the labscript folder.
     """
@@ -404,10 +407,9 @@ def test_labscript_spooler_modify(labscript_storage_setup_teardown: Callable) ->
 
     modified_path = test_spooler._modify_shot_output_folder(new_dir)
     assert modified_path == "test/test_dir"
-    ic(modified_path)
 
 
-def test_labscript_spooler_add_job(labscript_storage_setup_teardown: Callable) -> None:
+def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
@@ -441,7 +443,8 @@ def test_labscript_spooler_add_job(labscript_storage_setup_teardown: Callable) -
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "ERROR", "Job should have failed"
     assert result_dict is not None
-    # now add the header at the right position by copying the dummy_header.py file into the exp_script_folder
+    # now add the header at the right position by copying
+    # the dummy_header.py file into the exp_script_folder
     # and then run the test again
 
     # Define the source and destination paths
@@ -453,6 +456,10 @@ def test_labscript_spooler_add_job(labscript_storage_setup_teardown: Callable) -
     shutil.copy(source_path, destination_path)
     assert os.path.exists(destination_path)
 
+    # now also make sure that the folder for the remote experiment exists
+    remote_experiments_path = f"{labsript_params.exp_script_folder}/remote_experiments"
+    os.makedirs(remote_experiments_path, exist_ok=True)
+
     # now also make sure that the folder where we are looking for files exists
     file_queue_path = "test/Test_ID/experiment_0"
     os.makedirs(file_queue_path, exist_ok=True)
@@ -461,7 +468,7 @@ def test_labscript_spooler_add_job(labscript_storage_setup_teardown: Callable) -
     # now also a mock files to the folder
     for ii in range(n_shots):
         file_path = f"{file_queue_path}/test_{ii}.py"
-        with open(file_path, "w") as file:
+        with open(file_path, "w", encoding="UTF-8") as file:
             file.write("test")
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job should have failed"
