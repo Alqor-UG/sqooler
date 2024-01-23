@@ -9,8 +9,10 @@ We are proud to be currently sponsored by the *Unitary Fund*. It enables us to s
 - The PC never has to grant access privileges to any outside contributor.
 - The remote jobs are heavily controlled through [pydantic](https://docs.pydantic.dev/latest/).
 - Simple setup through templates.
+- Direct integration with web services like [qlued](https://github.com/Alqor-UG/qlued].
+- Fully open source.
 
-This is a collection of cold atom simulators that you can access through the `qiskit-cold-atom` and the `qlued` interface:
+It allows cold atom hardware and simulators to be accessed through the `qiskit-cold-atom` and the `qlued` API:
 
 - `qiskit-cold-atom` allows the enduser to write the circuit definitions on its laptop and send them to the server in form of a nice *json* file.
 - `qlued` handles the user management and stores the received *json* file in an appropiate queue.
@@ -29,7 +31,7 @@ We provide templates for a simple startup:
 If you would like to just play with the package, you can simply install it with a simple:
 
 ```
-pip install -e git+https://github.com/Alqor-UG/sqooler.git
+pip install sqooler
 ```
 
 
