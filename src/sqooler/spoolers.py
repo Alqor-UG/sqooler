@@ -1,5 +1,10 @@
 """
-This module contains the code for the Spooler classes and its helpers.
+This module contains the code for the Spooler classes and its helpers. So it mainly meant to be deployed
+on the back-end side for people that would like to perform calculations and work through the job queue.
+
+The main class is the `Spooler` class. It is the class that is used for the simulators. 
+The `LabscriptSpooler` class is a specialized version of the `Spooler` class that allows us to execute 
+jobs in labscript directly.
 """
 
 import os
@@ -29,6 +34,12 @@ class BaseSpooler(ABC):
         device_config: A dictionary that some main config params for the experiment.
         n_wires: maximum number of wires for the spooler
         n_max_shots: the maximum number of shots for the spooler
+        version: the version of the backend
+        cold_atom_type: the type of cold atom that is used in the experiment
+        n_max_experiments: the maximum number of experiments that can be executed
+        wire_order: the order of the wires
+        num_species: the number of atomic species in the experiment
+        operational: is the backend ready for access by remote users ?
     """
 
     def __init__(
@@ -83,6 +94,9 @@ class BaseSpooler(ABC):
     def get_configuration(self) -> BackendConfigSchemaIn:
         """
         Sends back the configuration dictionary of the spooler.
+
+        Returns:
+            The configuration dictionary of the spooler.
         """
         gate_list = []
         for _, ins_obj in self.ins_schema_dict.items():
@@ -109,6 +123,13 @@ class BaseSpooler(ABC):
         """
         Check all the instruction to make sure that they are valid and part
         of the allowed instructions.
+
+        Args:
+            ins_list: The list of instructions that should be checked.
+
+        Returns:
+            str: The error message
+            bool: Are the instructions ok ?
         """
         err_code = ""
         exp_ok = False
@@ -220,7 +241,7 @@ class Spooler(BaseSpooler):
         It can be basically anything that allows the execution of the circuit.
 
         Returns:
-            Callable[[dict, str | None], ExperimentDict]: The function that generates the circuit.
+            The function that generates the circuit.
 
         Raises:
             ValueError: if the gen_circuit is not a callable function
@@ -323,7 +344,12 @@ class LabscriptSpooler(BaseSpooler):
     """
     A specialized spooler class that allows us to execute jobs in labscript directly.
     The main changes are that we need to add the job in a different way and connect it to a
-     `runmanager.remoeClient`
+     `runmanager.remoteClient`. It adds three new attributes to the `BaseSpooler` class.
+
+    Attributes:
+        remote_client: The remote client that is used to connect to the labscript server.
+        labscript_params: The parameters that are used to generate the folder for the shots.
+        run: The run object that is used to execute the labscript file.
     """
 
     def __init__(
@@ -347,10 +373,7 @@ class LabscriptSpooler(BaseSpooler):
         The constructor of the class. The  arguments are the same as for the Spooler
         class with two additions.
 
-        Args:
-            remote_client: The remote client that is used to connect to the labscript server.
-            labscript_params: The parameters that are used to generate the folder for the shots.
-            run: The run object that is used to execute the labscript file.
+
         """
         super().__init__(
             ins_schema_dict,
@@ -381,6 +404,10 @@ class LabscriptSpooler(BaseSpooler):
         Args:
             json_dict: The job dictonary of all the instructions.
             status_msg_dict: the status dictionary of the job we are treating.
+
+        Returns:
+            result_dict: The dictionary with the results of the job.
+            status_msg_dict: The status dictionary of the job.
         """
         job_id = status_msg_dict.job_id
 
@@ -639,6 +666,14 @@ def create_memory_data(
     """
     The function to create memory key in results dictionary
     with proprer formatting.
+
+    Args:
+        shots_array: The array with the shots.
+        exp_name: The name of the experiment.
+        n_shots: The number of shots.
+
+    Returns:
+        The ExperimentDict object describing the results.
     """
     exp_sub_dict: dict = {
         "header": {"name": "experiment_0", "extra metadata": "text"},
