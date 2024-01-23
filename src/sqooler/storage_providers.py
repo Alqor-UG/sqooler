@@ -486,8 +486,10 @@ class DropboxProviderExtended(StorageProvider):
 
             try:
                 dbx.files_get_metadata(full_path)
-            except ApiError:
-                raise FileNotFoundError(f"Could not update file under {full_path}")
+            except ApiError as err:
+                raise FileNotFoundError(
+                    f"Could not update file under {full_path}"
+                ) from err
 
             dbx.files_upload(
                 dump_str.encode("utf-8"), full_path, mode=WriteMode("overwrite")

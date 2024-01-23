@@ -10,7 +10,6 @@ import pytest
 
 from sqooler.storage_providers import MongodbProviderExtended
 from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
-from icecream import ic
 
 DB_NAME = "mongodbtest"
 
@@ -200,7 +199,6 @@ class TestMongodbProviderExtended:
         storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
 
         # file properties
-        file_id = uuid.uuid4().hex
         test_content = {"experiment_0": "Nothing happened here."}
         storage_path = "test/test_folder"
         mongo_id = uuid.uuid4().hex[:24]
@@ -220,7 +218,6 @@ class TestMongodbProviderExtended:
         test_content = {"experiment_1": "Nothing happened here."}
         storage_provider.update_file(test_content, storage_path, mongo_id)
         test_result = storage_provider.get_file_content(storage_path, mongo_id)
-        ic(test_result)
         assert test_content == test_result
 
         # clean up our mess
