@@ -2,8 +2,9 @@
 This module contains the code for the Spooler classes and its helpers. So it mainly meant to be deployed
 on the back-end side for people that would like to perform calculations and work through the job queue.
 
-The main class is the `Spooler` class. It is the class that is used for the simulators. The `LabscriptSpooler`
-class is a specialized version of the `Spooler` class that allows us to execute jobs in labscript directly.
+The main class is the `Spooler` class. It is the class that is used for the simulators. 
+The `LabscriptSpooler` class is a specialized version of the `Spooler` class that allows us to execute 
+jobs in labscript directly.
 """
 
 import os
