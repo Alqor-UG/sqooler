@@ -16,6 +16,7 @@ import os
 
 # necessary for the dropbox provider
 import datetime
+from datetime import timezone
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
@@ -188,7 +189,7 @@ class StorageProvider(ABC):
     @abstractmethod
     def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
-        Update the file content.
+        Update the file content. It replaces the old content with the new content.
 
         Args:
             content_dict: The dictionary containing the new content of the file
@@ -197,6 +198,9 @@ class StorageProvider(ABC):
 
         Returns:
             None
+
+        Raises:
+            FileNotFoundError: If the file is not found
         """
 
     @abstractmethod
@@ -479,6 +483,14 @@ class DropboxProviderExtended(StorageProvider):
         ) as dbx:
             # Check that the access token is valid
             dbx.users_get_current_account()
+
+            try:
+                dbx.files_get_metadata(full_path)
+            except ApiError as err:
+                raise FileNotFoundError(
+                    f"Could not update file under {full_path}"
+                ) from err
+
             dbx.files_upload(
                 dump_str.encode("utf-8"), full_path, mode=WriteMode("overwrite")
             )
@@ -732,7 +744,7 @@ class DropboxProviderExtended(StorageProvider):
             The job_id of the uploaded job
         """
         job_id = (
-            (datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
+            (datetime.datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
             + "-"
             + display_name
             + "-"
@@ -952,7 +964,8 @@ class MongodbProviderExtended(StorageProvider):
 
     def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
-        Update the file content.
+        Update the file content. It replaces the old content with the new content.
+
 
         Args:
             content_dict: The dictionary containing the new content of the file
@@ -961,6 +974,9 @@ class MongodbProviderExtended(StorageProvider):
 
         Returns:
             None
+
+        Raises:
+            FileNotFoundError: If the file is not found
         """
         # get the database on which we work
         database = self.client[storage_path.split("/")[0]]
@@ -970,9 +986,10 @@ class MongodbProviderExtended(StorageProvider):
         collection = database[collection_name]
 
         filter_dict = {"_id": ObjectId(job_id)}
+        result = collection.replace_one(filter_dict, content_dict)
 
-        newvalues = {"$set": content_dict}
-        collection.update_one(filter_dict, newvalues)
+        if result.matched_count == 0:
+            raise FileNotFoundError(f"Could not update file under {storage_path}")
 
     @validate_active
     def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
@@ -1425,6 +1442,9 @@ class LocalProviderExtended(StorageProvider):
 
         Returns:
             None
+
+        Raises:
+            FileNotFoundError: If the file is not found
         """
         # strip trailing and leading slashes from the storage_path
         storage_path = storage_path.strip("/")

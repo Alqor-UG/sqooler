@@ -190,6 +190,39 @@ class TestMongodbProviderExtended:
 
         storage_provider.delete_file(config_path, mongo_id)
 
+    def test_update_raise_error(self) -> None:
+        """
+        Test that it is update a file once it was uploaded.
+        """
+
+        # create a dropbox object
+        storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
+
+        # file properties
+        test_content = {"experiment_0": "Nothing happened here."}
+        storage_path = "test/test_folder"
+        mongo_id = uuid.uuid4().hex[:24]
+
+        # make sure that we cannot update a file if it does not exist
+
+        with pytest.raises(FileNotFoundError):
+            storage_provider.update_file(test_content, storage_path, mongo_id)
+
+        # upload a file and get it back
+        storage_provider.upload(test_content, storage_path, mongo_id)
+        test_result = storage_provider.get_file_content(storage_path, mongo_id)
+
+        assert test_content == test_result
+
+        # update it and get it back
+        test_content = {"experiment_1": "Nothing happened here."}
+        storage_provider.update_file(test_content, storage_path, mongo_id)
+        test_result = storage_provider.get_file_content(storage_path, mongo_id)
+        assert test_content == test_result
+
+        # clean up our mess
+        storage_provider.delete_file(storage_path, mongo_id)
+
     def test_status(self) -> None:
         """
         Test that we are able to obtain the status of the backend.
