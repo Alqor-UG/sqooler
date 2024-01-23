@@ -1796,8 +1796,6 @@ class DropboxProvider(DropboxProviderExtended):
         """
         Args:
             login_dict: The dictionary that contains the login information
-            name: The name of the storage provider
-            is_active: Is the storage provider active.
         """
 
         super().__init__(login_dict, name="default", is_active=True)

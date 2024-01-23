@@ -11,7 +11,6 @@ comments: true
 - Simple setup through templates.
 
 ## Our related projects
-* [``sqooler``](https://github.com/alqor-ug/sqooler) - SDK to provide cloud access to your hardware or simulator.
 * [``labscript-qc-example``](https://github.com/Alqor-UG/labscript-qc-example) - Template to provide cloud access to your labscript code.
 * [``sqooler-example``](https://github.com/Alqor-UG/sqooler-example) - Template to provide cloud access to your simulator.
 * [``qlued``](https://github.com/alqor-ug/qlued) - Webkit for user management etc.

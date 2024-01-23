@@ -21,9 +21,6 @@ def update_backends(
     Args:
         storage_provider: The storage provider that should be used.
         backends: A dictionary of all the backends that should be updated.
-
-    Returns:
-        None
     """
     for requested_backend, spooler in backends.items():
         # the content
