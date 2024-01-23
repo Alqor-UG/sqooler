@@ -15,7 +15,7 @@ import shutil
 import os
 
 # necessary for the dropbox provider
-import datetime
+import datetime, timezone
 import dropbox
 from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
@@ -197,6 +197,9 @@ class StorageProvider(ABC):
 
         Returns:
             None
+
+        Raises:
+            FileNotFoundError: If the file is not found
         """
 
     @abstractmethod
@@ -479,6 +482,12 @@ class DropboxProviderExtended(StorageProvider):
         ) as dbx:
             # Check that the access token is valid
             dbx.users_get_current_account()
+
+            try:
+                dbx.files_get_metadata(full_path)
+            except ApiError:
+                raise FileNotFoundError(f"Could not update file under {full_path}")
+
             dbx.files_upload(
                 dump_str.encode("utf-8"), full_path, mode=WriteMode("overwrite")
             )
@@ -732,7 +741,7 @@ class DropboxProviderExtended(StorageProvider):
             The job_id of the uploaded job
         """
         job_id = (
-            (datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
+            (datetime.datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
             + "-"
             + display_name
             + "-"

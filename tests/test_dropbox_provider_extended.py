@@ -83,6 +83,40 @@ class TestDropboxProviderExtended:
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
+    def test_update_raise_error(self) -> None:
+        """
+        Test that it is update a file once it was uploaded.
+        """
+
+        # create a dropbox object
+        storage_provider = DropboxProviderExtended(self.get_login(), DB_NAME)
+
+        # file properties
+        file_id = uuid.uuid4().hex
+        test_content = {"experiment_0": "Nothing happened here."}
+        storage_path = "test_folder"
+        job_id = f"world-{file_id}"
+
+        # make sure that we cannot update a file if it does not exist
+
+        with pytest.raises(FileNotFoundError):
+            storage_provider.update_file(test_content, storage_path, job_id)
+
+        # upload a file and get it back
+        storage_provider.upload(test_content, storage_path, job_id)
+        test_result = storage_provider.get_file_content(storage_path, job_id)
+
+        assert test_content == test_result
+
+        # update it and get it back
+        test_content = {"experiment_1": "Nothing happened here."}
+        storage_provider.update_file(test_content, storage_path, job_id)
+        test_result = storage_provider.get_file_content(storage_path, job_id)
+        assert test_content == test_result
+
+        # clean up our mess
+        storage_provider.delete_file(storage_path, job_id)
+
     def test_configs(self) -> None:
         """
         Test that we are able to obtain a list of backends.
