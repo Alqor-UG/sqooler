@@ -9,7 +9,7 @@ We are proud to be currently sponsored by the *Unitary Fund*. It enables us to s
 - The PC never has to grant access privileges to any outside contributor.
 - The remote jobs are heavily controlled through [pydantic](https://docs.pydantic.dev/latest/).
 - Simple setup through templates.
-- Direct integration with web services like [qlued](https://github.com/Alqor-UG/qlued].
+- Direct integration with web services like [qlued](https://github.com/Alqor-UG/qlued).
 - Fully open source.
 
 It allows cold atom hardware and simulators to be accessed through the `qiskit-cold-atom` and the `qlued` API:
