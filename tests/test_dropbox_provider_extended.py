@@ -8,7 +8,7 @@ from decouple import config
 
 import pytest
 
-from sqooler.storage_providers import DropboxProviderExtended
+from sqooler.storage_providers.dropbox import DropboxProviderExtended
 from sqooler.schemes import DropboxLoginInformation, BackendConfigSchemaIn
 
 DB_NAME = "dropboxtest"

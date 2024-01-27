@@ -9,7 +9,7 @@ import shutil
 # get the environment variables
 from decouple import config
 
-from sqooler.storage_providers import LocalProvider
+from sqooler.storage_providers.local import LocalProvider
 from sqooler.schemes import ResultDict, LocalLoginInformation, BackendConfigSchemaIn
 
 

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 import pytest
 
-from sqooler.storage_providers import LocalProviderExtended
+from sqooler.storage_providers.local import LocalProviderExtended
 from sqooler.schemes import LocalLoginInformation, BackendConfigSchemaIn
 
 DB_NAME = "localtest"

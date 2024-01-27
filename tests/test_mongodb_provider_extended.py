@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 import pytest
 
-from sqooler.storage_providers import MongodbProviderExtended
+from sqooler.storage_providers.mongodb import MongodbProviderExtended
 from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
 
 DB_NAME = "mongodbtest"

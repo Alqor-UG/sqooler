@@ -7,7 +7,7 @@ import uuid
 # get the environment variables
 from decouple import config
 
-from sqooler.storage_providers import DropboxProvider
+from sqooler.storage_providers.dropbox import DropboxProvider
 from sqooler.schemes import ResultDict, DropboxLoginInformation, BackendConfigSchemaIn
 
 
