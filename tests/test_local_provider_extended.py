@@ -349,6 +349,14 @@ class TestLocalProviderExtended:
             job_id=job_id,
         )
         assert len(status_msg_dict.job_id) > 1
+        # now test what happens with a poor job id
+        job_status = storage_provider.get_status(
+            display_name=backend_name,
+            username=username,
+            job_id="jdsfssdfs",
+        )
+        assert job_status.status == "ERROR"
+
         # now test that we can get the job status
         job_status = storage_provider.get_status(
             display_name=backend_name,

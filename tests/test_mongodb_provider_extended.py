@@ -348,6 +348,21 @@ class TestMongodbProviderExtended:
         )
         assert job_status.job_id == job_id
 
+        # test that we fail safely as we try to get a job that does not exist
+        job_status = storage_provider.get_status(
+            display_name=backend_name,
+            username=username,
+            job_id=uuid.uuid4().hex,
+        )
+        assert job_status.status == "ERROR"
+
+        job_status = storage_provider.get_status(
+            display_name=backend_name,
+            username=username,
+            job_id=uuid.uuid4().hex[:24],
+        )
+        assert job_status.status == "ERROR"
+
         # test that we can get a job result
         # first upload a dummy result
         dummy_result = {

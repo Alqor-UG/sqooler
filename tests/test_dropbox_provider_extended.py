@@ -222,13 +222,22 @@ class TestDropboxProviderExtended:
         )
         assert len(status_msg_dict.job_id) > 1
 
-        # now test that we can get the job status
+        # what happens if we try get an unknown job ?
+
         job_status = storage_provider.get_status(
             display_name=backend_name,
             username=username,
             job_id=job_id,
         )
         assert job_status.job_id == job_id
+
+        # now test that we can get the job status
+        job_status = storage_provider.get_status(
+            display_name=backend_name,
+            username=username,
+            job_id="dofjhdgiuhi",
+        )
+        assert job_status.status == "ERROR"
 
         # test that we can get a job result
         # first upload a dummy result
