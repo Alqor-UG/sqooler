@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 import pytest
 
-from sqooler.storage_providers import MongodbProviderExtended
+from sqooler.storage_providers.mongodb import MongodbProviderExtended
 from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
 
 DB_NAME = "mongodbtest"
@@ -130,6 +130,13 @@ class TestMongodbProviderExtended:
         test_result = storage_provider.get_file_content(storage_path, job_id)
 
         assert test_content == test_result
+
+        # make sure that get_file_content raises an error if the file does not exist
+        with pytest.raises(FileNotFoundError):
+            storage_provider.get_file_content(storage_path, "non_existing")
+
+        with pytest.raises(FileNotFoundError):
+            storage_provider.get_file_content(storage_path, uuid.uuid4().hex[:24])
 
         # move it and get it back
         second_path = "test/subcollection_2"

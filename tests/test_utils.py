@@ -20,7 +20,7 @@ from sqooler.utils import (
 from sqooler.schemes import LocalLoginInformation
 
 from sqooler.spoolers import Spooler
-from sqooler.storage_providers import LocalProvider
+from sqooler.storage_providers.local import LocalProvider
 
 
 local_login = LocalLoginInformation(base_path="utils_storage")

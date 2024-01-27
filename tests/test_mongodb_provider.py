@@ -6,7 +6,7 @@ import uuid
 # get the environment variables
 from decouple import config
 
-from sqooler.storage_providers import MongodbProvider
+from sqooler.storage_providers.mongodb import MongodbProvider
 from sqooler.schemes import ResultDict, MongodbLoginInformation, BackendConfigSchemaIn
 
 

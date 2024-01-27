@@ -9,7 +9,7 @@ import regex as re
 
 from .schemes import ResultDict, StatusMsgDict
 from .spoolers import Spooler
-from .storage_providers import StorageProvider
+from .storage_providers.base import StorageProvider
 
 
 def update_backends(
