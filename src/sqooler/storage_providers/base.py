@@ -53,13 +53,28 @@ class StorageProvider(ABC):
     @abstractmethod
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
-        Upload the file to the storage
+        Upload the file to the storage.
+
+        Args:
+            content_dict: The dictionary containing the content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
         """
 
     @abstractmethod
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
         """
-        Get the file content from the storage
+        Get the file content from the storage.
+
+        Args:
+            storage_path: The path to the file
+            job_id: The id of the job
+
+        Returns:
+            The content of the file
+
+        Raises:
+            FileNotFoundError: If the file is not found
         """
 
     @abstractmethod

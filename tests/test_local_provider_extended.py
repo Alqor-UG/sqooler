@@ -91,6 +91,10 @@ class TestLocalProviderExtended:
 
         assert test_content == test_result
 
+        # make sure that get_file_content raises an error if the file does not exist
+        with pytest.raises(FileNotFoundError):
+            storage_provider.get_file_content(storage_path, "non_existing")
+
         # move it and get it back
         second_path = "test/subcollection_2"
         storage_provider.move_file(storage_path, second_path, job_id)

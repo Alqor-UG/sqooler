@@ -80,6 +80,11 @@ class LocalProviderExtended(StorageProvider):
         full_json_path = os.path.join(self.base_path, storage_path, file_name)
         secure_path = os.path.normpath(full_json_path)
 
+        # does the file already exist ?
+        if not os.path.exists(secure_path):
+            raise FileNotFoundError(
+                f"The file {secure_path} does not exist and cannot be loaded."
+            )
         with open(secure_path, "r", encoding="utf-8") as json_file:
             loaded_data_dict = json.load(json_file)
         return loaded_data_dict

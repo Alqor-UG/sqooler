@@ -92,6 +92,13 @@ class MongodbProviderExtended(StorageProvider):
         Returns:
             The content of the file
         """
+        try:
+            document_to_find = {"_id": ObjectId(job_id)}
+        except InvalidId as err:
+            raise FileNotFoundError(
+                f"The job_id {job_id} is not valid. Please check the job_id."
+            ) from err
+
         document_to_find = {"_id": ObjectId(job_id)}
 
         # get the database on which we work
@@ -104,7 +111,9 @@ class MongodbProviderExtended(StorageProvider):
         result_found = collection.find_one(document_to_find)
 
         if not result_found:
-            return {}
+            raise FileNotFoundError(
+                f"Could not find a file under {storage_path} with the id {job_id}."
+            )
 
         # remove the id from the result dict for further use
         result_found.pop("_id", None)
@@ -393,15 +402,8 @@ class MongodbProviderExtended(StorageProvider):
             status_dict = self.get_file_content(
                 storage_path=status_json_dir, job_id=job_id
             )
-            if not status_dict:
-                return StatusMsgDict(
-                    job_id=job_id,
-                    status="ERROR",
-                    detail="The job does not exist.",
-                    error_message=f"Could not find a job under {job_id}.",
-                )
             return StatusMsgDict(**status_dict)
-        except InvalidId as err:
+        except FileNotFoundError as err:
             # if the job_id is not valid, we return an error
             return StatusMsgDict(
                 job_id=job_id,

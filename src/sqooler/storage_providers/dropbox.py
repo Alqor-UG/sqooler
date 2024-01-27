@@ -97,7 +97,12 @@ class DropboxProviderExtended(StorageProvider):
             except AuthError:
                 sys.exit("ERROR: Invalid access token.")
             full_path = "/" + storage_path + "/" + job_id + ".json"
-            _, res = dbx.files_download(path=full_path)
+            try:
+                _, res = dbx.files_download(path=full_path)
+            except ApiError as err:
+                raise FileNotFoundError(
+                    f"Could not find file under {full_path}"
+                ) from err
             data = res.content
         return json.loads(data.decode("utf-8"))
 
@@ -474,7 +479,7 @@ class DropboxProviderExtended(StorageProvider):
                 storage_path=status_json_dir, job_id=status_json_name
             )
             return StatusMsgDict(**status_dict)
-        except ApiError:
+        except FileNotFoundError:
             status_draft = {
                 "job_id": job_id,
                 "status": "ERROR",
