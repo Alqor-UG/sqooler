@@ -24,7 +24,7 @@ from dropbox.exceptions import ApiError, AuthError
 # necessary for the mongodb provider
 from pymongo.mongo_client import MongoClient
 from bson.objectid import ObjectId
-
+from bson.errors import InvalidId
 from .schemes import (
     ResultDict,
     StatusMsgDict,
@@ -809,10 +809,19 @@ class DropboxProviderExtended(StorageProvider):
         status_json_dir = "Backend_files/Status/" + display_name + "/" + username
         status_json_name = "status-" + job_id
 
-        status_dict = self.get_file_content(
-            storage_path=status_json_dir, job_id=status_json_name
-        )
-        return StatusMsgDict(**status_dict)
+        try:
+            status_dict = self.get_file_content(
+                storage_path=status_json_dir, job_id=status_json_name
+            )
+            return StatusMsgDict(**status_dict)
+        except ApiError:
+            status_draft = {
+                "job_id": job_id,
+                "status": "ERROR",
+                "detail": "Could not find the status file.",
+                "error_message": f"Missing status file for {job_id}.",
+            }
+            return StatusMsgDict(**status_draft)
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """
@@ -926,8 +935,12 @@ class MongodbProviderExtended(StorageProvider):
         """
         Get the file content from the storage
 
-        storage_path: the path towards the file, excluding the filename / id
-        job_id: the id of the file we are about to look up
+        Args:
+            storage_path: the path towards the file, excluding the filename / id
+            job_id: the id of the file we are about to look up
+
+        Returns:
+            The content of the file
         """
         document_to_find = {"_id": ObjectId(job_id)}
 
@@ -1226,8 +1239,26 @@ class MongodbProviderExtended(StorageProvider):
         """
         status_json_dir = "status/" + display_name
 
-        status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
-        return StatusMsgDict(**status_dict)
+        try:
+            status_dict = self.get_file_content(
+                storage_path=status_json_dir, job_id=job_id
+            )
+            if not status_dict:
+                return StatusMsgDict(
+                    job_id=job_id,
+                    status="ERROR",
+                    detail="The job does not exist.",
+                    error_message=f"Could not find a job under {job_id}.",
+                )
+            return StatusMsgDict(**status_dict)
+        except InvalidId as err:
+            # if the job_id is not valid, we return an error
+            return StatusMsgDict(
+                job_id=job_id,
+                status="ERROR",
+                detail="The job_id is not valid.",
+                error_message=str(err),
+            )
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """
@@ -1648,8 +1679,19 @@ class LocalProviderExtended(StorageProvider):
         """
         status_json_dir = "status/" + display_name
 
-        status_dict = self.get_file_content(storage_path=status_json_dir, job_id=job_id)
-        return StatusMsgDict(**status_dict)
+        try:
+            status_dict = self.get_file_content(
+                storage_path=status_json_dir, job_id=job_id
+            )
+            return StatusMsgDict(**status_dict)
+        except FileNotFoundError:
+            # if the job_id is not valid, we return an error
+            return StatusMsgDict(
+                job_id=job_id,
+                status="ERROR",
+                detail="Cannot get status",
+                error_message=f"Could not find status for {display_name} with job_id {job_id}.",
+            )
 
     def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
         """
