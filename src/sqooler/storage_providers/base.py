@@ -177,7 +177,8 @@ class StorageProvider(ABC):
             job_id: The job_id of the job that we want to upload the status for
 
         Returns:
-            The result dict of the job
+            The result dict of the job. If the information is not available, the result dict
+            has a status of "ERROR".
         """
 
     @abstractmethod

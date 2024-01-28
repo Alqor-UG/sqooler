@@ -501,7 +501,8 @@ class DropboxProviderExtended(StorageProvider):
             job_id: The job_id of the job that we want to upload the status for
 
         Returns:
-            The result dict of the job
+            The result dict of the job. If the information is not available, the result dict
+            has a status of "ERROR".
         """
         result_json_dir = "Backend_files/Result/" + display_name + "/" + username
         result_json_name = "result-" + job_id

@@ -422,14 +422,15 @@ class MongodbProviderExtended(StorageProvider):
             job_id: The job_id of the job that we want to upload the status for
 
         Returns:
-            The result dict of the job
+            The result dict of the job. If the information is not available, the result dict
+            has a status of "ERROR".
         """
         result_json_dir = "results/" + display_name
         try:
             result_dict = self.get_file_content(
                 storage_path=result_json_dir, job_id=job_id
             )
-        except FileNotFoundError as err:
+        except FileNotFoundError:
             # if the job_id is not valid, we return an error
             return ResultDict(
                 display_name=display_name,
