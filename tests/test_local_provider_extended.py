@@ -384,6 +384,13 @@ class TestLocalProviderExtended:
         }
         result_json_dir = "results/" + backend_name
         storage_provider.upload(dummy_result, result_json_dir, job_id)
+        # what happens if we try to get a result that does not exist ?
+        result_info = storage_provider.get_result(
+            display_name=backend_name,
+            username=username,
+            job_id="dglfjhous",
+        )
+        assert result_info.status == "ERROR"
 
         # now get the result
         result_info = storage_provider.get_result(
