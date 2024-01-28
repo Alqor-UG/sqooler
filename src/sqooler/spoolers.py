@@ -282,9 +282,11 @@ class Spooler(BaseSpooler):
         """
         job_id = status_msg_dict.job_id
 
-        result_dict = get_init_results()
         result_dict = ResultDict(
-            display_name=self.display_name, backend_version=self.version, job_id=job_id
+            display_name=self.display_name,
+            backend_version=self.version,
+            job_id=job_id,
+            status="INITIALIZING",
         )
         result_dict.results = []  # this simply helps pylint to understand the code
 

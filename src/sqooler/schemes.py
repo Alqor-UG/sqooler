@@ -22,7 +22,7 @@ class ExperimentDict(BaseModel):
 # the strings that are allowed for the status
 StatusStr = Annotated[
     Literal["INITIALIZING", "QUEUED", "DONE", "ERROR"],
-    Field(description="status of job execution.", default="INITIALIZING"),
+    Field(description="status of job execution."),
 ]
 
 
@@ -264,14 +264,12 @@ def get_init_status() -> StatusMsgDict:
     Returns:
         the status message
     """
-    status_msg_draft = {
-        "job_id": "None",
-        "status": "INITIALIZING",
-        "detail": "Got your json.",
-        "error_message": "None",
-    }
-    status_msg_dict = StatusMsgDict(**status_msg_draft)
-    return status_msg_dict
+    return StatusMsgDict(
+        job_id="None",
+        status="INITIALIZING",
+        detail="Got your json.",
+        error_message="None",
+    )
 
 
 def get_init_results() -> ResultDict:
@@ -287,4 +285,5 @@ def get_init_results() -> ResultDict:
         job_id="",
         qobj_id=None,
         success=True,
+        status="INITIALIZING",
     )
