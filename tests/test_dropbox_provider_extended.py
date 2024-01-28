@@ -2,10 +2,10 @@
 The tests for the storage provider
 """
 
-import uuid
-from pydantic import ValidationError
-from decouple import config
 from typing import Any
+
+import uuid
+from decouple import config
 import pytest
 
 from sqooler.storage_providers.dropbox import DropboxProviderExtended

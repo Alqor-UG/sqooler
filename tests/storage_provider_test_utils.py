@@ -1,14 +1,18 @@
-from sqooler.storage_providers.base import StorageProvider
-import pytest
+"""
+This module contains the test utils for the storage providers. So it is called by the ..._provider tests.
+"""
 
 from typing import Any
-from pydantic import ValidationError
 
 import pytest
-from icecream import ic
+from pydantic import ValidationError
 
 
 class StorageProviderTestUtils:
+    """
+    The test utils for the storage providers.
+    """
+
     def get_login_class(self) -> Any:
         """
         Get the login for the provider.

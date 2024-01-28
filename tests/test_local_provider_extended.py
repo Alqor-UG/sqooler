@@ -7,7 +7,6 @@ import shutil
 from typing import Any
 
 from decouple import config
-from pydantic import ValidationError
 
 import pytest
 

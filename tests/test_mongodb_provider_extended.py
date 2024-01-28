@@ -9,9 +9,9 @@ import pytest
 from sqooler.storage_providers.mongodb import MongodbProviderExtended
 from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
 
-DB_NAME = "mongodbtest"
-
 from .storage_provider_test_utils import StorageProviderTestUtils
+
+DB_NAME = "mongodbtest"
 
 
 class TestMongodbProviderExtended(StorageProviderTestUtils):
