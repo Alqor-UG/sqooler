@@ -449,7 +449,7 @@ class LocalProviderExtended(StorageProvider):
             backend_name: The name of the backend
 
         Returns:
-            the path towards the job
+            the dict of the next job
         """
         queue_dir = "jobs/queued/" + backend_name
         job_dict = {"job_id": 0, "job_json_path": "None"}

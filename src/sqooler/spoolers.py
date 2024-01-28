@@ -22,6 +22,7 @@ from .schemes import (
     StatusMsgDict,
     GateDict,
     LabscriptParams,
+    get_init_results,
 )
 
 
@@ -281,16 +282,11 @@ class Spooler(BaseSpooler):
         """
         job_id = status_msg_dict.job_id
 
-        result_draft: dict = {
-            "display_name": self.display_name,
-            "backend_version": self.version,
-            "job_id": job_id,
-            "qobj_id": None,
-            "success": True,
-            "status": "finished",
-            "header": {},
-            "results": [],
-        }
+        result_dict = get_init_results()
+        result_dict.job_id = job_id
+        result_dict.display_name = self.display_name
+        result_dict.backend_version = self.version
+
         err_msg, json_is_fine = self.check_json_dict(json_dict)
         if json_is_fine:
             # check_hilbert_space_dimension
@@ -301,17 +297,15 @@ class Spooler(BaseSpooler):
                     # Here we
                     try:
                         # this assumes that we never have more than one argument here.
-                        result_draft["results"].append(self.gen_circuit(exp_dict))
+                        result_dict.results.append(self.gen_circuit(exp_dict))
                     except ValueError as err:
                         status_msg_dict.detail += "; " + str(err)
                         status_msg_dict.error_message += "; " + str(err)
                         status_msg_dict.status = "ERROR"
-                        result_dict = ResultDict(**result_draft)
                         return result_dict, status_msg_dict
                 status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
                     Shots sent to solver."
                 status_msg_dict.status = "DONE"
-                result_dict = ResultDict(**result_draft)
                 return result_dict, status_msg_dict
 
             status_msg_dict.detail += (
@@ -323,7 +317,6 @@ class Spooler(BaseSpooler):
                 + dim_err_msg
             )
             status_msg_dict.status = "ERROR"
-            result_dict = ResultDict(**result_draft)
             return result_dict, status_msg_dict
         else:
             status_msg_dict.detail += (
@@ -336,7 +329,6 @@ class Spooler(BaseSpooler):
             )
             status_msg_dict.status = "ERROR"
 
-        result_dict = ResultDict(**result_draft)
         return result_dict, status_msg_dict
 
 
@@ -411,16 +403,17 @@ class LabscriptSpooler(BaseSpooler):
         """
         job_id = status_msg_dict.job_id
 
-        result_draft: dict = {
-            "display_name": self.display_name,
-            "backend_version": self.version,
-            "job_id": job_id,
-            "qobj_id": None,
-            "success": True,
-            "status": "finished",
-            "header": {},
-            "results": [],
-        }
+        result_dict = ResultDict(
+            display_name=self.display_name,
+            backend_version=self.version,
+            job_id=job_id,
+            qobj_id=None,
+            success=True,
+            status="INITIALIZING",
+            header={},
+            results=[],
+        )
+
         err_msg, json_is_fine = self.check_json_dict(json_dict)
         if json_is_fine:
             # check_hilbert_space_dimension
@@ -434,21 +427,17 @@ class LabscriptSpooler(BaseSpooler):
 
                     # Here we generate the ciruit
                     try:
-                        result_draft["results"].append(
-                            self.gen_circuit(exp_dict, job_id)
-                        )
+                        result_dict.results.append(self.gen_circuit(exp_dict, job_id))
                     except FileNotFoundError as err:
                         error_message = str(err)
                         status_msg_dict.detail += "; Failed to generate labscript file."
                         status_msg_dict.error_message += f"; Failed to generate labscript \
                             file. Error: {error_message}"
                         status_msg_dict.status = "ERROR"
-                        result_dict = ResultDict(**result_draft)
                         return result_dict, status_msg_dict
                 status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
                     Shots sent to solver."
                 status_msg_dict.status = "DONE"
-                result_dict = ResultDict(**result_draft)
                 return result_dict, status_msg_dict
 
             status_msg_dict.detail += (
