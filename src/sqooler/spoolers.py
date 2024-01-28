@@ -283,9 +283,10 @@ class Spooler(BaseSpooler):
         job_id = status_msg_dict.job_id
 
         result_dict = get_init_results()
-        result_dict.job_id = job_id
-        result_dict.display_name = self.display_name
-        result_dict.backend_version = self.version
+        result_dict = ResultDict(
+            display_name=self.display_name, backend_version=self.version, job_id=job_id
+        )
+        result_dict.results = []  # this simply helps pylint to understand the code
 
         err_msg, json_is_fine = self.check_json_dict(json_dict)
         if json_is_fine:
@@ -449,8 +450,6 @@ class LabscriptSpooler(BaseSpooler):
                 + dim_err_msg
             )
             status_msg_dict.status = "ERROR"
-
-            result_dict = ResultDict(**result_draft)
             return result_dict, status_msg_dict
 
         status_msg_dict.detail += (
@@ -463,7 +462,6 @@ class LabscriptSpooler(BaseSpooler):
         )
         status_msg_dict.status = "ERROR"
 
-        result_dict = ResultDict(**result_draft)
         return result_dict, status_msg_dict
 
     def _modify_shot_output_folder(self, new_dir: str) -> str:

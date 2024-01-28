@@ -11,7 +11,6 @@ from pydantic import ValidationError, BaseModel, Field
 from typing_extensions import Annotated
 import pytest
 from sqooler.schemes import (
-    StatusMsgDict,
     ExperimentDict,
     LabscriptParams,
     get_init_status,

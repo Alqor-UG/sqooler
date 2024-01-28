@@ -7,7 +7,7 @@ import time
 import traceback
 import regex as re
 
-from .schemes import ResultDict, StatusMsgDict, get_init_results, get_init_status
+from .schemes import get_init_results, get_init_status
 from .spoolers import Spooler
 from .storage_providers.base import StorageProvider
 
@@ -114,6 +114,7 @@ def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
         the results dict
     """
     status_msg_dict = get_init_status()
+    status_msg_dict.job_id = job_id
 
     result_dict, status_msg_dict = spooler.add_job(json_dict, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job failed"
