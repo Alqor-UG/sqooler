@@ -5,19 +5,33 @@ The tests for the storage provider
 import uuid
 from pydantic import ValidationError
 from decouple import config
-
+from typing import Any
 import pytest
 
 from sqooler.storage_providers.dropbox import DropboxProviderExtended
 from sqooler.schemes import DropboxLoginInformation, BackendConfigSchemaIn
 
+from .storage_provider_test_utils import StorageProviderTestUtils
+
 DB_NAME = "dropboxtest"
 
 
-class TestDropboxProviderExtended:
+class TestDropboxProviderExtended(StorageProviderTestUtils):
     """
     The class that contains all the tests for the dropbox provider.
     """
+
+    def get_login_class(self) -> Any:
+        """
+        Get the storage provider.
+        """
+        return DropboxLoginInformation
+
+    def get_storage_provider(self) -> Any:
+        """
+        Get the storage provider.
+        """
+        return DropboxProviderExtended
 
     def get_login(self) -> DropboxLoginInformation:
         """
@@ -40,17 +54,7 @@ class TestDropboxProviderExtended:
         """
         Test that we can create a dropbox object.
         """
-        dropbox_provider = DropboxProviderExtended(self.get_login(), DB_NAME)
-        assert not dropbox_provider is None
-
-        # test that we cannot create a dropbox object a poor login dict structure
-        poor_login_dict = {
-            "app_key_t": "test",
-            "app_secret": "test",
-            "refresh_token": "test",
-        }
-        with pytest.raises(ValidationError):
-            DropboxProviderExtended(DropboxLoginInformation(**poor_login_dict), DB_NAME)
+        self.storage_object_tests(DB_NAME)
 
     def test_upload_etc(self) -> None:
         """

@@ -47,6 +47,20 @@ class StorageProvider(ABC):
         """
         if not name:
             raise ValueError("The name of the storage provider cannot be empty.")
+
+        # transform the name to lowercase
+        name = name.lower()
+        # make sure that the name does not contain any underscores or spaces
+        if "_" in name or " " in name:
+            raise ValueError(
+                "The name of the storage provider cannot contain underscores or spaces."
+            )
+
+        # make sure that the name does not contain any special characters
+        if not name.isalnum():
+            raise ValueError(
+                "The name of the storage provider cannot contain special characters."
+            )
         self.name = name
         self.is_active = is_active
 
