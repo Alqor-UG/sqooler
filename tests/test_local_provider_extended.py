@@ -378,7 +378,7 @@ class TestLocalProviderExtended:
             "job_id": job_id,
             "qobj_id": None,
             "success": True,
-            "status": "finished",
+            "status": "INITIALIZING",
             "header": {},
             "results": [],
         }

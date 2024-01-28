@@ -7,7 +7,7 @@ import time
 import traceback
 import regex as re
 
-from .schemes import ResultDict, StatusMsgDict
+from .schemes import get_init_results, get_init_status
 from .spoolers import Spooler
 from .storage_providers.base import StorageProvider
 
@@ -69,25 +69,9 @@ def main(
             storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
         )
 
-        result_draft: dict = {
-            "display_name": "",
-            "backend_version": "",
-            "job_id": "",
-            "qobj_id": None,
-            "success": True,
-            "status": "finished",
-            "header": {},
-            "results": [],
-        }
-
-        result_dict = ResultDict(**result_draft)
-        status_msg_draft = {
-            "job_id": job_dict["job_id"],
-            "status": "None",
-            "detail": "None",
-            "error_message": "None",
-        }
-        status_msg_dict = StatusMsgDict(**status_msg_draft)
+        result_dict = get_init_results()
+        status_msg_dict = get_init_status()
+        status_msg_dict.job_id = job_dict["job_id"]
         # Fix this pylint issue whenever you have time, but be careful !
         # pylint: disable=W0703
         try:
@@ -129,13 +113,8 @@ def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
     Returns:
         the results dict
     """
-    status_msg_draft = {
-        "job_id": job_id,
-        "status": "None",
-        "detail": "None",
-        "error_message": "None",
-    }
-    status_msg_dict = StatusMsgDict(**status_msg_draft)
+    status_msg_dict = get_init_status()
+    status_msg_dict.job_id = job_id
 
     result_dict, status_msg_dict = spooler.add_job(json_dict, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job failed"

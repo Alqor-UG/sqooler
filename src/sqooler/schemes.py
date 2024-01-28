@@ -3,7 +3,7 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Optional
+from typing import Optional, Literal, Annotated
 
 from pydantic import BaseModel, Field
 
@@ -19,13 +19,20 @@ class ExperimentDict(BaseModel):
     data: dict = Field(description="dictionary of results for the experiment.")
 
 
+# the strings that are allowed for the status
+StatusStr = Annotated[
+    Literal["INITIALIZING", "QUEUED", "DONE", "ERROR"],
+    Field(description="status of job execution."),
+]
+
+
 class StatusMsgDict(BaseModel):
     """
     A class that defines the structure of the status messages.
     """
 
     job_id: str = Field(description="unique execution id from the backend.")
-    status: str = Field(description="status of job execution.")
+    status: StatusStr
     detail: str = Field(description="detailed status of job execution.")
     error_message: str = Field(description="error message of job execution.")
 
@@ -43,11 +50,16 @@ class ResultDict(BaseModel):
     backend_version: str = Field(description="backend version, in the form X.Y.Z.")
     job_id: str = Field(description="unique execution id from the backend.")
     qobj_id: Optional[str] = Field(default=None, description="user-generated Qobj id.")
-    success: bool = Field(description="True if complete input qobj executed correctly.")
-    status: str = Field(description="status of job execution.")
-    header: dict = Field(description="Contains centralized information about the job.")
+    success: bool = Field(
+        description="True if complete input qobj executed correctly.", default=True
+    )
+    status: StatusStr
+    header: dict = Field(
+        description="Contains centralized information about the job.", default={}
+    )
     results: list[ExperimentDict] = Field(
-        description="corresponding results for array of experiments of the input qobj"
+        description="corresponding results for array of experiments of the input qobj",
+        default=[],
     )
 
 
@@ -243,3 +255,35 @@ class LabscriptParams(BaseModel):
         description="The relative path to the experimental scripts."
     )
     t_wait: float = Field(description="The time to wait between checks.")
+
+
+def get_init_status() -> StatusMsgDict:
+    """
+    A support function that returns the status message for an initializing job.
+
+    Returns:
+        the status message
+    """
+    return StatusMsgDict(
+        job_id="None",
+        status="INITIALIZING",
+        detail="Got your json.",
+        error_message="None",
+    )
+
+
+def get_init_results() -> ResultDict:
+    """
+    A support function that returns the result dict for an initializing job.
+
+    Returns:
+        the result dict
+    """
+    return ResultDict(
+        display_name="",
+        backend_version="",
+        job_id="",
+        qobj_id=None,
+        success=True,
+        status="INITIALIZING",
+    )

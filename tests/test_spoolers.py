@@ -11,9 +11,9 @@ from pydantic import ValidationError, BaseModel, Field
 from typing_extensions import Annotated
 import pytest
 from sqooler.schemes import (
-    StatusMsgDict,
     ExperimentDict,
     LabscriptParams,
+    get_init_status,
 )
 
 from sqooler.spoolers import (
@@ -174,12 +174,8 @@ def test_spooler_add_job_fail() -> None:
     test_spooler = Spooler(
         ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
     )
-    status_msg_draft = {
-        "job_id": "Test_ID",
-        "status": "None",
-        "detail": "None",
-        "error_message": "None",
-    }
+    status_msg_dict = get_init_status()
+    status_msg_dict.job_id = "Test_ID"
 
     job_payload = {
         "experiment_0": {
@@ -189,7 +185,6 @@ def test_spooler_add_job_fail() -> None:
             "wire_order": "interleaved",
         },
     }
-    status_msg_dict = StatusMsgDict(**status_msg_draft)
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert result_dict is not None
@@ -206,12 +201,9 @@ def test_spooler_add_job() -> None:
         n_wires=2,
         operational=False,
     )
-    status_msg_draft = {
-        "job_id": "Test_ID",
-        "status": "None",
-        "detail": "None",
-        "error_message": "None",
-    }
+
+    status_msg_dict = get_init_status()
+    status_msg_dict.job_id = "Test_ID"
 
     job_payload = {
         "experiment_0": {
@@ -221,7 +213,6 @@ def test_spooler_add_job() -> None:
             "wire_order": "interleaved",
         },
     }
-    status_msg_dict = StatusMsgDict(**status_msg_draft)
     # should fail gracefully as no  gen_circuit function is defined
     _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "ERROR", "Job failed"
@@ -423,12 +414,10 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         operational=False,
         labscript_params=labsript_params,
     )
-    status_msg_draft = {
-        "job_id": "Test_ID",
-        "status": "None",
-        "detail": "None",
-        "error_message": "None",
-    }
+
+    status_msg_dict = get_init_status()
+    status_msg_dict.job_id = "Test_ID"
+
     n_shots = 4
     job_payload = {
         "experiment_0": {
@@ -438,7 +427,6 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
             "wire_order": "interleaved",
         },
     }
-    status_msg_dict = StatusMsgDict(**status_msg_draft)
 
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "ERROR", "Job should have failed"
