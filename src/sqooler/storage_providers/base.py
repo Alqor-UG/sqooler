@@ -3,6 +3,7 @@ The module that contains all the necessary logic for communication with the exte
 storage for the jobs. It creates an abstract API layer for the storage providers.
 """
 from abc import ABC, abstractmethod
+import re
 
 from typing import Mapping, Callable, Any
 import functools
@@ -47,6 +48,15 @@ class StorageProvider(ABC):
         """
         if not name:
             raise ValueError("The name of the storage provider cannot be empty.")
+
+        # transform the name to lowercase
+        name = name.lower()
+
+        # make sure that the name only contains alphanumeric characters
+        if not re.match("^[a-z0-9]+$", name):
+            raise ValueError(
+                "The name of the storage provider can only contain lowercase alphanumeric characters."
+            )
         self.name = name
         self.is_active = is_active
 

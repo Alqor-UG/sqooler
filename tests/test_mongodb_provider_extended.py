@@ -2,22 +2,34 @@
 The tests for the extended mongodb storage provider
 """
 import uuid
-
+from typing import Any
 from decouple import config
-from pydantic import ValidationError
 
 import pytest
-
 from sqooler.storage_providers.mongodb import MongodbProviderExtended
 from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
+
+from .storage_provider_test_utils import StorageProviderTestUtils
 
 DB_NAME = "mongodbtest"
 
 
-class TestMongodbProviderExtended:
+class TestMongodbProviderExtended(StorageProviderTestUtils):
     """
     The class that contains all the tests for the dropbox provider.
     """
+
+    def get_login_class(self) -> Any:
+        """
+        Get the storage provider.
+        """
+        return MongodbLoginInformation
+
+    def get_storage_provider(self) -> Any:
+        """
+        Get the storage provider.
+        """
+        return MongodbProviderExtended
 
     def get_login(self) -> MongodbLoginInformation:
         """
@@ -79,17 +91,7 @@ class TestMongodbProviderExtended:
         """
         Test that we can create a MongoDB object.
         """
-        mongodb_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-        assert not mongodb_provider is None
-
-        # test that we cannot create a dropbox object a poor login dict structure
-        poor_login_dict = {
-            "app_key_t": "test",
-            "app_secret": "test",
-            "refresh_token": "test",
-        }
-        with pytest.raises(ValidationError):
-            MongodbProviderExtended(MongodbLoginInformation(**poor_login_dict), DB_NAME)
+        self.storage_object_tests(DB_NAME)
 
     def test_not_active(self) -> None:
         """

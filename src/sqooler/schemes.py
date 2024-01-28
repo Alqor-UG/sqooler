@@ -44,9 +44,11 @@ class ResultDict(BaseModel):
     """
 
     backend_name: Optional[str] = Field(
-        default=None, description="The name of the backend"
+        default=None, description="The name of the backend", pattern=r"^[a-z0-9]*$"
     )
-    display_name: str = Field(description="alternate name field for the backend")
+    display_name: str = Field(
+        description="alternate name field for the backend", pattern=r"^[a-z0-9]*$"
+    )
     backend_version: str = Field(description="backend version, in the form X.Y.Z.")
     job_id: str = Field(description="unique execution id from the backend.")
     qobj_id: Optional[str] = Field(default=None, description="user-generated Qobj id.")
@@ -117,7 +119,7 @@ class BackendConfigSchemaIn(BaseModel):
     description: str = Field(description="A description for the backend")
     version: str = Field(description="The backend version in the form X.Y.Z")
     display_name: Optional[str] = Field(
-        description=" Alternate name field for the backend"
+        description=" Alternate name field for the backend", pattern=r"^[a-z0-9]+$"
     )
     cold_atom_type: str = Field(
         description="The type of cold atom system that is simulated. Non standard qiskit field."

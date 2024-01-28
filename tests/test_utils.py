@@ -5,7 +5,7 @@ import os
 import uuid
 import shutil
 from typing import Iterator, Callable, Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from typing_extensions import Annotated
 
@@ -67,8 +67,14 @@ def test_update_backends(utils_storage_setup_teardown: Callable) -> None:
     """
     Test that it is possible to update the backends.
     """
-    update_backends(storage_provider, backends)
+    # test that it fails with poor names
 
+    backends_poor = {"test_test_test": test_spooler}
+    with pytest.raises(ValidationError):
+        update_backends(storage_provider, backends_poor)
+
+    # test that it works with good names
+    update_backends(storage_provider, backends)
     config_path = storage_provider.base_path + "/backends/configs"
     full_json_path = config_path + "/" + "test" + ".json"
 
