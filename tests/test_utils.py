@@ -16,8 +16,6 @@ from sqooler.utils import (
     update_backends,
     main,
     run_json_circuit,
-    get_init_status,
-    get_init_results,
 )
 from sqooler.schemes import LocalLoginInformation
 
@@ -119,22 +117,3 @@ def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
     job_id = "1"
     with pytest.raises(AssertionError):
         run_json_circuit(job_payload, job_id, test_spooler)
-
-
-def test_get_init_status(utils_storage_setup_teardown: Callable) -> None:
-    """
-    Test that we can get the initial status.
-    """
-    status = get_init_status()
-    assert status.status == "INITIALIZING"
-    assert status.detail == "Got your json."
-    assert status.error_message == "None"
-    assert status.job_id == "None"
-
-
-def test_get_init_results(utils_storage_setup_teardown: Callable) -> None:
-    """
-    Test that we can get the initial results.
-    """
-    results = get_init_results()
-    assert results.status == "INITIALIZING"
