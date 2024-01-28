@@ -22,7 +22,6 @@ from .schemes import (
     StatusMsgDict,
     GateDict,
     LabscriptParams,
-    get_init_results,
 )
 
 
