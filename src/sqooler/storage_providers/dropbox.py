@@ -505,9 +505,21 @@ class DropboxProviderExtended(StorageProvider):
         """
         result_json_dir = "Backend_files/Result/" + display_name + "/" + username
         result_json_name = "result-" + job_id
-        result_dict = self.get_file_content(
-            storage_path=result_json_dir, job_id=result_json_name
-        )
+        try:
+            result_dict = self.get_file_content(
+                storage_path=result_json_dir, job_id=result_json_name
+            )
+        except FileNotFoundError:
+            return ResultDict(
+                display_name=display_name,
+                backend_version="",
+                job_id=job_id,
+                qobj_id=None,
+                success=False,
+                status="ERROR",
+                header={},
+                results=[],
+            )
         backend_config_info = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_info.backend_name
 

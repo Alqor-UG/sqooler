@@ -386,6 +386,14 @@ class TestMongodbProviderExtended:
         result_json_dir = "results/" + backend_name
         storage_provider.upload(dummy_result, result_json_dir, job_id)
 
+        # what happens if we try get an unknown job ?
+        job_result = storage_provider.get_result(
+            display_name=backend_name,
+            username=username,
+            job_id=uuid.uuid4().hex,
+        )
+        assert job_result.status == "ERROR"
+
         # now get the result
         result_info = storage_provider.get_result(
             display_name=backend_name,

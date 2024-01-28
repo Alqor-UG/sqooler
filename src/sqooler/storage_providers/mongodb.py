@@ -425,7 +425,22 @@ class MongodbProviderExtended(StorageProvider):
             The result dict of the job
         """
         result_json_dir = "results/" + display_name
-        result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
+        try:
+            result_dict = self.get_file_content(
+                storage_path=result_json_dir, job_id=job_id
+            )
+        except FileNotFoundError as err:
+            # if the job_id is not valid, we return an error
+            return ResultDict(
+                display_name=display_name,
+                backend_version="",
+                job_id=job_id,
+                qobj_id=None,
+                success=False,
+                status="ERROR",
+                header={},
+                results=[],
+            )
         backend_config_info = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_info.backend_name
 
