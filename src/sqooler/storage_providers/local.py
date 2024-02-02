@@ -362,7 +362,6 @@ class LocalProviderExtended(StorageProvider):
                 header={},
                 results=[],
             )
-        long_backend_name = backend_config_info.backend_name
 
         result_json_dir = "results/" + display_name
         try:
