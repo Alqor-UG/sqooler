@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "sqooler"
+version = "0.4.0"
+description = "Code that enables validated cloud access to quantum hardware (simulators)"
+authors = ["fretchen <fred.jendrzejewski@gmail.com>"]
+repository = "https://github.com/Alqor-UG/sqooler"
+documentation = "https://alqor-ug.github.io/sqooler"
+license = "Unlicense"
+readme = "README.md"
+packages = [{include = "sqooler", from = "src"}]
+keywords = ["pydantic", "quantum-hardware","sdk-python"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pydantic = "^2.3.0"
+dropbox = "^11.36.2"
+setuptools = "^69.0.3"
+pymongo = "^4.3.3"
+regex = "^2023.6.3"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+pytest = "^7.4.0"
+pylint = "^3.0.3"
+mypy = "^1.8.0"
+python-decouple = "^3.6"
+ipykernel = "^6.28.0"
+icecream = "^2.1.3"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+mike = "^2.0.0"
+mkdocs-material = "^9.1.5"
+mkdocstrings-python = "^1.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

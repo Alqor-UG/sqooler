@@ -2,10 +2,9 @@
 comments: true
 ---
 
-# API documentation of utils
+# API documentation of spoolers
 
-
-::: src.sqooler.utils
+::: src.sqooler.spoolers
     handler: python 
     options:
       show_source: true
