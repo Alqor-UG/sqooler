@@ -347,6 +347,23 @@ class LocalProviderExtended(StorageProvider):
             The result dict of the job. If the information is not available, the result dict
             has a status of "ERROR".
         """
+
+        try:
+            backend_config_info = self.get_backend_dict(display_name)
+        except FileNotFoundError:
+            # if the backend does not exist, we return an error
+            return ResultDict(
+                display_name="",
+                backend_version="",
+                job_id=job_id,
+                qobj_id=None,
+                success=False,
+                status="ERROR",
+                header={},
+                results=[],
+            )
+        long_backend_name = backend_config_info.backend_name
+
         result_json_dir = "results/" + display_name
         try:
             result_dict = self.get_file_content(
@@ -364,7 +381,6 @@ class LocalProviderExtended(StorageProvider):
                 header={},
                 results=[],
             )
-        backend_config_info = self.get_backend_dict(display_name)
         result_dict["backend_name"] = backend_config_info.backend_name
         typed_result = ResultDict(**result_dict)
         return typed_result

@@ -44,10 +44,13 @@ class ResultDict(BaseModel):
     """
 
     backend_name: Optional[str] = Field(
-        default=None, description="The name of the backend", pattern=r"^[a-z0-9]*$"
+        default=None,
+        description="The full name of the backend including the storage provider.",
+        pattern=r"^[a-z0-9]+_[a-z0-9]+_[a-z0-9]+$",
     )
     display_name: str = Field(
-        description="alternate name field for the backend", pattern=r"^[a-z0-9]*$"
+        description="The short name for the backend",
+        pattern=r"^[a-z0-9]+$",
     )
     backend_version: str = Field(description="backend version, in the form X.Y.Z.")
     job_id: str = Field(description="unique execution id from the backend.")
