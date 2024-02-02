@@ -119,7 +119,7 @@ class BackendConfigSchemaIn(BaseModel):
     description: str = Field(description="A description for the backend")
     version: str = Field(description="The backend version in the form X.Y.Z")
     display_name: Optional[str] = Field(
-        description=" Alternate name field for the backend", pattern=r"^[a-z0-9]+$"
+        description=" Alternate name field for the backend", pattern=r"^[a-z0-9]*$"
     )
     cold_atom_type: str = Field(
         description="The type of cold atom system that is simulated. Non standard qiskit field."
