@@ -2,6 +2,7 @@
 The module that contains all the necessary logic for communication with the external
 storage for the jobs. It creates an abstract API layer for the storage providers.
 """
+
 from abc import ABC, abstractmethod
 import re
 
