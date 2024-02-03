@@ -138,6 +138,35 @@ class DummyInstruction(GateInstruction):
     qasm_def: str = "gate rydberg_full(omega, delta, phi) {}"
 
 
+class DummyFullInstruction(GateInstruction):
+    """
+    The time evolution under the global Hamiltonian. It does not allow for any local control.
+
+    Attributes:
+        name: The string to identify the instruction
+        wires: The wire on which the instruction should be applied
+            so the indices should be between 0 and N_MAX_WIRES-1
+        params: Define the paramert for `RX`, `RZ`and `RydbergBlock` in this order
+    """
+
+    name: Literal["rydberg_full"] = "rydberg_full"
+    wires: Annotated[
+        list[Annotated[int, Field(ge=0, le=5)]],
+        Field(min_length=2, max_length=5),
+    ]
+    params: Annotated[
+        list[Annotated[float, Field(ge=0, le=5)]],
+        Field(min_length=3, max_length=3),
+    ]
+
+    # a string that is sent over to the config dict and that is necessary for compatibility with QISKIT.
+    parameters: str = "omega, delta, phi"
+    description: str = "Apply the Rydberg and Rabi coupling over the whole array."
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: list = [[0, 1, 2, 3, 4]]
+    qasm_def: str = "gate rydberg_full(omega, delta, phi) {}"
+
+
 def dummy_gen_circuit(
     experiment: dict,  # pylint: disable=unused-argument
     job_id: Optional[str] = None,  # pylint: disable=unused-argument
