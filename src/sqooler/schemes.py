@@ -5,7 +5,7 @@ There is no obvious need, why this code should be touch in a new back-end.
 
 from typing import Optional, Literal, Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ExperimentDict(BaseModel):
@@ -232,6 +232,7 @@ class GateInstruction(BaseModel):
 
     name: str
     parameters: str
+    wires: list[int] = Field(description="The wires on which the gate acts")
     description: str
     coupling_map: list
     qasm_def: str = "{}"
@@ -249,6 +250,25 @@ class GateInstruction(BaseModel):
             "parameters": [cls.model_fields["parameters"].default],
             "qasm_def": cls.model_fields["qasm_def"].default,
         }
+
+    @field_validator("wires")
+    @classmethod
+    def valid_coupling(cls, wires: list) -> list:
+        """
+        Validate that the wires are within the coupling map.
+
+        Args:
+            wires: the wires of the gate
+
+        Returns:
+            the wires if they are valid
+
+        Raises:
+            ValueError: if the wires are not within the coupling map
+        """
+        if not wires in cls.model_fields["coupling_map"].default:
+            raise ValueError("The combination of wires is not in the coupling map.")
+        return wires
 
 
 class LabscriptParams(BaseModel):
