@@ -113,7 +113,7 @@ class BackendStatusSchemaOut(BaseModel):
     status_msg: str = Field(description="The status message for the backend")
 
 
-class BackendConfigSchemaIn(BaseModel):
+class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
     """
     The schema send in to detail the configuration of the backend.
     This is uploaded to the storage provider.
@@ -154,7 +154,7 @@ class BackendConfigSchemaIn(BaseModel):
     )
 
 
-class BackendConfigSchemaOut(BaseModel):
+class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
     """
     The schema send out to detail the configuration of the backend. We follow the
     conventions of the qiskit configuration dictionary here.
