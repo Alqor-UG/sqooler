@@ -5,7 +5,7 @@ This module contains the test utils for the storage providers. So it is called b
 from typing import Any, Tuple
 
 import uuid
-
+from decouple import config
 import pytest
 from pydantic import ValidationError
 from sqooler.schemes import BackendConfigSchemaIn
@@ -118,7 +118,7 @@ class StorageProviderTestUtils:
                 "wire_order": "sequential",
             },
         }
-        username = "dummy_user"
+        username = config("TEST_USERNAME")
 
         job_id = storage_provider.upload_job(
             job_dict=job_payload, display_name=backend_name, username=username
