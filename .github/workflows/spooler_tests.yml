@@ -16,6 +16,7 @@ jobs:
       MONGODB_USERNAME: ${{secrets.MONGODB_USERNAME}}
       MONGODB_PASSWORD: ${{secrets.MONGODB_PASSWORD}}
       MONGODB_DATABASE_URL: ${{secrets.MONGODB_DATABASE_URL}}
+      BASE_PATH: ${{secrets.BASE_PATH}}
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
