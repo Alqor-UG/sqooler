@@ -69,7 +69,7 @@ class TestDropboxProvider:
         """
         storage_provider = DropboxProvider(self.get_login())
         dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy_{dummy_id}"
+        backend_name = f"dummy{dummy_id}"
         dummy_dict: dict = {}
         dummy_dict["display_name"] = backend_name
         dummy_dict["gates"] = []
@@ -101,7 +101,7 @@ class TestDropboxProvider:
 
         # create a dummy backend
         dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy_{dummy_id}"
+        backend_name = f"dummy{dummy_id}"
 
         username = "test_user"
         job_id = (
@@ -137,6 +137,7 @@ class TestDropboxProvider:
             display_name=backend_name,
             backend_version="0.0.1",
             job_id=next_job["job_id"],
+            status="INITIALIZING",
         )
 
         # upload the status dict without other status.

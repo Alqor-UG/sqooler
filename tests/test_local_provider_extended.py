@@ -302,82 +302,10 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        # disable too many local variables
-        # pylint: disable=R0914
-
-        # create a storageprovider object
-        storage_provider = LocalProviderExtended(self.get_login(), DB_NAME)
-
-        # create a dummy config
-        dummy_id = uuid.uuid4().hex[:5]
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["name"] = "Dummy"
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["num_species"] = 1
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["max_shots"] = 5
-        dummy_dict["max_experiments"] = 5
-        dummy_dict["description"] = "Dummy simulator for testing"
-        dummy_dict["operational"] = True
-        backend_name = f"dummy{dummy_id}"
-        dummy_dict["display_name"] = backend_name
-        dummy_dict["simulator"] = True
-
-        config_path = "backends/configs"
-        storage_provider.upload(dummy_dict, config_path, job_id=backend_name)
-
-        # let us first test the we can upload a dummy job
-        job_payload = {
-            "experiment_0": {
-                "instructions": [
-                    ("load", [7], []),
-                    ("load", [2], []),
-                    ("measure", [2], []),
-                    ("measure", [6], []),
-                    ("measure", [7], []),
-                ],
-                "num_wires": 8,
-                "shots": 4,
-                "wire_order": "sequential",
-            },
-        }
-        username = "dummy_user"
-
-        job_id = storage_provider.upload_job(
-            job_dict=job_payload, display_name=backend_name, username=username
-        )
-        assert len(job_id) > 1
-
-        # now also test that we can upload the status
-        status_msg_dict = storage_provider.upload_status(
-            display_name=backend_name,
-            username=username,
-            job_id=job_id,
-        )
-        assert len(status_msg_dict.job_id) > 1
-        # now test what happens with a poor job id
-        job_status = storage_provider.get_status(
-            display_name=backend_name,
-            username=username,
-            job_id="jdsfssdfs",
-        )
-        assert job_status.status == "ERROR"
-
-        # now test that we can get the job status
-        job_status = storage_provider.get_status(
-            display_name=backend_name,
-            username=username,
-            job_id=job_id,
-        )
-        assert job_status.job_id == job_id
-
+        backend_name, job_id, username, storage_provider = self.job_tests(DB_NAME)
         # test that we can get a job result
         # first upload a dummy result
-        dummy_result = {
+        dummy_result: dict = {
             "backend_name": backend_name,
             "display_name": backend_name,
             "backend_version": "0.0.1",
@@ -388,6 +316,7 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
             "header": {},
             "results": [],
         }
+
         result_json_dir = "results/" + backend_name
         storage_provider.upload(dummy_result, result_json_dir, job_id)
         # what happens if we try to get a result that does not exist ?

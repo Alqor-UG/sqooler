@@ -44,10 +44,13 @@ class ResultDict(BaseModel):
     """
 
     backend_name: Optional[str] = Field(
-        default=None, description="The name of the backend", pattern=r"^[a-z0-9]*$"
+        default=None,
+        description="The full name of the backend including the storage provider.",
+        pattern=r"^[a-z0-9]*_[a-z0-9]*_[a-z0-9]*$",
     )
     display_name: str = Field(
-        description="alternate name field for the backend", pattern=r"^[a-z0-9]*$"
+        description="The short name for the backend",
+        pattern=r"^[a-z0-9]*$",
     )
     backend_version: str = Field(description="backend version, in the form X.Y.Z.")
     job_id: str = Field(description="unique execution id from the backend.")
@@ -110,7 +113,7 @@ class BackendStatusSchemaOut(BaseModel):
     status_msg: str = Field(description="The status message for the backend")
 
 
-class BackendConfigSchemaIn(BaseModel):
+class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
     """
     The schema send in to detail the configuration of the backend.
     This is uploaded to the storage provider.
@@ -119,7 +122,7 @@ class BackendConfigSchemaIn(BaseModel):
     description: str = Field(description="A description for the backend")
     version: str = Field(description="The backend version in the form X.Y.Z")
     display_name: Optional[str] = Field(
-        description=" Alternate name field for the backend", pattern=r"^[a-z0-9]+$"
+        description=" Alternate name field for the backend", pattern=r"^[a-z0-9]*$"
     )
     cold_atom_type: str = Field(
         description="The type of cold atom system that is simulated. Non standard qiskit field."
@@ -151,7 +154,7 @@ class BackendConfigSchemaIn(BaseModel):
     )
 
 
-class BackendConfigSchemaOut(BaseModel):
+class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
     """
     The schema send out to detail the configuration of the backend. We follow the
     conventions of the qiskit configuration dictionary here.

@@ -116,7 +116,7 @@ class TestMongodbProvider:
 
         storage_provider = MongodbProvider(self.get_login())
         dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy_{dummy_id}"
+        backend_name = f"dummy{dummy_id}"
 
         dummy_dict: dict = {}
         dummy_dict["gates"] = []
@@ -164,7 +164,7 @@ class TestMongodbProvider:
 
         # create a dummy backend
         dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy_{dummy_id}"
+        backend_name = f"dummy{dummy_id}"
 
         # first we have to upload a dummy job
         job_id = (uuid.uuid4().hex)[:24]
@@ -196,6 +196,7 @@ class TestMongodbProvider:
             display_name=backend_name,
             backend_version="0.0.1",
             job_id=next_job["job_id"],
+            status="INITIALIZING",
         )
 
         # upload the status dict without other status.

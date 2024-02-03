@@ -303,10 +303,9 @@ class StorageProvider(ABC):
 
         # if the name is already in the dict, we should set the backend_name to the name
         # otherwise we calculate it.
-        if backend_config_dict["simulator"]:
-            backend_name = f"{self.name}_{display_name}_simulator"
-        else:
-            backend_name = f"{self.name}_{display_name}_hardware"
+        backend_name = self.long_backend_name(
+            display_name, backend_config_dict["simulator"]
+        )
 
         backend_config_dict["backend_name"] = backend_name
         backend_config_dict["n_qubits"] = backend_config_dict["num_wires"]
@@ -318,6 +317,21 @@ class StorageProvider(ABC):
         backend_config_dict["memory"] = True
         backend_config_dict["coupling_map"] = "linear"
         return BackendConfigSchemaOut(**backend_config_dict)
+
+    def long_backend_name(self, display_name: str, simulator: bool) -> str:
+        """
+        This function returns the long name of the backend.
+
+        Args:
+            display_name: The name of the backend
+            simulator: True if the backend is a simulator
+
+        Returns:
+            The long name of the backend
+        """
+        if simulator:
+            return f"{self.name}_{display_name}_simulator"
+        return f"{self.name}_{display_name}_hardware"
 
     def backend_dict_to_qiskit_status(
         self, backend_dict: BackendConfigSchemaIn

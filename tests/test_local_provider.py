@@ -74,7 +74,7 @@ class TestLocalProvider:
 
         storage_provider = LocalProvider(self.get_login())
         dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy_{dummy_id}"
+        backend_name = f"dummy{dummy_id}"
 
         dummy_dict: dict = {}
         dummy_dict["gates"] = []
@@ -122,7 +122,7 @@ class TestLocalProvider:
 
         # create a dummy backend
         dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy_{dummy_id}"
+        backend_name = f"dummy{dummy_id}"
         queue_path = "jobs/queued/" + backend_name
 
         # what happens if there are no jobs in the queue?
@@ -157,6 +157,7 @@ class TestLocalProvider:
             display_name=backend_name,
             backend_version="0.0.1",
             job_id=next_job["job_id"],
+            status="INITIALIZING",
         )
         # upload the status dict without other status.
         status_json_dir = "status/" + backend_name
