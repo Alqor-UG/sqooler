@@ -447,6 +447,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#src.sqooler.schemes.GateInstruction.valid_coupling" class="md-nav__link">
+    <span class="md-ellipsis">
+      valid_coupling
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -697,6 +706,15 @@
   <a href="#src.sqooler.schemes.GateInstruction.config_dict" class="md-nav__link">
     <span class="md-ellipsis">
       config_dict
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#src.sqooler.schemes.GateInstruction.valid_coupling" class="md-nav__link">
+    <span class="md-ellipsis">
+      valid_coupling
     </span>
   </a>
   
@@ -1390,7 +1408,27 @@ Any gate has to have the following attributes.</p>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">GateInstruction</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">GateInstruction</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The basic class for all the gate intructions of a backend.</span>
 <span class="sd">    Any gate has to have the following attributes.</span>
@@ -1398,6 +1436,7 @@ Any gate has to have the following attributes.</p>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">parameters</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">wires</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The wires on which the gate acts&quot;</span><span class="p">)</span>
     <span class="n">description</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">coupling_map</span><span class="p">:</span> <span class="nb">list</span>
     <span class="n">qasm_def</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span>
@@ -1415,6 +1454,25 @@ Any gate has to have the following attributes.</p>
             <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">],</span>
             <span class="s2">&quot;qasm_def&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">&quot;qasm_def&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
         <span class="p">}</span>
+
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;wires&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">valid_coupling</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">wires</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate that the wires are within the coupling map.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            wires: the wires of the gate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            the wires if they are valid</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if the wires are not within the coupling map</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">wires</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">&quot;coupling_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The combination of wires is not in the coupling map.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wires</span>
 </code></pre></div></td></tr></table></div>
             </details>
 
@@ -1451,8 +1509,7 @@ Any gate has to have the following attributes.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
-<span class="normal">241</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
@@ -1462,7 +1519,8 @@ Any gate has to have the following attributes.</p>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">251</span>
+<span class="normal">252</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span> <span class="nf">config_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Give back the properties of the instruction such as needed for the server.</span>
@@ -1474,6 +1532,146 @@ Any gate has to have the following attributes.</p>
         <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">],</span>
         <span class="s2">&quot;qasm_def&quot;</span><span class="p">:</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">&quot;qasm_def&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">,</span>
     <span class="p">}</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="src.sqooler.schemes.GateInstruction.valid_coupling" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">valid_coupling</span><span class="p">(</span><span class="n">wires</span><span class="p">)</span></code>
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Validate that the wires are within the coupling map.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>wires</code></td>
+          <td>
+                <code>list</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the wires of the gate</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>list</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>the wires if they are valid</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>ValueError</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>if the wires are not within the coupling map</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;wires&quot;</span><span class="p">)</span>
+<span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">valid_coupling</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">wires</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validate that the wires are within the coupling map.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        wires: the wires of the gate</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        the wires if they are valid</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: if the wires are not within the coupling map</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">wires</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">[</span><span class="s2">&quot;coupling_map&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">default</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The combination of wires is not in the coupling map.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wires</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
@@ -1509,15 +1707,15 @@ Any gate has to have the following attributes.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LabscriptParams</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LabscriptParams</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class that defines the parameters for the labscript folders.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1873,21 +2071,21 @@ qiskit class qiskit.result.Result.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_init_results</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ResultDict</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_init_results</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ResultDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A support function that returns the result dict for an initializing job.</span>
 
@@ -1949,19 +2147,19 @@ qiskit class qiskit.result.Result.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/schemes.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_init_status</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">StatusMsgDict</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_init_status</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">StatusMsgDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A support function that returns the status message for an initializing job.</span>
 
