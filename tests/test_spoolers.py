@@ -112,7 +112,7 @@ class DummyRun:
         return 5
 
 
-class DummyInstruction(BaseModel):
+class DummyInstruction(GateInstruction):
     """
     The test instruction for testing the whole system.
 
@@ -131,6 +131,11 @@ class DummyInstruction(BaseModel):
         list[Annotated[int, Field(ge=1, le=10)]],
         Field(min_length=1, max_length=1),
     ]
+    parameters: str = "omega, delta, phi"
+    description: str = "Apply the Rydberg and Rabi coupling over the whole array."
+    # TODO: This should become most likely a type that is then used for the enforcement of the wires.
+    coupling_map: list = [[0, 1, 2, 3, 4]]
+    qasm_def: str = "gate rydberg_full(omega, delta, phi) {}"
 
 
 class DummyFullInstruction(GateInstruction):
