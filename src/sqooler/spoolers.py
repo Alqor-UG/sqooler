@@ -9,7 +9,7 @@ jobs in labscript directly.
 
 import os
 from collections.abc import Callable
-from typing import Type, Any
+from typing import Type, Any, Optional
 from time import sleep
 
 from abc import ABC
@@ -23,6 +23,8 @@ from .schemes import (
     GateDict,
     LabscriptParams,
 )
+
+from icecream import ic
 
 
 class BaseSpooler(ABC):
@@ -290,7 +292,9 @@ class Spooler(BaseSpooler):
         result_dict.results = []  # this simply helps pylint to understand the code
 
         err_msg, json_is_fine = self.check_json_dict(json_dict)
+        ic(json_is_fine, err_msg)
         if json_is_fine:
+            ic(json_dict)
             # check_hilbert_space_dimension
             dim_err_msg, dim_ok = self.check_dimension(json_dict)
             if dim_ok:
@@ -649,7 +653,10 @@ def get_file_queue(dir_path: str) -> list[str]:
 
 
 def create_memory_data(
-    shots_array: list, exp_name: str, n_shots: int
+    shots_array: list,
+    exp_name: str,
+    n_shots: int,
+    measured_wires: Optional[list[int]] = None,
 ) -> ExperimentDict:
     """
     The function to create memory key in results dictionary
@@ -677,4 +684,7 @@ def create_memory_data(
         for shot in shots_array
     ]
     exp_sub_dict["data"]["memory"] = memory_list
+    if measured_wires is not None:
+        exp_sub_dict["data"]["measured_wires"] = measured_wires
+    ic(exp_sub_dict)
     return ExperimentDict(**exp_sub_dict)

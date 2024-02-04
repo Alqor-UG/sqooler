@@ -24,6 +24,8 @@ from sqooler.spoolers import (
     LabscriptSpooler,
 )
 
+from icecream import ic
+
 
 class DummyExperiment(BaseModel):
     """
@@ -174,7 +176,12 @@ def dummy_gen_circuit(
     """
     A dummy function to generate a circuit from the experiment dict.
     """
-    return ExperimentDict(header={}, shots=0, success=True, data={})
+    ic("Dummy function called")
+    shots_array = [1, 2, 3]
+    exp_name = "test"
+    n_shots = 3
+    exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
+    return exp_sub_dict
 
 
 def test_spooler_config() -> None:
@@ -254,6 +261,7 @@ def test_spooler_add_job() -> None:
     assert status_msg_dict.error_message == "None; gen_circuit must be set"
 
     test_spooler.gen_circuit = dummy_gen_circuit
+    ic("Starting the run that should not fail.")
     _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job failed"
 
@@ -519,3 +527,19 @@ def test_create_memory_data() -> None:
     n_shots = 3
     exp_dict = create_memory_data(shots_array, exp_name, n_shots)
     assert exp_dict.success is True
+
+    # test with measured wires
+    measured_wires = [1, 2]
+    exp_dict = create_memory_data(shots_array, exp_name, n_shots, measured_wires)
+    assert exp_dict.success is True
+
+    # test with mixed input
+    measured_wires = ["1", 2]
+    exp_dict = create_memory_data(shots_array, exp_name, n_shots, measured_wires)
+    ic(exp_dict)
+    assert exp_dict.success is True
+
+    # test with poor input
+    measured_wires = ["1a", "dsfs"]
+    with pytest.raises(ValidationError):
+        exp_dict = create_memory_data(shots_array, exp_name, n_shots, measured_wires)

@@ -8,15 +8,27 @@ from typing import Optional, Literal, Annotated
 from pydantic import BaseModel, Field, field_validator
 
 
+class DataDict(BaseModel):
+    """
+    A class that defines the structure of the data within the ExperimentDict.
+    """
+
+    memory: list[str] = Field(description="A list of results safed as string.")
+    measured_wires: Optional[list[int]] = Field(
+        default=None, description="The indices of the wires that were measured."
+    )
+
+
 class ExperimentDict(BaseModel):
     """
-    A class that defines the structure of the experiments.
+    A class that defines the structure of the experiments. Strongly inspired by the
+    qiskit class qiskit.result.ExperimentData.
     """
 
     header: dict = Field(description="Contains centralized information about the job.")
     shots: int = Field(description="number of shots in the experiment.")
     success: bool = Field(description="True if experiment ran successfully.")
-    data: dict = Field(description="dictionary of results for the experiment.")
+    data: DataDict = Field(description="dictionary of results for the experiment.")
 
 
 # the strings that are allowed for the status
