@@ -8,29 +8,6 @@ from typing import Optional, Literal, Annotated
 from pydantic import BaseModel, Field, field_validator
 
 
-class DataDict(BaseModel):
-    """
-    A class that defines the structure of the data within the ExperimentDict.
-    """
-
-    memory: list[str] = Field(description="A list of results safed as string.")
-    measured_wires: Optional[list[int]] = Field(
-        default=None, description="The indices of the wires that were measured."
-    )
-
-
-class ExperimentDict(BaseModel):
-    """
-    A class that defines the structure of the experiments. Strongly inspired by the
-    qiskit class qiskit.result.ExperimentData.
-    """
-
-    header: dict = Field(description="Contains centralized information about the job.")
-    shots: int = Field(description="number of shots in the experiment.")
-    success: bool = Field(description="True if experiment ran successfully.")
-    data: DataDict = Field(description="dictionary of results for the experiment.")
-
-
 # the strings that are allowed for the status
 StatusStr = Annotated[
     Literal["INITIALIZING", "QUEUED", "DONE", "ERROR"],
@@ -47,37 +24,6 @@ class StatusMsgDict(BaseModel):
     status: StatusStr
     detail: str = Field(description="detailed status of job execution.")
     error_message: str = Field(description="error message of job execution.")
-
-
-class ResultDict(BaseModel):
-    """
-    A class that defines the structure of results. It is closely related to the
-    qiskit class qiskit.result.Result.
-    """
-
-    backend_name: Optional[str] = Field(
-        default=None,
-        description="The full name of the backend including the storage provider.",
-        pattern=r"^[a-z0-9]*_[a-z0-9]*_[a-z0-9]*$",
-    )
-    display_name: str = Field(
-        description="The short name for the backend",
-        pattern=r"^[a-z0-9]*$",
-    )
-    backend_version: str = Field(description="backend version, in the form X.Y.Z.")
-    job_id: str = Field(description="unique execution id from the backend.")
-    qobj_id: Optional[str] = Field(default=None, description="user-generated Qobj id.")
-    success: bool = Field(
-        description="True if complete input qobj executed correctly.", default=True
-    )
-    status: StatusStr
-    header: dict = Field(
-        description="Contains centralized information about the job.", default={}
-    )
-    results: list[ExperimentDict] = Field(
-        description="corresponding results for array of experiments of the input qobj",
-        default=[],
-    )
 
 
 class DropboxLoginInformation(BaseModel):
@@ -234,6 +180,60 @@ class GateDict(BaseModel):
     name: str = Field(description="The name of the gate")
     wires: list[int] = Field(description="The wires on which the gate acts")
     params: list[float] = Field(description="The parameters of the gate")
+
+
+class DataDict(BaseModel):
+    """
+    A class that defines the structure of the data within the ExperimentDict.
+    """
+
+    memory: list[str] = Field(description="A list of results safed as string.")
+    instructions: Optional[list[GateDict]] = Field(
+        default=None, description="The indices of the wires that were measured."
+    )
+
+
+class ExperimentDict(BaseModel):
+    """
+    A class that defines the structure of the experiments. Strongly inspired by the
+    qiskit class qiskit.result.ExperimentData.
+    """
+
+    header: dict = Field(description="Contains centralized information about the job.")
+    shots: int = Field(description="number of shots in the experiment.")
+    success: bool = Field(description="True if experiment ran successfully.")
+    data: DataDict = Field(description="dictionary of results for the experiment.")
+
+
+class ResultDict(BaseModel):
+    """
+    A class that defines the structure of results. It is closely related to the
+    qiskit class qiskit.result.Result.
+    """
+
+    backend_name: Optional[str] = Field(
+        default=None,
+        description="The full name of the backend including the storage provider.",
+        pattern=r"^[a-z0-9]*_[a-z0-9]*_[a-z0-9]*$",
+    )
+    display_name: str = Field(
+        description="The short name for the backend",
+        pattern=r"^[a-z0-9]*$",
+    )
+    backend_version: str = Field(description="backend version, in the form X.Y.Z.")
+    job_id: str = Field(description="unique execution id from the backend.")
+    qobj_id: Optional[str] = Field(default=None, description="user-generated Qobj id.")
+    success: bool = Field(
+        description="True if complete input qobj executed correctly.", default=True
+    )
+    status: StatusStr
+    header: dict = Field(
+        description="Contains centralized information about the job.", default={}
+    )
+    results: list[ExperimentDict] = Field(
+        description="corresponding results for array of experiments of the input qobj",
+        default=[],
+    )
 
 
 class GateInstruction(BaseModel):

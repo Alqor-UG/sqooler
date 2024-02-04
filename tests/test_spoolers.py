@@ -24,8 +24,6 @@ from sqooler.spoolers import (
     LabscriptSpooler,
 )
 
-from icecream import ic
-
 
 class DummyExperiment(BaseModel):
     """
@@ -33,10 +31,6 @@ class DummyExperiment(BaseModel):
     """
 
     wire_order: Literal["interleaved", "sequential"] = "sequential"
-
-    # mypy keeps throwing errors here because it does not understand the type.
-    # not sure how to fix it, so we leave it as is for the moment
-    # HINT: Annotated does not work
     shots: Annotated[int, Field(gt=0, le=5)]
     num_wires: Annotated[int, Field(ge=1, le=5)]
     instructions: list[list]
@@ -170,17 +164,19 @@ class DummyFullInstruction(GateInstruction):
 
 
 def dummy_gen_circuit(
-    experiment: dict,  # pylint: disable=unused-argument
+    json_dict: dict,
     job_id: Optional[str] = None,  # pylint: disable=unused-argument
 ) -> ExperimentDict:
     """
     A dummy function to generate a circuit from the experiment dict.
     """
-    ic("Dummy function called")
+    exp_name = next(iter(json_dict))
+    raw_ins_list = json_dict[next(iter(json_dict))]["instructions"]
+    ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
     shots_array = [1, 2, 3]
     exp_name = "test"
     n_shots = 3
-    exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
+    exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots, ins_list)
     return exp_sub_dict
 
 
@@ -261,7 +257,6 @@ def test_spooler_add_job() -> None:
     assert status_msg_dict.error_message == "None; gen_circuit must be set"
 
     test_spooler.gen_circuit = dummy_gen_circuit
-    ic("Starting the run that should not fail.")
     _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job failed"
 
@@ -529,17 +524,13 @@ def test_create_memory_data() -> None:
     assert exp_dict.success is True
 
     # test with measured wires
-    measured_wires = [1, 2]
-    exp_dict = create_memory_data(shots_array, exp_name, n_shots, measured_wires)
+    instr = ["test", [0], [1.0]]
+    instr_list = [gate_dict_from_list(instr)]
+    exp_dict = create_memory_data(shots_array, exp_name, n_shots, instr_list)
     assert exp_dict.success is True
 
     # test with mixed input
-    measured_wires = ["1", 2]
-    exp_dict = create_memory_data(shots_array, exp_name, n_shots, measured_wires)
-    ic(exp_dict)
-    assert exp_dict.success is True
-
-    # test with poor input
-    measured_wires = ["1a", "dsfs"]
+    instr = ["test", [0, "a"], [1.0]]
     with pytest.raises(ValidationError):
-        exp_dict = create_memory_data(shots_array, exp_name, n_shots, measured_wires)
+        instr_list = [gate_dict_from_list(instr)]
+        exp_dict = create_memory_data(shots_array, exp_name, n_shots, instr_list)

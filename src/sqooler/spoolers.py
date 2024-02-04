@@ -24,8 +24,6 @@ from .schemes import (
     LabscriptParams,
 )
 
-from icecream import ic
-
 
 class BaseSpooler(ABC):
     """
@@ -292,9 +290,7 @@ class Spooler(BaseSpooler):
         result_dict.results = []  # this simply helps pylint to understand the code
 
         err_msg, json_is_fine = self.check_json_dict(json_dict)
-        ic(json_is_fine, err_msg)
         if json_is_fine:
-            ic(json_dict)
             # check_hilbert_space_dimension
             dim_err_msg, dim_ok = self.check_dimension(json_dict)
             if dim_ok:
@@ -515,7 +511,8 @@ class LabscriptSpooler(BaseSpooler):
             )
 
         exp_name = next(iter(json_dict))
-        ins_list = json_dict[next(iter(json_dict))]["instructions"]
+        raw_ins_list = json_dict[next(iter(json_dict))]["instructions"]
+        ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
         n_shots = json_dict[next(iter(json_dict))]["shots"]
 
         globals_dict = {
@@ -528,7 +525,6 @@ class LabscriptSpooler(BaseSpooler):
         self.remote_client.set_globals(globals_dict)
         script_name = f"experiment_{globals_dict['job_id']}.py"
         exp_script = os.path.join(remote_experiments_path, script_name)
-        ins_list = json_dict[next(iter(json_dict))]["instructions"]
         code = ""
         # this is the top part of the script it allows us to import the
         # typical functions that we require for each single sequence
@@ -548,10 +544,7 @@ class LabscriptSpooler(BaseSpooler):
         for inst in ins_list:
             # we can directly use the function name as we have already verified
             # that the function exists in the `add_job` function
-            func_name = inst[0]
-            params = "(" + str(inst[1:])[1:-1] + ")"
-            code = "Experiment." + func_name + params + "\n"
-
+            code = f"Experiment.{inst.name}({inst.wires}, {inst.params})\n"
             # we should add proper error handling here
             # pylint: disable=bare-except
             try:
@@ -607,8 +600,7 @@ class LabscriptSpooler(BaseSpooler):
                     print(exc)
                     sleep(self.labscript_params.t_wait)
                     n_tries += 1
-
-        exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
+        exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots, ins_list)
         return exp_sub_dict
 
 
@@ -656,7 +648,7 @@ def create_memory_data(
     shots_array: list,
     exp_name: str,
     n_shots: int,
-    measured_wires: Optional[list[int]] = None,
+    instructions: Optional[list[GateDict]] = None,
 ) -> ExperimentDict:
     """
     The function to create memory key in results dictionary
@@ -666,6 +658,7 @@ def create_memory_data(
         shots_array: The array with the shots.
         exp_name: The name of the experiment.
         n_shots: The number of shots.
+        instructions: The list of instructions that were executed
 
     Returns:
         The ExperimentDict object describing the results.
@@ -684,7 +677,6 @@ def create_memory_data(
         for shot in shots_array
     ]
     exp_sub_dict["data"]["memory"] = memory_list
-    if measured_wires is not None:
-        exp_sub_dict["data"]["measured_wires"] = measured_wires
-    ic(exp_sub_dict)
+    if instructions is not None:
+        exp_sub_dict["data"]["instructions"] = instructions
     return ExperimentDict(**exp_sub_dict)
