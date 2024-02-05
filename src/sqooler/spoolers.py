@@ -9,7 +9,7 @@ jobs in labscript directly.
 
 import os
 from collections.abc import Callable
-from typing import Type, Any
+from typing import Type, Any, Optional
 from time import sleep
 
 from abc import ABC
@@ -511,7 +511,8 @@ class LabscriptSpooler(BaseSpooler):
             )
 
         exp_name = next(iter(json_dict))
-        ins_list = json_dict[next(iter(json_dict))]["instructions"]
+        raw_ins_list = json_dict[next(iter(json_dict))]["instructions"]
+        ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
         n_shots = json_dict[next(iter(json_dict))]["shots"]
 
         globals_dict = {
@@ -524,7 +525,6 @@ class LabscriptSpooler(BaseSpooler):
         self.remote_client.set_globals(globals_dict)
         script_name = f"experiment_{globals_dict['job_id']}.py"
         exp_script = os.path.join(remote_experiments_path, script_name)
-        ins_list = json_dict[next(iter(json_dict))]["instructions"]
         code = ""
         # this is the top part of the script it allows us to import the
         # typical functions that we require for each single sequence
@@ -544,10 +544,7 @@ class LabscriptSpooler(BaseSpooler):
         for inst in ins_list:
             # we can directly use the function name as we have already verified
             # that the function exists in the `add_job` function
-            func_name = inst[0]
-            params = "(" + str(inst[1:])[1:-1] + ")"
-            code = "Experiment." + func_name + params + "\n"
-
+            code = f"Experiment.{inst.name}({inst.wires}, {inst.params})\n"
             # we should add proper error handling here
             # pylint: disable=bare-except
             try:
@@ -603,8 +600,7 @@ class LabscriptSpooler(BaseSpooler):
                     print(exc)
                     sleep(self.labscript_params.t_wait)
                     n_tries += 1
-
-        exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
+        exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots, ins_list)
         return exp_sub_dict
 
 
@@ -649,7 +645,10 @@ def get_file_queue(dir_path: str) -> list[str]:
 
 
 def create_memory_data(
-    shots_array: list, exp_name: str, n_shots: int
+    shots_array: list,
+    exp_name: str,
+    n_shots: int,
+    instructions: Optional[list[GateDict]] = None,
 ) -> ExperimentDict:
     """
     The function to create memory key in results dictionary
@@ -659,6 +658,7 @@ def create_memory_data(
         shots_array: The array with the shots.
         exp_name: The name of the experiment.
         n_shots: The number of shots.
+        instructions: The list of instructions that were executed
 
     Returns:
         The ExperimentDict object describing the results.
@@ -677,4 +677,6 @@ def create_memory_data(
         for shot in shots_array
     ]
     exp_sub_dict["data"]["memory"] = memory_list
+    if instructions is not None:
+        exp_sub_dict["data"]["instructions"] = instructions
     return ExperimentDict(**exp_sub_dict)
