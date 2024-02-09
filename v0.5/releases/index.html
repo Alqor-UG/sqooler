@@ -307,6 +307,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v05" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.5
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v04" class="md-nav__link">
     <span class="md-ellipsis">
       v0.4
@@ -411,11 +420,78 @@
   
   
     <li class="md-nav__item">
+      <a href="../spoolers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Spoolers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Storage Providers
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Storage Providers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../storage_providers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Storage providers
+    Basics
   </span>
   
 
@@ -432,11 +508,53 @@
   
   
     <li class="md-nav__item">
-      <a href="../spoolers/" class="md-nav__link">
+      <a href="../mongodb/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Spoolers
+    MongoDB
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Local storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dropbox/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Dropbox
   </span>
   
 
@@ -480,6 +598,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v05" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.5
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v04" class="md-nav__link">
     <span class="md-ellipsis">
       v0.4
@@ -508,6 +635,19 @@
 
 <h1 id="release-information">Release information</h1>
 <p>In this guide we will cover the key information about the different releases.</p>
+<h2 id="v05">v0.5</h2>
+<p>This release further increased the typing and testing of the package. It also fixed some long standing usability bugs for the user. </p>
+<p>What Changed:</p>
+<ul>
+<li>Cleaner error handling of missing status</li>
+<li>Unify the error handling for the <code>get_file_content</code> function amongst <code>StorageProvider</code>s.</li>
+<li>Put the different <code>StorageProvider</code>s into the <code>storage_provider</code> module to make it easier to add new ones.</li>
+<li>Type and verify the status string to be "INITIALIZING", "QUEUED", "DONE", "ERROR" and introduce the functions <code>get_init_status</code> as well as <code>get_init_results</code> that help with the initialization.</li>
+<li>Clean out the names given to the backends and storage providers such that they conform with the intended logic of being alphanumeric names only.</li>
+<li>Enforce the coupling map of the <code>GateInstruction</code>.</li>
+<li>Give back the measured wires and the instructions for each <em>experiment</em> to make it easier to reconstruct. </li>
+<li>Introduced the new <code>DataDict</code> for better typing for the results.</li>
+</ul>
 <h2 id="v04">v0.4</h2>
 <p>This release focused on better typing with <code>pydantic</code> and a simpler deployment on the back-end side.</p>
 <p>What Changed:</p>
