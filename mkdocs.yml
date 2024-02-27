@@ -13,6 +13,7 @@ theme:
 
 nav:
   - Introduction: "index.md"
+  - "General description": "description.md"
   - Contributing: contributing.md
   - Releases: releases.md
   - "Modules":
@@ -24,6 +25,7 @@ nav:
     - "MongoDB": "mongodb.md"
     - "Local storage": "local.md"
     - "Dropbox": "dropbox.md"
+  - "Ideas on Payments": "idea_payment.md"
 
 repo_url: https://github.com/alqor-ug/sqooler
 edit_uri: edit/main/docs/
@@ -41,7 +43,12 @@ markdown_extensions:
   - attr_list
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
