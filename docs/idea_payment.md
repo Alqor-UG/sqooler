@@ -30,10 +30,28 @@ The simplest idea is to go with low-tech and allow access to specific users only
 Both options are fairly interesting for users and for backend providers. 
 
 ## Some ideas on pay per use
-The traditional way would be to have Stripe service then together you send the job in a trusted way to the person doing the calculation and there you go. 
+
+The typical usage would be to tie the whole thing together and basically wrap a service like stripe into the service. 
+Then you send the job in a trusted way to the person doing the calculation and there you go. 
 
 !!! note
     It could be interesting to have a look how the structure is behind [Polar](https://polar.sh/). They seem to have a similar problem concerning payment between user and service provider.
+
+Most likely it would also have to have the following requirements:
+
+- Alice has to register with some payment options.
+- Bob has to register with some payment options.
+- The system has to securely send the money from Alice to Bob.
+- Alice has to be able to see the cost of a calculation before she submits it. Or does she ?
+
+This brings up the question on how to calculate the estimated costs:
+
+- You might just say that each shot costs some amount of money.
+- You might also base the costs on the time the calculation takes this is similiar to the way cloud services are often billed.
+- When should be the money transferred ? Most likely some monthly bill would be most reasonable ?
+- How can Bob sign his results such that the ownership is clear ? Maybe something like an MD5 hash that includes his username and the json file with the results ? This would be especially important for research groups.
+
+Whatever the case, we really have to enable Bob to register and this brings him back into `qlued`. 
 
 ## Some ideas on the decentralized way
 
@@ -65,4 +83,4 @@ The setup obivously also raises a lot of questions. Some of the main questions a
 1. How can Alice be sure that she receives "good" results?
 1. How much are the gas costs? 
 
-
+If you have any technical input to the questions above you are welcome to contribute to the discussion. Until we have some good draft in this direction we will most likely have to stick to the centralized way.

@@ -25,7 +25,7 @@ nav:
     - "MongoDB": "mongodb.md"
     - "Local storage": "local.md"
     - "Dropbox": "dropbox.md"
-  - Ideas: "idea_payment.md"
+  - "Ideas on Payments": "idea_payment.md"
 
 repo_url: https://github.com/alqor-ug/sqooler
 edit_uri: edit/main/docs/
