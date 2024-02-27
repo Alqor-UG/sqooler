@@ -32,9 +32,19 @@ sequenceDiagram
   end
   Bob->>Alice: Here are the results.
 ```
+As you can see the above diagram contains all the necessary steps to get the job done. It was around this idea that `sqooler` was built. However, it does not contain any payment yet and we will have to see how we can integrate it.
+
+## Some simple ideas on how to integrate payment
+The simplest idea is to go with low-tech and allow access to specific users only. This is the traditional way to handle access to a service. However, this is not very flexible and does not allow for a lot of automation. So you would like to be able to charge for the service. Several options are imaginable:
+
+- *Flatrate* If you have large customers they would most likely be interested in a monthly flatrate. This is easy and predicatable. Possibly even very interesting for systems such as simulators. However, they have a massive drawback for the occasional user that would just like to use the system for some specific jobs.
+- *Pay per use* This is the most flexible way to handle payment. However, it is also the most complicated to set up and predict the pricing. But it seems likely that this is the way to go at least for the capital intense systems.
+
+Both options are fairly interesting for users and for backend providers. Let us alreay make a few notes on the way that the money could flow between Alice and Bob.
+
+## Some ideas on the centralized way
+The traditional way would be to have Stripe service then together you send the job in a trusted way to the person doing the calculation and there you go.
 
 ## Some ideas on the decentralized way
 This raises the question if it would be possible to make the analogy with block chain technologies with validators and people asking for the validation. The problem is however, that quantum systems are non-deterministic. This kills this analogy to a certain degree. However, maybe something like the minting of NFTs would be a reasonable analogy ?
 
-## Some ideas on the centralized way
-The traditional way would be to have Stripe service then together you send the job in a trusted way to the person doing the calculation and there you go.
