@@ -13,8 +13,8 @@ theme:
 
 nav:
   - Introduction: "index.md"
-  - Contributing: contributing.md
   - "General description": "description.md"
+  - Contributing: contributing.md
   - Releases: releases.md
   - "Modules":
     - "Schemes": "schemes.md"
