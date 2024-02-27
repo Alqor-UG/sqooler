@@ -9,30 +9,17 @@ In this document, I will outline some ideas on how to handle payment in the app.
 1. The centralized way where everything is handled in chain of trust.
 2. The decentralized way where the payment is handled through a blockchain.
 
-I will try to explore both options and then also outline the challenges.
-In the following, I will start to draw up the ideas behind a possible decentral solution. Naively, we could think of the following:
-
- - As a user we have very little interest in the supplier of the calculation. We just want the calculation properly done.
- - As a supplier backend provider or similiar we have little interest in the person demanding the calculation. If you are european you might even be happy to not know too much about them. But you want to get paid for your work and if you are a researcher you want to make sure that it is clear that you made the calculations. 
- 
- Until now we might sketch the whole process up like this:
+I will try to explore both options and then also outline the challenges. Let us get back to the scheme from the [description](description.md) and extend it by the basic idea of money versus results.
 
 ``` mermaid
-sequenceDiagram
-  autonumber
-  actor Alice
-  actor Bob
-  Alice->>Bob: I want to have a calculation done.
-  Bob->>Alice: Send me your instructions according to the configuration.
-  Alice->>Bob: Here are my instructions in the json format.
-  loop shots
-        Bob->>Bob: Verify the instruction!
-        Bob->>Bob: Execute the job!
-        Bob->>Bob: Save the results in a nice fashion!
-  end
-  Bob->>Alice: Here are the results.
+flowchart LR
+    id1(Alice) -- json API --- id2[qlued]
+    id2[qlued] -- sqooler --- id3[(storage)]
+    id3[(storage)] -- sqooler --- id4(Bob)
+    id1(Alice) == payment ===> id4(Bob)
 ```
-As you can see the above diagram contains all the necessary steps to get the job done. It was around this idea that `sqooler` was built. However, it does not contain any payment yet and we will have to see how we can integrate it.
+
+The challenge is now to integrate payment into this system.
 
 ## Some simple ideas on how to integrate payment
 The simplest idea is to go with low-tech and allow access to specific users only. This is the traditional way to handle access to a service. However, this is not very flexible and does not allow for a lot of automation. So you would like to be able to charge for the service. Several options are imaginable:
@@ -40,11 +27,42 @@ The simplest idea is to go with low-tech and allow access to specific users only
 - *Flatrate* If you have large customers they would most likely be interested in a monthly flatrate. This is easy and predicatable. Possibly even very interesting for systems such as simulators. However, they have a massive drawback for the occasional user that would just like to use the system for some specific jobs.
 - *Pay per use* This is the most flexible way to handle payment. However, it is also the most complicated to set up and predict the pricing. But it seems likely that this is the way to go at least for the capital intense systems.
 
-Both options are fairly interesting for users and for backend providers. Let us alreay make a few notes on the way that the money could flow between Alice and Bob.
+Both options are fairly interesting for users and for backend providers. 
 
-## Some ideas on the centralized way
-The traditional way would be to have Stripe service then together you send the job in a trusted way to the person doing the calculation and there you go.
+## Some ideas on pay per use
+The traditional way would be to have Stripe service then together you send the job in a trusted way to the person doing the calculation and there you go. 
+
+!!! note
+    It could be interesting to have a look how the structure is behind [Polar](https://polar.sh/). They seem to have a similar problem concerning payment between user and service provider.
 
 ## Some ideas on the decentralized way
-This raises the question if it would be possible to make the analogy with block chain technologies with validators and people asking for the validation. The problem is however, that quantum systems are non-deterministic. This kills this analogy to a certain degree. However, maybe something like the minting of NFTs would be a reasonable analogy ?
+
+As mentionned at the end of the [description](description.md) the system is set up with as much decoupling as possible for the moment. As we have seen Bob can easily change the storage, has no connection with Alice and lives a fairly indpendent life. So you start to wonder if the system could not be transferred to some fancy blockchain infrastructure. The system would then look very roughly like this:
+
+``` mermaid
+flowchart LR
+    id1(Alice) --- id2[smart contract]
+    id2[smart contract] --- id3(Bob)
+```
+
+The logic would then be something like this:
+
+- Alice sends a job to the smart contract.
+- Bob picks up the job and does the calculation.
+- Bob sends the result back to the smart contract and gets paid.
+
+This is tempting in several ways:
+
+- It pushes the decentralization to the most extreme.
+- Block-chain systems are all about payment options so the technology sounds like a good fit.
+- The whole user registration etc gets fully offloaded to the blockchain with masks etc.
+- The whole privacy issue is also simplified due the use of wallets.
+- For research groups it could be extra interesting as the ownership of the calculation is very clearly traceble.
+
+The setup obivously also raises a lot of questions. Some of the main questions are:
+
+1. How can Alice make sure that she is the only one that can access the results if she wants them to be private?
+1. How can Alice be sure that she receives "good" results?
+1. How much are the gas costs? 
+
 
