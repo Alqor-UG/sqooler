@@ -358,7 +358,7 @@ class LabscriptSpooler(BaseSpooler):
         description: str = "",
         n_max_shots: int = 1000,
         version: str = "0.0.1",
-        cold_atom_type: str = "spin",
+        cold_atom_type: ColdAtomStr = "spin",
         n_max_experiments: int = 15,
         wire_order: str = "interleaved",
         num_species: int = 1,

@@ -24,8 +24,6 @@ from sqooler.spoolers import (
     LabscriptSpooler,
 )
 
-from pprint import pprint
-
 
 class DummyExperiment(BaseModel):
     """
