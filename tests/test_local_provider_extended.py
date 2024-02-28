@@ -21,7 +21,7 @@ DB_NAME = "localtest"
 
 class TestLocalProviderExtended(StorageProviderTestUtils):
     """
-    The class that contains all the tests for the dropbox provider.
+    The class that contains all the tests for the extended local provider.
     """
 
     def get_login_class(self) -> Any:

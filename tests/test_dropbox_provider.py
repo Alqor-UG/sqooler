@@ -4,18 +4,32 @@ The tests for the storage provider
 
 import datetime
 import uuid
+from typing import Any
 
 # get the environment variables
 from decouple import config
-
 from sqooler.storage_providers.dropbox import DropboxProvider
-from sqooler.schemes import ResultDict, DropboxLoginInformation, BackendConfigSchemaIn
+from sqooler.schemes import ResultDict, DropboxLoginInformation
+
+from .storage_provider_test_utils import StorageProviderTestUtils
 
 
-class TestDropboxProvider:
+class TestDropboxProvider(StorageProviderTestUtils):
     """
     The class that contains all the tests for the dropbox provider.
     """
+
+    def get_login_class(self) -> Any:
+        """
+        Get the storage provider.
+        """
+        return DropboxLoginInformation
+
+    def get_storage_provider(self) -> Any:
+        """
+        Get the storage provider.
+        """
+        return DropboxProvider
 
     def get_login(self) -> DropboxLoginInformation:
         """
@@ -68,30 +82,16 @@ class TestDropboxProvider:
         that come from the spoolers.
         """
         storage_provider = DropboxProvider(self.get_login())
-        dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy{dummy_id}"
-        dummy_dict: dict = {}
-        dummy_dict["display_name"] = backend_name
-        dummy_dict["gates"] = []
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["num_species"] = 1
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["max_shots"] = 5
-        dummy_dict["max_experiments"] = 5
-        dummy_dict["description"] = "Dummy simulator for testing"
-        dummy_dict["operational"] = True
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["simulator"] = False
 
-        config_info = BackendConfigSchemaIn(**dummy_dict)
+        backend_name, config_info = self.get_dummy_config()
         storage_provider.upload_config(config_info, backend_name)
 
         # can we get the backend in the list ?
         dummy_path = f"Backend_files/Config/{backend_name}"
         backend_dict = storage_provider.get_file_content(dummy_path, "config")
-        assert backend_dict["display_name"] == dummy_dict["display_name"]
+        assert backend_dict["display_name"] == config_info.display_name
+
+        storage_provider.delete_file(dummy_path, "config")
 
     def test_get_next_job_in_queue(self) -> None:
         """

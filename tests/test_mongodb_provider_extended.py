@@ -157,42 +157,22 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         # create a mongodb object
         storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-
-        # create a dummy config
-        dummy_id = uuid.uuid4().hex[:5]
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["name"] = "Dummy"
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["simulator"] = True
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["num_species"] = 1
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["max_shots"] = 5
-        dummy_dict["max_experiments"] = 5
-        dummy_dict["description"] = "Dummy simulator for testing"
-        dummy_dict["operational"] = True
-
-        backend_name = f"dummy{dummy_id}"
-        dummy_dict["display_name"] = backend_name
-
-        config_path = "backends/configs"
+        backend_name, backend_config_info = self.get_dummy_config()
         mongo_id = uuid.uuid4().hex[:24]
-        backend_config_info = BackendConfigSchemaIn(**dummy_dict)
+        config_path = "backends/configs"
+
         storage_provider.upload_config(backend_config_info, backend_name)
 
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
-        assert f"dummy{dummy_id}" in backends
+        assert backend_name in backends
 
         # can we get the config of the backend ?
         backend_info = storage_provider.get_backend_dict(backend_name)
         backend_dict = backend_info.model_dump()
         assert (
             backend_dict["backend_name"]
-            == f"mongodbtest_{dummy_dict['display_name']}_simulator"
+            == f"mongodbtest_{backend_config_info.display_name}_simulator"
         )
         # make sure that we raise an error if we try to get a backend that does not exist
         with pytest.raises(FileNotFoundError):

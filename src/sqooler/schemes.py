@@ -14,6 +14,14 @@ StatusStr = Annotated[
     Field(description="status of job execution."),
 ]
 
+# the strings that are allowed for the cold_atom_type
+ColdAtomStr = Annotated[
+    Literal["fermion", "boson", "spin", "mixed"],
+    Field(
+        description="The type of cold atom system that is simulated. Non standard qiskit field."
+    ),
+]
+
 
 class StatusMsgDict(BaseModel):
     """
@@ -82,9 +90,7 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
     display_name: Optional[str] = Field(
         description=" Alternate name field for the backend", pattern=r"^[a-z0-9]*$"
     )
-    cold_atom_type: str = Field(
-        description="The type of cold atom system that is simulated. Non standard qiskit field."
-    )
+    cold_atom_type: ColdAtomStr
     gates: list = Field(
         description="The list of GateConfig objects for the basis gates of the backend"
     )
@@ -156,9 +162,7 @@ class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
     supported_instructions: list[str] = Field(
         description="Instructions supported by the backend."
     )
-    cold_atom_type: str = Field(
-        description="The type of cold atom system that is simulated. Non standard qiskit field."
-    )
+    cold_atom_type: ColdAtomStr
     wire_order: str = Field(
         description=(
             "The wire order of the backend. Either linear or interleaved."

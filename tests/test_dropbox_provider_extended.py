@@ -9,7 +9,7 @@ from decouple import config
 import pytest
 
 from sqooler.storage_providers.dropbox import DropboxProviderExtended
-from sqooler.schemes import DropboxLoginInformation, BackendConfigSchemaIn
+from sqooler.schemes import DropboxLoginInformation
 
 from .storage_provider_test_utils import StorageProviderTestUtils
 
@@ -133,39 +133,20 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         # create a dropbox object
         storage_provider = DropboxProviderExtended(self.get_login(), DB_NAME)
 
-        # create a dummy config
-        dummy_id = uuid.uuid4().hex[:5]
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["name"] = "Dummy"
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["simulator"] = True
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["num_species"] = 1
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["max_shots"] = 5
-        dummy_dict["max_experiments"] = 5
-        dummy_dict["description"] = "Dummy simulator for testing"
-        backend_name = f"dummy{dummy_id}"
-        dummy_dict["display_name"] = backend_name
-        dummy_path = f"Backend_files/Config/{backend_name}"
-        dummy_dict["operational"] = True
-
-        config_info = BackendConfigSchemaIn(**dummy_dict)
+        backend_name, config_info = self.get_dummy_config()
         storage_provider.upload_config(config_info, backend_name)
+        dummy_path = f"Backend_files/Config/{backend_name}"
 
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
-        assert f"dummy{dummy_id}" in backends
+        assert backend_name in backends
 
         # can we get the config of the backend ?
         backend_info = storage_provider.get_backend_dict(backend_name)
         backend_dict = backend_info.model_dump()
         assert (
             backend_dict["backend_name"]
-            == f"dropboxtest_{dummy_dict['display_name']}_simulator"
+            == f"dropboxtest_{config_info.display_name}_simulator"
         )
 
         storage_provider.delete_file(dummy_path, "config")
