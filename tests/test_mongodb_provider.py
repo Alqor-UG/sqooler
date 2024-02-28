@@ -3,18 +3,33 @@ The tests for the storage provider using mongodb
 """
 
 import uuid
+from typing import Any
 
 # get the environment variables
 from decouple import config
 
 from sqooler.storage_providers.mongodb import MongodbProvider
-from sqooler.schemes import ResultDict, MongodbLoginInformation, BackendConfigSchemaIn
+from sqooler.schemes import ResultDict, MongodbLoginInformation
+
+from .storage_provider_test_utils import StorageProviderTestUtils
 
 
-class TestMongodbProvider:
+class TestMongodbProvider(StorageProviderTestUtils):
     """
     The class that contains all the tests for the dropbox provider.
     """
+
+    def get_login_class(self) -> Any:
+        """
+        Get the storage provider.
+        """
+        return MongodbLoginInformation
+
+    def get_storage_provider(self) -> Any:
+        """
+        Get the storage provider.
+        """
+        return MongodbProvider
 
     def get_login(self) -> MongodbLoginInformation:
         """
@@ -115,25 +130,8 @@ class TestMongodbProvider:
         """
 
         storage_provider = MongodbProvider(self.get_login())
-        dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy{dummy_id}"
 
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["display_name"] = backend_name
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["description"] = "This is a dummy backend."
-        dummy_dict["cold_atom_type"] = "fermions"
-        dummy_dict["max_experiments"] = 1
-        dummy_dict["max_shots"] = 1
-        dummy_dict["simulator"] = True
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["num_species"] = 1
-        dummy_dict["operational"] = True
-
-        backend_config_info = BackendConfigSchemaIn(**dummy_dict)
+        backend_name, backend_config_info = self.get_dummy_config()
         storage_provider.upload_config(backend_config_info, backend_name)
 
         # can we get the backend in the list ?
@@ -145,7 +143,7 @@ class TestMongodbProvider:
         result_found = configs.find_one(document_to_find)
         if result_found is None:
             raise ValueError("The backend was not uploaded properly.")
-        assert result_found["display_name"] == dummy_dict["display_name"]
+        assert result_found["display_name"] == backend_config_info.display_name
 
         # make sure that the upload of the same backend does only update it.
         backend_config_info.num_wires = 4

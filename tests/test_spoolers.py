@@ -24,6 +24,8 @@ from sqooler.spoolers import (
     LabscriptSpooler,
 )
 
+from pprint import pprint
+
 
 class DummyExperiment(BaseModel):
     """
@@ -189,6 +191,32 @@ def test_spooler_config() -> None:
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
     assert spooler_config.operational
+
+
+def test_spooler_cold_atom() -> None:
+    """
+    Test that we cannot set the spooler with the wrong cold atom type.
+    """
+
+    test_spooler = Spooler(
+        ins_schema_dict={},
+        device_config=DummyExperiment,
+        n_wires=2,
+        cold_atom_type="fermion",
+    )
+
+    spooler_config = test_spooler.get_configuration()
+    assert spooler_config.num_wires == 2
+    assert spooler_config.operational
+
+    with pytest.raises(ValidationError):
+        test_spooler = Spooler(
+            ins_schema_dict={},
+            device_config=DummyExperiment,
+            n_wires=2,
+            cold_atom_type="something",
+        )
+        spooler_config = test_spooler.get_configuration()
 
 
 def test_spooler_operational() -> None:
