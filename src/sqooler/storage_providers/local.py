@@ -18,6 +18,7 @@ from ..schemes import (
     BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     BackendConfigSchemaOut,
+    DisplayNameStr,
 )
 
 from .base import StorageProvider, validate_active
@@ -167,13 +168,13 @@ class LocalProviderExtended(StorageProvider):
         os.remove(source_file)
 
     @validate_active
-    def get_backends(self) -> list[str]:
+    def get_backends(self) -> list[DisplayNameStr]:
         """
         Get a list of all the backends that the provider offers.
         """
         # path of the configs
         config_path = self.base_path + "/backends/configs"
-        backend_names: list[str] = []
+        backend_names: list[DisplayNameStr] = []
 
         # If the folder does not exist, return an empty list
         if not os.path.exists(config_path):
@@ -194,7 +195,7 @@ class LocalProviderExtended(StorageProvider):
         return backend_names
 
     @validate_active
-    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
+    def get_backend_dict(self, display_name: DisplayNameStr) -> BackendConfigSchemaOut:
         """
         The configuration dictionary of the backend such that it can be sent out to the API to
         the common user. We make sure that it is compatible with QISKIT within this function.
@@ -223,7 +224,9 @@ class LocalProviderExtended(StorageProvider):
         qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
         return qiskit_backend_dict
 
-    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+    def get_backend_status(
+        self, display_name: DisplayNameStr
+    ) -> BackendStatusSchemaOut:
         """
         Get the status of the backend. This follows the qiskit logic.
 
@@ -253,7 +256,9 @@ class LocalProviderExtended(StorageProvider):
         qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 
-    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+    def upload_job(
+        self, job_dict: dict, display_name: DisplayNameStr, username: str
+    ) -> str:
         """
         Upload the job to the storage provider.
 
@@ -273,7 +278,7 @@ class LocalProviderExtended(StorageProvider):
         return job_id
 
     def upload_status(
-        self, display_name: str, username: str, job_id: str
+        self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
@@ -305,7 +310,7 @@ class LocalProviderExtended(StorageProvider):
         return status_dict
 
     def get_status(
-        self, display_name: str, username: str, job_id: str
+        self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
@@ -334,7 +339,9 @@ class LocalProviderExtended(StorageProvider):
                 error_message=f"Could not find status for {display_name} with job_id {job_id}.",
             )
 
-    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+    def get_result(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> ResultDict:
         """
         This function gets the result file from the backend and returns the result dict.
 
@@ -385,14 +392,14 @@ class LocalProviderExtended(StorageProvider):
         return typed_result
 
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, backend_name: str
+        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
         Args:
             config_dict: The dictionary containing the configuration
-            backend_name (str): The name of the backend
+            display_name : The name of the backend
 
         Returns:
             None
@@ -404,7 +411,7 @@ class LocalProviderExtended(StorageProvider):
         if not os.path.exists(config_path):
             os.makedirs(config_path)
 
-        file_name = backend_name + ".json"
+        file_name = display_name + ".json"
         full_json_path = os.path.join(config_path, file_name)
         secure_path = os.path.normpath(full_json_path)
         with open(secure_path, "w", encoding="utf-8") as json_file:
@@ -415,7 +422,7 @@ class LocalProviderExtended(StorageProvider):
         result_dict: ResultDict,
         status_msg_dict: StatusMsgDict,
         job_id: str,
-        backend_name: str,
+        display_name: DisplayNameStr,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -424,7 +431,7 @@ class LocalProviderExtended(StorageProvider):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
-            backend_name: the name of the backend
+            display_name: the name of the backend
 
         Returns:
             None
@@ -438,11 +445,11 @@ class LocalProviderExtended(StorageProvider):
                     "The 'result_dict' argument cannot be None if the job is done."
                 )
             # let us create the result json file
-            result_json_dir = "results/" + backend_name
+            result_json_dir = "results/" + display_name
             self.upload(result_dict.model_dump(), result_json_dir, job_id)
 
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = "jobs/finished/" + backend_name
+            job_finished_json_dir = "jobs/finished/" + display_name
             self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
@@ -451,7 +458,7 @@ class LocalProviderExtended(StorageProvider):
             self.move_file(job_json_start_dir, deleted_json_dir, job_id)
 
         # and create the status json file
-        status_json_dir = "status/" + backend_name
+        status_json_dir = "status/" + display_name
         self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
@@ -471,17 +478,17 @@ class LocalProviderExtended(StorageProvider):
             return []
         return os.listdir(full_path)
 
-    def get_next_job_in_queue(self, backend_name: str) -> dict:
+    def get_next_job_in_queue(self, display_name: str) -> dict:
         """
         A function that obtains the next job in the queue.
 
         Args:
-            backend_name: The name of the backend
+            display_name: The name of the backend
 
         Returns:
             the dict of the next job
         """
-        queue_dir = "jobs/queued/" + backend_name
+        queue_dir = "jobs/queued/" + display_name
         job_dict = {"job_id": 0, "job_json_path": "None"}
         job_list = self.get_file_queue(queue_dir)
         # if there is a job, we should move it

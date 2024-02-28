@@ -17,6 +17,7 @@ from ..schemes import (
     BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     BackendConfigSchemaOut,
+    DisplayNameStr,
 )
 
 from .base import StorageProvider, validate_active
@@ -217,7 +218,7 @@ class MongodbProviderExtended(StorageProvider):
         collection.delete_one(document_to_find)
 
     @validate_active
-    def get_backends(self) -> list[str]:
+    def get_backends(self) -> list[DisplayNameStr]:
         """
         Get a list of all the backends that the provider offers.
         """
@@ -226,13 +227,13 @@ class MongodbProviderExtended(StorageProvider):
         database = self.client["backends"]
         config_collection = database["configs"]
         # get all the documents in the collection configs and save the disply_name in a list
-        backend_names: list[str] = []
+        backend_names: list[DisplayNameStr] = []
         for config_dict in config_collection.find():
             backend_names.append(config_dict["display_name"])
         return backend_names
 
     @validate_active
-    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
+    def get_backend_dict(self, display_name: DisplayNameStr) -> BackendConfigSchemaOut:
         """
         The configuration dictionary of the backend such that it can be sent out to the API to
         the common user. We make sure that it is compatible with QISKIT within this function.
@@ -259,7 +260,9 @@ class MongodbProviderExtended(StorageProvider):
         qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
         return qiskit_backend_dict
 
-    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+    def get_backend_status(
+        self, display_name: DisplayNameStr
+    ) -> BackendStatusSchemaOut:
         """
         Get the status of the backend. This follows the qiskit logic.
 
@@ -291,14 +294,14 @@ class MongodbProviderExtended(StorageProvider):
         return qiskit_backend_dict
 
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, backend_name: str
+        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
         Args:
             config_dict: The dictionary containing the configuration
-            backend_name (str): The name of the backend
+            display_name : The name of the backend
 
         Returns:
             None
@@ -307,7 +310,7 @@ class MongodbProviderExtended(StorageProvider):
 
         # first we have to check if the device already exists in the database
 
-        document_to_find = {"display_name": backend_name}
+        document_to_find = {"display_name": display_name}
 
         # get the database on which we work
         database = self.client["backends"]
@@ -316,7 +319,7 @@ class MongodbProviderExtended(StorageProvider):
         collection = database["configs"]
 
         result_found = collection.find_one(document_to_find)
-        config_dict.display_name = backend_name
+        config_dict.display_name = display_name
         if result_found:
             # update the file
             self.update_file(
@@ -331,7 +334,9 @@ class MongodbProviderExtended(StorageProvider):
         config_id = uuid.uuid4().hex[:24]
         self.upload(config_dict.model_dump(), config_path, config_id)
 
-    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+    def upload_job(
+        self, job_dict: dict, display_name: DisplayNameStr, username: str
+    ) -> str:
         """
         Upload the job to the storage provider.
 
@@ -351,7 +356,7 @@ class MongodbProviderExtended(StorageProvider):
         return job_id
 
     def upload_status(
-        self, display_name: str, username: str, job_id: str
+        self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
@@ -383,7 +388,7 @@ class MongodbProviderExtended(StorageProvider):
         return status_dict
 
     def get_status(
-        self, display_name: str, username: str, job_id: str
+        self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
@@ -412,7 +417,9 @@ class MongodbProviderExtended(StorageProvider):
                 error_message=str(err),
             )
 
-    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+    def get_result(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> ResultDict:
         """
         This function gets the result file from the backend and returns the result dict.
 
@@ -453,7 +460,7 @@ class MongodbProviderExtended(StorageProvider):
         result_dict: ResultDict | None,
         status_msg_dict: StatusMsgDict,
         job_id: str,
-        backend_name: str,
+        display_name: DisplayNameStr,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -466,7 +473,7 @@ class MongodbProviderExtended(StorageProvider):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
-            backend_name: the name of the backend
+            display_name: the name of the backend
 
         Returns:
             None
@@ -484,11 +491,11 @@ class MongodbProviderExtended(StorageProvider):
                     "The 'result_dict' argument cannot be None if the job is done."
                 )
             # let us create the result json file
-            result_json_dir = "results/" + backend_name
+            result_json_dir = "results/" + display_name
             self.upload(result_dict.model_dump(), result_json_dir, job_id)
 
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = "jobs/finished/" + backend_name
+            job_finished_json_dir = "jobs/finished/" + display_name
             self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
@@ -499,7 +506,7 @@ class MongodbProviderExtended(StorageProvider):
         # TODO: most likely we should raise an error if the status of the job is not DONE or ERROR
 
         # and create the status json file
-        status_json_dir = "status/" + backend_name
+        status_json_dir = "status/" + display_name
         self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
@@ -529,19 +536,19 @@ class MongodbProviderExtended(StorageProvider):
             file_list.append(str(result["_id"]))
         return file_list
 
-    def get_next_job_in_queue(self, backend_name: str) -> dict:
+    def get_next_job_in_queue(self, display_name: str) -> dict:
         """
         A function that obtains the next job in the queue. It looks in the queued folder and moves the
         first job to the running folder.
 
         Args:
-            backend_name (str): The name of the backend
+            display_name : The name of the backend
 
         Returns:
             the path towards the job
         """
 
-        queue_dir = "jobs/queued/" + backend_name
+        queue_dir = "jobs/queued/" + display_name
         job_dict = {"job_id": 0, "job_json_path": "None"}
         job_list = self.get_file_queue(queue_dir)
         # if there is a job, we should move it
