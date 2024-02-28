@@ -5,6 +5,8 @@ The tests for the storage provider
 import datetime
 import uuid
 from typing import Any
+from datetime import timezone
+
 
 # get the environment variables
 from decouple import config
@@ -105,7 +107,7 @@ class TestDropboxProvider(StorageProviderTestUtils):
 
         username = "test_user"
         job_id = (
-            (datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S"))
+            (datetime.datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
             + "-"
             + backend_name
             + "-"

@@ -221,7 +221,7 @@ class DropboxProviderExtended(StorageProvider):
                 sys.exit("ERROR: Invalid access token.")
 
             full_path = "/" + storage_path + "/" + job_id + ".json"
-            _ = dbx.files_delete(path=full_path)
+            _ = dbx.files_delete_v2(path=full_path)
 
     def upload_config(
         self, config_dict: BackendConfigSchemaIn, backend_name: str
