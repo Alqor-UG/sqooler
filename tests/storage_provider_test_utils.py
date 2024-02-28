@@ -2,13 +2,14 @@
 This module contains the test utils for the storage providers. So it is called by the ..._provider tests.
 """
 
-from typing import Any, Tuple
+from typing import Any, Tuple, Type
 
 import uuid
 from decouple import config
 import pytest
 from pydantic import ValidationError
 from sqooler.schemes import BackendConfigSchemaIn
+from sqooler.storage_providers.base import StorageProvider
 
 
 class StorageProviderTestUtils:
@@ -22,7 +23,7 @@ class StorageProviderTestUtils:
         """
         raise NotImplementedError
 
-    def get_storage_provider(self) -> Any:
+    def get_storage_provider(self) -> Type[StorageProvider]:
         """
         Get the storage provider.
         """
@@ -130,7 +131,7 @@ class StorageProviderTestUtils:
         dummy_dict["simulator"] = True
 
         config_info = BackendConfigSchemaIn(**dummy_dict)
-        storage_provider.upload_config(config_info, backend_name=backend_name)
+        storage_provider.upload_config(config_info, display_name=backend_name)
 
         # let us first test the we can upload a dummy job
         job_payload = {
