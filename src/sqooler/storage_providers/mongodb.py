@@ -16,7 +16,7 @@ from ..schemes import (
     MongodbLoginInformation,
     BackendStatusSchemaOut,
     BackendConfigSchemaIn,
-    BackendConfigSchemaOut,
+    NextJobSchema,
     DisplayNameStr,
 )
 
@@ -232,34 +232,6 @@ class MongodbProviderExtended(StorageProvider):
             backend_names.append(config_dict["display_name"])
         return backend_names
 
-    @validate_active
-    def get_backend_dict(self, display_name: DisplayNameStr) -> BackendConfigSchemaOut:
-        """
-        The configuration dictionary of the backend such that it can be sent out to the API to
-        the common user. We make sure that it is compatible with QISKIT within this function.
-
-        Args:
-            display_name: The identifier of the backend
-
-        Returns:
-            The full schema of the backend.
-        """
-        # get the database on which we work
-        database = self.client["backends"]
-        config_collection = database["configs"]
-
-        # create the filter for the document with display_name that is equal to display_name
-        document_to_find = {"display_name": display_name}
-        backend_config_dict = config_collection.find_one(document_to_find)
-
-        if not backend_config_dict:
-            raise FileNotFoundError("The backend does not exist for the given storage.")
-
-        backend_config_dict.pop("_id")
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
-        return qiskit_backend_dict
-
     def get_backend_status(
         self, display_name: DisplayNameStr
     ) -> BackendStatusSchemaOut:
@@ -333,6 +305,35 @@ class MongodbProviderExtended(StorageProvider):
 
         config_id = uuid.uuid4().hex[:24]
         self.upload(config_dict.model_dump(), config_path, config_id)
+
+    @validate_active
+    def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
+        """
+        The function that downloads the spooler configuration to the storage.
+
+        Args:
+            config_dict: The model containing the configuration
+            display_name : The name of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
+
+        Returns:
+            The configuration of the backend in complete form.
+        """
+        # get the database on which we work
+        database = self.client["backends"]
+        config_collection = database["configs"]
+
+        # create the filter for the document with display_name that is equal to display_name
+        document_to_find = {"display_name": display_name}
+        backend_config_dict = config_collection.find_one(document_to_find)
+
+        if not backend_config_dict:
+            raise FileNotFoundError("The backend does not exist for the given storage.")
+
+        backend_config_dict.pop("_id")
+        return BackendConfigSchemaIn(**backend_config_dict)
 
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str
@@ -536,21 +537,26 @@ class MongodbProviderExtended(StorageProvider):
             file_list.append(str(result["_id"]))
         return file_list
 
-    def get_next_job_in_queue(self, display_name: str) -> dict:
+    def get_next_job_in_queue(self, display_name: str) -> NextJobSchema:
         """
-        A function that obtains the next job in the queue. It looks in the queued folder and moves the
-        first job to the running folder.
+        A function that obtains the next job in the queue. If there is no job, it returns an empty
+        dict. If there is a job, it moves the job from the queue to the running folder.
+        It also update the time stamp for when the system last looked into the file queue.
 
         Args:
-            display_name : The name of the backend
+            display_name: The name of the backend
 
         Returns:
-            the path towards the job
+            the job dict
         """
 
         queue_dir = "jobs/queued/" + display_name
         job_dict = {"job_id": 0, "job_json_path": "None"}
         job_list = self.get_file_queue(queue_dir)
+
+        # update the time stamp of the last job
+        self.timestamp_queue(display_name)
+
         # if there is a job, we should move it
         if job_list:
             job_id = job_list[0]
@@ -559,7 +565,7 @@ class MongodbProviderExtended(StorageProvider):
             # and move the file into the right directory
             self.move_file(queue_dir, "jobs/running", job_id)
             job_dict["job_json_path"] = "jobs/running"
-        return job_dict
+        return NextJobSchema(**job_dict)
 
 
 class MongodbProvider(MongodbProviderExtended):
