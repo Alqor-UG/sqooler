@@ -338,7 +338,7 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         assert dummy_result["results"] == result["results"]
 
         # remove the obsolete job from the storage
-        job_dir = "jobs/queued/" + backend_name
+        job_dir = "jobs/running/"
         storage_provider.delete_file(job_dir, job_id)
 
         # remove the obsolete collection from the storage

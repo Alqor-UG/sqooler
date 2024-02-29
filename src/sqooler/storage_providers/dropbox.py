@@ -548,6 +548,9 @@ class DropboxProviderExtended(StorageProvider):
         job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
         job_dict = {"job_id": 0, "job_json_path": "None"}
         job_list = self.get_file_queue(job_json_dir)
+
+        # time stamp when we last looked for a job
+
         # if there is a job, we should move it
         if job_list:
             job_json_name = job_list[0]

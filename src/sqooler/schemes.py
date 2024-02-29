@@ -6,7 +6,7 @@ There is no obvious need, why this code should be touch in a new back-end.
 from typing import Optional, Literal, Annotated
 
 from pydantic import BaseModel, Field, field_validator
-
+from datetime import datetime
 
 # the strings that are allowed for the status
 StatusStr = Annotated[
@@ -98,6 +98,15 @@ class BackendStatusSchemaOut(BaseModel):
     status_msg: str = Field(description="The status message for the backend")
 
 
+class NextJobSchema(BaseModel):
+    """
+    The schema for the next job to be executed.
+    """
+
+    job_id: str = Field(description="unique execution id from the backend.")
+    job_json_path: str = Field(description="The path to the job json file.")
+
+
 class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
     """
     The schema send in to detail the configuration of the backend.
@@ -132,6 +141,9 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
     )
     status_msg: Optional[str] = Field(
         default=None, description="The status message for the backend"
+    )
+    last_queue_check: Optional[datetime] = Field(
+        default=None, description="The last time the queue was checked."
     )
 
 

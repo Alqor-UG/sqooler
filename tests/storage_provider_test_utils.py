@@ -11,6 +11,8 @@ from pydantic import ValidationError
 from sqooler.schemes import BackendConfigSchemaIn
 from sqooler.storage_providers.base import StorageProvider
 
+from pprint import pprint
+
 
 class StorageProviderTestUtils:
     """
@@ -177,5 +179,17 @@ class StorageProviderTestUtils:
             job_id=job_id,
         )
         assert job_status.job_id == job_id
+
+        # make sure that last checked is not set
+        backend_config = storage_provider.get_config(backend_name)
+        assert backend_config.last_queue_check is None
+
+        # now test that we can move through the queue
+        next_job = storage_provider.get_next_job_in_queue(backend_name)
+        assert next_job.job_id == job_id
+        pprint(next_job.model_dump())
+        # now also make sure that we updated the time stamp for the queue
+        backend_config = storage_provider.get_config(backend_name)
+        assert backend_config.last_queue_check
 
         return backend_name, job_id, username, storage_provider

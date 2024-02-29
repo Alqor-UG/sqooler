@@ -17,7 +17,7 @@ from ..schemes import (
     LocalLoginInformation,
     BackendStatusSchemaOut,
     BackendConfigSchemaIn,
-    BackendConfigSchemaOut,
+    NextJobSchema,
     DisplayNameStr,
 )
 
@@ -193,36 +193,6 @@ class LocalProviderExtended(StorageProvider):
                 config_dict = json.load(json_file)
                 backend_names.append(config_dict["display_name"])
         return backend_names
-
-    @validate_active
-    def get_backend_dict(self, display_name: DisplayNameStr) -> BackendConfigSchemaOut:
-        """
-        The configuration dictionary of the backend such that it can be sent out to the API to
-        the common user. We make sure that it is compatible with QISKIT within this function.
-
-        Args:
-            display_name: The identifier of the backend
-
-        Returns:
-            The full schema of the backend.
-
-        Raises:
-            FileNotFoundError: If the backend does not exist
-        """
-        # path of the configs
-        config_path = self.base_path + "/backends/configs"
-        file_name = display_name + ".json"
-        full_json_path = os.path.join(config_path, file_name)
-        secure_path = os.path.normpath(full_json_path)
-        with open(secure_path, "r", encoding="utf-8") as json_file:
-            backend_config_dict = json.load(json_file)
-
-        if not backend_config_dict:
-            raise FileNotFoundError("The backend does not exist for the given storage.")
-
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
-        return qiskit_backend_dict
 
     def get_backend_status(
         self, display_name: DisplayNameStr
@@ -415,7 +385,34 @@ class LocalProviderExtended(StorageProvider):
         full_json_path = os.path.join(config_path, file_name)
         secure_path = os.path.normpath(full_json_path)
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json.dump(config_dict.model_dump(), json_file)
+            json_file.write(config_dict.model_dump_json())
+
+    def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
+        """
+        The function that downloads the spooler configuration to the storage.
+
+        Args:
+            config_dict: The model containing the configuration
+            display_name : The name of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
+
+        Returns:
+            The configuration of the backend in complete form.
+        """
+        # path of the configs
+        config_path = self.base_path + "/backends/configs"
+        file_name = display_name + ".json"
+        full_json_path = os.path.join(config_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "r", encoding="utf-8") as json_file:
+            backend_config_dict = json.load(json_file)
+
+        if not backend_config_dict:
+            raise FileNotFoundError("The backend does not exist for the given storage.")
+
+        return BackendConfigSchemaIn(**backend_config_dict)
 
     def update_in_database(
         self,
@@ -478,7 +475,7 @@ class LocalProviderExtended(StorageProvider):
             return []
         return os.listdir(full_path)
 
-    def get_next_job_in_queue(self, display_name: str) -> dict:
+    def get_next_job_in_queue(self, display_name: str) -> NextJobSchema:
         """
         A function that obtains the next job in the queue.
 
@@ -491,6 +488,10 @@ class LocalProviderExtended(StorageProvider):
         queue_dir = "jobs/queued/" + display_name
         job_dict = {"job_id": 0, "job_json_path": "None"}
         job_list = self.get_file_queue(queue_dir)
+
+        # update the time stamp of the last job
+        self.timestamp_queue(display_name)
+
         # if there is a job, we should move it
         if job_list:
             job_json_name = job_list[0]
@@ -500,7 +501,7 @@ class LocalProviderExtended(StorageProvider):
             # and move the file into the right directory
             self.move_file(queue_dir, "jobs/running", job_id)
             job_dict["job_json_path"] = "jobs/running"
-        return job_dict
+        return NextJobSchema(**job_dict)
 
 
 class LocalProvider(LocalProviderExtended):

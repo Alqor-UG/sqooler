@@ -9,12 +9,15 @@ import re
 from typing import Mapping, Callable, Any
 import functools
 
+from datetime import datetime, timezone
+
 from ..schemes import (
     ResultDict,
     StatusMsgDict,
     BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     BackendConfigSchemaOut,
+    NextJobSchema,
     DisplayNameStr,
     BackendNameStr,
 )
@@ -96,17 +99,24 @@ class StorageProvider(ABC):
         Get a list of all the backends that the provider offers.
         """
 
-    @abstractmethod
+    @validate_active
     def get_backend_dict(self, display_name: DisplayNameStr) -> BackendConfigSchemaOut:
         """
-        The configuration of the backend.
+        The configuration dictionary of the backend such that it can be sent out to the API to
+        the common user. We make sure that it is compatible with QISKIT within this function.
 
         Args:
             display_name: The identifier of the backend
 
         Returns:
             The full schema of the backend.
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
         """
+        backend_config_info = self.get_config(display_name)
+        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
+        return qiskit_backend_dict
 
     @abstractmethod
     def get_backend_status(
@@ -245,6 +255,19 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
+        """
+        The function that downloads the spooler configuration to the storage.
+
+        Args:
+            config_dict: The model containing the configuration
+            display_name : The name of the backend
+
+        Returns:
+            The configuration of the backend in complete form.
+        """
+
+    @abstractmethod
     def update_in_database(
         self,
         result_dict: ResultDict,
@@ -278,17 +301,42 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> dict:
+    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> NextJobSchema:
         """
         A function that obtains the next job in the queue. If there is no job, it returns an empty
         dict. If there is a job, it moves the job from the queue to the running folder.
+        It also update the time stamp for when the system last looked into the file queue.
 
         Args:
             display_name: The name of the backend
 
         Returns:
-            the path towards the job
+            the job dict
         """
+
+    def timestamp_queue(self, display_name: DisplayNameStr) -> None:
+        """
+        Updates the time stamp for when the system last looked into the file queue.
+        This allows us to track if the system is actually online or not.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+
+        # first let us get the current configuration
+        config_dict = self.get_config(display_name)
+
+        # get the current time
+        current_time = datetime.now(timezone.utc)
+
+        # update the time stamp
+        config_dict.last_queue_check = current_time
+
+        # upload the new configuration
+        self.upload_config(config_dict, display_name)
 
     def backend_dict_to_qiskit(
         self, backend_config_info: BackendConfigSchemaIn
