@@ -272,7 +272,8 @@ class StorageProvider(ABC):
     @abstractmethod
     def get_next_job_in_queue(self, backend_name: str) -> dict:
         """
-        A function that obtains the next job in the queue.
+        A function that obtains the next job in the queue. If there is no job, it returns an empty
+        dict. If there is a job, it moves the job from the queue to the running folder.
 
         Args:
             backend_name (str): The name of the backend
