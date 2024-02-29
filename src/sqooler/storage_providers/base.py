@@ -15,6 +15,8 @@ from ..schemes import (
     BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     BackendConfigSchemaOut,
+    DisplayNameStr,
+    BackendNameStr,
 )
 
 
@@ -95,7 +97,7 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
+    def get_backend_dict(self, display_name: DisplayNameStr) -> BackendConfigSchemaOut:
         """
         The configuration of the backend.
 
@@ -107,7 +109,9 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+    def get_backend_status(
+        self, display_name: DisplayNameStr
+    ) -> BackendStatusSchemaOut:
         """
         Get the status of the backend. This follows the qiskit logic.
 
@@ -119,7 +123,9 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+    def upload_job(
+        self, job_dict: dict, display_name: DisplayNameStr, username: str
+    ) -> str:
         """
         Upload the job to the storage provider.
 
@@ -147,7 +153,7 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def upload_status(
-        self, display_name: str, username: str, job_id: str
+        self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
@@ -163,7 +169,7 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def get_status(
-        self, display_name: str, username: str, job_id: str
+        self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
@@ -178,7 +184,9 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+    def get_result(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> ResultDict:
         """
         This function gets the result file from the backend and returns the result dict.
 
@@ -223,14 +231,14 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, backend_name: str
+        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
         Args:
             config_dict: The model containing the configuration
-            backend_name (str): The name of the backend
+            display_name : The name of the backend
 
         Returns:
             None
@@ -242,7 +250,7 @@ class StorageProvider(ABC):
         result_dict: ResultDict,
         status_msg_dict: StatusMsgDict,
         job_id: str,
-        backend_name: str,
+        display_name: DisplayNameStr,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -251,7 +259,7 @@ class StorageProvider(ABC):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
-            backend_name: the name of the backend
+            display_name: the name of the backend
 
         Returns:
             None
@@ -270,13 +278,13 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_next_job_in_queue(self, backend_name: str) -> dict:
+    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> dict:
         """
         A function that obtains the next job in the queue. If there is no job, it returns an empty
         dict. If there is a job, it moves the job from the queue to the running folder.
 
         Args:
-            backend_name (str): The name of the backend
+            display_name: The name of the backend
 
         Returns:
             the path towards the job
@@ -319,7 +327,9 @@ class StorageProvider(ABC):
         backend_config_dict["coupling_map"] = "linear"
         return BackendConfigSchemaOut(**backend_config_dict)
 
-    def long_backend_name(self, display_name: str, simulator: bool) -> str:
+    def long_backend_name(
+        self, display_name: DisplayNameStr, simulator: bool
+    ) -> BackendNameStr:
         """
         This function returns the long name of the backend.
 

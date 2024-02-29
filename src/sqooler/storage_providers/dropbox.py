@@ -22,6 +22,7 @@ from ..schemes import (
     BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     BackendConfigSchemaOut,
+    DisplayNameStr,
 )
 
 from .base import StorageProvider, validate_active
@@ -224,7 +225,7 @@ class DropboxProviderExtended(StorageProvider):
             _ = dbx.files_delete_v2(path=full_path)
 
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, backend_name: str
+        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
@@ -234,13 +235,13 @@ class DropboxProviderExtended(StorageProvider):
 
         Args:
             config_dict: The dictionary containing the configuration
-            backend_name (str): The name of the backend
+            display_name : The name of the backend
 
         Returns:
             None
         """
 
-        config_path = "Backend_files/Config/" + backend_name
+        config_path = "Backend_files/Config/" + display_name
         self.upload(config_dict.model_dump(), config_path, "config")
 
     def update_in_database(
@@ -248,7 +249,7 @@ class DropboxProviderExtended(StorageProvider):
         result_dict: ResultDict,
         status_msg_dict: StatusMsgDict,
         job_id: str,
-        backend_name: str,
+        display_name: DisplayNameStr,
     ) -> None:
         """
         Upload the status and result to the dropbox.
@@ -257,7 +258,7 @@ class DropboxProviderExtended(StorageProvider):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
-            backend_name: the name of the backend
+            display_name: the name of the backend
 
         Returns:
             None
@@ -266,7 +267,7 @@ class DropboxProviderExtended(StorageProvider):
         extracted_username = job_id.split("-")[2]
 
         status_json_dir = (
-            "/Backend_files/Status/" + backend_name + "/" + extracted_username + "/"
+            "/Backend_files/Status/" + display_name + "/" + extracted_username + "/"
         )
         status_json_name = "status-" + job_id
 
@@ -276,7 +277,7 @@ class DropboxProviderExtended(StorageProvider):
         if status_msg_dict.status == "DONE":
             # let us create the result json file
             result_json_dir = (
-                "/Backend_files/Result/" + backend_name + "/" + extracted_username + "/"
+                "/Backend_files/Result/" + display_name + "/" + extracted_username + "/"
             )
             result_json_name = "result-" + job_id
             self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
@@ -284,7 +285,7 @@ class DropboxProviderExtended(StorageProvider):
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = (
                 "/Backend_files/Finished_Jobs/"
-                + backend_name
+                + display_name
                 + "/"
                 + extracted_username
                 + "/"
@@ -364,7 +365,7 @@ class DropboxProviderExtended(StorageProvider):
                 backend_names.append(entry.name)
         return backend_names
 
-    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
+    def get_backend_dict(self, display_name: DisplayNameStr) -> BackendConfigSchemaOut:
         """
         The configuration of the backend.
 
@@ -382,7 +383,9 @@ class DropboxProviderExtended(StorageProvider):
         qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
         return qiskit_backend_dict
 
-    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+    def get_backend_status(
+        self, display_name: DisplayNameStr
+    ) -> BackendStatusSchemaOut:
         """
         Get the status of the backend. This follows the qiskit logic.
 
@@ -400,7 +403,9 @@ class DropboxProviderExtended(StorageProvider):
         qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 
-    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+    def upload_job(
+        self, job_dict: dict, display_name: DisplayNameStr, username: str
+    ) -> str:
         """
         This function uploads a job to the backend and creates the job_id.
 
@@ -432,7 +437,7 @@ class DropboxProviderExtended(StorageProvider):
         return job_id
 
     def upload_status(
-        self, display_name: str, username: str, job_id: str
+        self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
@@ -462,7 +467,7 @@ class DropboxProviderExtended(StorageProvider):
         return status_dict
 
     def get_status(
-        self, display_name: str, username: str, job_id: str
+        self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
         """
         This function gets the status file from the backend and returns the status dict.
@@ -492,7 +497,9 @@ class DropboxProviderExtended(StorageProvider):
             }
             return StatusMsgDict(**status_draft)
 
-    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
+    def get_result(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> ResultDict:
         """
         This function gets the result file from the backend and returns the result dict.
 
@@ -528,17 +535,17 @@ class DropboxProviderExtended(StorageProvider):
         typed_result = ResultDict(**result_dict)
         return typed_result
 
-    def get_next_job_in_queue(self, backend_name: str) -> dict:
+    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> dict:
         """
         A function that obtains the next job in the queue.
 
         Args:
-            backend_name (str): The name of the backend
+            display_name: The name of the backend
 
         Returns:
             the path towards the job
         """
-        job_json_dir = "/Backend_files/Queued_Jobs/" + backend_name + "/"
+        job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
         job_dict = {"job_id": 0, "job_json_path": "None"}
         job_list = self.get_file_queue(job_json_dir)
         # if there is a job, we should move it

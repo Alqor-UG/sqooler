@@ -22,6 +22,25 @@ ColdAtomStr = Annotated[
     ),
 ]
 
+# the strings that are allowed for the display_name
+DisplayNameStr = Annotated[
+    str,
+    Field(
+        default="",
+        description="The short name for the backend",
+        pattern=r"^[a-z0-9]*$",
+    ),
+]
+
+# the strings that are allowed for the backend_name
+BackendNameStr = Annotated[
+    str,
+    Field(
+        description="The full name of the backend including the storage provider.",
+        pattern=r"^$|^[a-z0-9]+_[a-z0-9]+_[a-z0-9]+$",
+    ),
+]
+
 
 class StatusMsgDict(BaseModel):
     """
@@ -70,7 +89,7 @@ class BackendStatusSchemaOut(BaseModel):
     `qiskit.providers.models.BackendStatus`.
     """
 
-    backend_name: str = Field(description="The name of the backend")
+    backend_name: BackendNameStr
     backend_version: str = Field(
         description="The version of the backend. Of the form X.Y.Z"
     )
@@ -87,9 +106,7 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
 
     description: str = Field(description="A description for the backend")
     version: str = Field(description="The backend version in the form X.Y.Z")
-    display_name: Optional[str] = Field(
-        description=" Alternate name field for the backend", pattern=r"^[a-z0-9]*$"
-    )
+    display_name: Optional[DisplayNameStr]
     cold_atom_type: ColdAtomStr
     gates: list = Field(
         description="The list of GateConfig objects for the basis gates of the backend"
@@ -127,7 +144,7 @@ class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
     """
 
     description: str = Field(description="A description for the backend")
-    display_name: str = Field(description=" Alternate name field for the backend")
+    display_name: DisplayNameStr
     conditional: bool = Field(
         default=False, description="True if the backend supports conditional operations"
     )
@@ -145,7 +162,7 @@ class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
     open_pulse: bool = Field(default=False, description="True if backend is OpenPulse")
     backend_version: str = Field(description="The backend version in the form X.Y.Z")
     n_qubits: int = Field(description="The number of qubits / wires for the backend")
-    backend_name: str = Field(description="The backend name")
+    backend_name: BackendNameStr
     basis_gates: list[str] = Field(
         description="The list of strings for the basis gates of the backends"
     )
@@ -215,15 +232,8 @@ class ResultDict(BaseModel):
     qiskit class qiskit.result.Result.
     """
 
-    backend_name: Optional[str] = Field(
-        default=None,
-        description="The full name of the backend including the storage provider.",
-        pattern=r"^[a-z0-9]*_[a-z0-9]*_[a-z0-9]*$",
-    )
-    display_name: str = Field(
-        description="The short name for the backend",
-        pattern=r"^[a-z0-9]*$",
-    )
+    backend_name: BackendNameStr | None = None
+    display_name: DisplayNameStr
     backend_version: str = Field(description="backend version, in the form X.Y.Z.")
     job_id: str = Field(description="unique execution id from the backend.")
     qobj_id: Optional[str] = Field(default=None, description="user-generated Qobj id.")
