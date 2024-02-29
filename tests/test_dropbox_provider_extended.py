@@ -192,7 +192,7 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         assert result["results"] == dummy_result["results"]
 
         # remove the obsolete job from the storage folder on the dropbox
-        job_dir = "/Backend_files/Queued_Jobs/" + backend_name + "/"
+        job_dir = "/Backend_files/Running_Jobs"
         job_name = "job-" + job_id
         storage_provider.delete_file(job_dir, job_name)
 
