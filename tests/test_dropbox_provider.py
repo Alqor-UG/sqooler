@@ -102,8 +102,8 @@ class TestDropboxProvider(StorageProviderTestUtils):
         storage_provider = DropboxProvider(self.get_login())
 
         # create a dummy backend
-        dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy{dummy_id}"
+        backend_name, backend_info = self.get_dummy_config()
+        storage_provider.upload_config(backend_info, backend_name)
 
         username = "test_user"
         job_id = (
@@ -132,13 +132,13 @@ class TestDropboxProvider(StorageProviderTestUtils):
         # the last step is to get the next job and see if this nicely worked out
         next_job = storage_provider.get_next_job_in_queue(backend_name)
 
-        assert next_job["job_id"] == job_id
+        assert next_job.job_id == job_id
 
         # we now also need to test the update_in_database part of the storage provider
         result_dict = ResultDict(
             display_name=backend_name,
             backend_version="0.0.1",
-            job_id=next_job["job_id"],
+            job_id=next_job.job_id,
             status="INITIALIZING",
         )
 
@@ -151,7 +151,7 @@ class TestDropboxProvider(StorageProviderTestUtils):
         # time to update everything
         status_msg_dict.status = "DONE"
         storage_provider.update_in_database(
-            result_dict, status_msg_dict, next_job["job_id"], backend_name
+            result_dict, status_msg_dict, next_job.job_id, backend_name
         )
 
         # we now need to check if the job is in the finished jobs folder

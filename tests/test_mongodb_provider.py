@@ -161,8 +161,8 @@ class TestMongodbProvider(StorageProviderTestUtils):
         storage_provider = MongodbProvider(self.get_login())
 
         # create a dummy backend
-        dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy{dummy_id}"
+        backend_name, backend_info = self.get_dummy_config()
+        storage_provider.upload_config(backend_info, backend_name)
 
         # first we have to upload a dummy job
         job_id = (uuid.uuid4().hex)[:24]
@@ -180,11 +180,11 @@ class TestMongodbProvider(StorageProviderTestUtils):
         # the last step is to get the next job and see if this nicely worked out
         next_job = storage_provider.get_next_job_in_queue(backend_name)
 
-        assert next_job["job_id"] == job_id
+        assert next_job.job_id == job_id
 
         # now also get the job content
         job_json_dict = storage_provider.get_job_content(
-            storage_path=next_job["job_json_path"], job_id=next_job["job_id"]
+            storage_path=next_job.job_json_path, job_id=next_job.job_id
         )
         assert "_id" not in job_json_dict.keys()
 
@@ -193,18 +193,18 @@ class TestMongodbProvider(StorageProviderTestUtils):
         result_dict = ResultDict(
             display_name=backend_name,
             backend_version="0.0.1",
-            job_id=next_job["job_id"],
+            job_id=next_job.job_id,
             status="INITIALIZING",
         )
 
         # upload the status dict without other status.
         status_msg_dict = storage_provider.upload_status(
-            backend_name, "test_user", next_job["job_id"]
+            backend_name, "test_user", next_job.job_id
         )
 
         status_msg_dict.status = "DONE"
         storage_provider.update_in_database(
-            result_dict, status_msg_dict, next_job["job_id"], backend_name
+            result_dict, status_msg_dict, next_job.job_id, backend_name
         )
 
         # we now need to check if the job is in the finished jobs folder
