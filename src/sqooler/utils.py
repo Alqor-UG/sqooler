@@ -63,15 +63,15 @@ def main(
         backends_list.append(backends_list.pop(0))
         # let us first see if jobs are waiting
         job_dict = storage_provider.get_next_job_in_queue(requested_backend)
-        if job_dict["job_json_path"] == "None":
+        if job_dict.job_json_path == "None":
             continue
         job_json_dict = storage_provider.get_job_content(
-            storage_path=job_dict["job_json_path"], job_id=job_dict["job_id"]
+            storage_path=job_dict.job_json_path, job_id=job_dict.job_id
         )
 
         result_dict = get_init_results()
         status_msg_dict = get_init_status()
-        status_msg_dict.job_id = job_dict["job_id"]
+        status_msg_dict.job_id = job_dict.job_id
         # Fix this pylint issue whenever you have time, but be careful !
         # pylint: disable=W0703
         try:
@@ -95,7 +95,7 @@ def main(
             status_msg_dict.error_message += "; " + slimmed_tb
 
         storage_provider.update_in_database(
-            result_dict, status_msg_dict, job_dict["job_id"], requested_backend
+            result_dict, status_msg_dict, job_dict.job_id, requested_backend
         )
 
         counter += 1

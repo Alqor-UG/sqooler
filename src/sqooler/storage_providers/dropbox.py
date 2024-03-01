@@ -21,7 +21,7 @@ from ..schemes import (
     DropboxLoginInformation,
     BackendStatusSchemaOut,
     BackendConfigSchemaIn,
-    BackendConfigSchemaOut,
+    NextJobSchema,
     DisplayNameStr,
 )
 
@@ -48,18 +48,17 @@ class DropboxProviderExtended(StorageProvider):
         self.app_secret = login_dict.app_secret
         self.refresh_token = login_dict.refresh_token
 
-    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
+    def upload_string(
+        self, content_string: str, storage_path: str, job_id: str
+    ) -> None:
         """
-        Upload the content_dict as a json file to the dropbox
+        Upload the content_string as a json file to the dropbox
 
         Args:
-            content_dict: the content of the file that should be uploaded
+            content_string: the content of the file that should be uploaded
             storage_path: the path where the file should be stored, but excluding the file name
             job_id: the name of the file without the .json extension
         """
-
-        # create the appropriate string for the dropbox API
-        dump_str = json.dumps(content_dict)
 
         # strip trailing and leading slashes from the storage_path
         storage_path = storage_path.strip("/")
@@ -76,8 +75,23 @@ class DropboxProviderExtended(StorageProvider):
             # Check that the access token is valid
             dbx.users_get_current_account()
             dbx.files_upload(
-                dump_str.encode("utf-8"), full_path, mode=WriteMode("overwrite")
+                content_string.encode("utf-8"), full_path, mode=WriteMode("overwrite")
             )
+
+    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
+        """
+        Upload the content_dict as a json file to the dropbox
+
+        Args:
+            content_dict: the content of the file that should be uploaded
+            storage_path: the path where the file should be stored, but excluding the file name
+            job_id: the name of the file without the .json extension
+        """
+
+        # create the appropriate string for the dropbox API
+        dump_str = json.dumps(content_dict)
+
+        self.upload_string(dump_str, storage_path, job_id)
 
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
         """
@@ -222,7 +236,7 @@ class DropboxProviderExtended(StorageProvider):
                 sys.exit("ERROR: Invalid access token.")
 
             full_path = "/" + storage_path + "/" + job_id + ".json"
-            _ = dbx.files_delete(path=full_path)
+            _ = dbx.files_delete_v2(path=full_path)
 
     def upload_config(
         self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
@@ -242,7 +256,7 @@ class DropboxProviderExtended(StorageProvider):
         """
 
         config_path = "Backend_files/Config/" + display_name
-        self.upload(config_dict.model_dump(), config_path, "config")
+        self.upload_string(config_dict.model_dump_json(), config_path, "config")
 
     def update_in_database(
         self,
@@ -365,23 +379,24 @@ class DropboxProviderExtended(StorageProvider):
                 backend_names.append(entry.name)
         return backend_names
 
-    def get_backend_dict(self, display_name: DisplayNameStr) -> BackendConfigSchemaOut:
+    def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
         """
-        The configuration of the backend.
+        The function that downloads the spooler configuration to the storage.
 
         Args:
-            display_name: The identifier of the backend
+            display_name : The name of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
 
         Returns:
-            The full schema of the backend.
+            The configuration of the backend in complete form.
         """
         backend_json_path = f"Backend_files/Config/{display_name}"
         backend_config_dict = self.get_file_content(
             storage_path=backend_json_path, job_id="config"
         )
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
-        return qiskit_backend_dict
+        return BackendConfigSchemaIn(**backend_config_dict)
 
     def get_backend_status(
         self, display_name: DisplayNameStr
@@ -535,7 +550,7 @@ class DropboxProviderExtended(StorageProvider):
         typed_result = ResultDict(**result_dict)
         return typed_result
 
-    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> dict:
+    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> NextJobSchema:
         """
         A function that obtains the next job in the queue.
 
@@ -548,6 +563,10 @@ class DropboxProviderExtended(StorageProvider):
         job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
         job_dict = {"job_id": 0, "job_json_path": "None"}
         job_list = self.get_file_queue(job_json_dir)
+
+        # time stamp when we last looked for a job
+        self.timestamp_queue(display_name)
+
         # if there is a job, we should move it
         if job_list:
             job_json_name = job_list[0]
@@ -558,7 +577,7 @@ class DropboxProviderExtended(StorageProvider):
             # and move the file into the right directory
             self.move_file(job_json_dir, "Backend_files/Running_Jobs", job_json_name)
             job_dict["job_json_path"] = "Backend_files/Running_Jobs"
-        return job_dict
+        return NextJobSchema(**job_dict)
 
 
 class DropboxProvider(DropboxProviderExtended):
