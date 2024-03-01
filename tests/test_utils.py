@@ -88,6 +88,10 @@ def test_main(utils_storage_setup_teardown: Callable) -> None:
     Test that it is possible to run the main function.
     """
     backend_name = "test"
+
+    # upload the backend
+    update_backends(storage_provider, backends)
+
     # first we have to upload a dummy job
     queue_path = "jobs/queued/" + backend_name
     job_id = (uuid.uuid4().hex)[:24]

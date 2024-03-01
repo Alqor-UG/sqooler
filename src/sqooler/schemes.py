@@ -4,9 +4,9 @@ There is no obvious need, why this code should be touch in a new back-end.
 """
 
 from typing import Optional, Literal, Annotated
+from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
-from datetime import datetime
 
 # the strings that are allowed for the status
 StatusStr = Annotated[

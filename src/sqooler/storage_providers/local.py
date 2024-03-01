@@ -392,7 +392,6 @@ class LocalProviderExtended(StorageProvider):
         The function that downloads the spooler configuration to the storage.
 
         Args:
-            config_dict: The model containing the configuration
             display_name : The name of the backend
 
         Raises:

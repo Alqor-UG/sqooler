@@ -55,7 +55,7 @@ class DropboxProviderExtended(StorageProvider):
         Upload the content_string as a json file to the dropbox
 
         Args:
-            content_str: the content of the file that should be uploaded
+            content_string: the content of the file that should be uploaded
             storage_path: the path where the file should be stored, but excluding the file name
             job_id: the name of the file without the .json extension
         """
@@ -384,7 +384,6 @@ class DropboxProviderExtended(StorageProvider):
         The function that downloads the spooler configuration to the storage.
 
         Args:
-            config_dict: The model containing the configuration
             display_name : The name of the backend
 
         Raises:
