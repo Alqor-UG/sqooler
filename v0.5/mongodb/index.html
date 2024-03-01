@@ -577,15 +577,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_backend_dict" class="md-nav__link">
-    <span class="md-ellipsis">
-      get_backend_dict
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_backend_status" class="md-nav__link">
     <span class="md-ellipsis">
       get_backend_status
@@ -598,6 +589,15 @@
   <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_backends" class="md-nav__link">
     <span class="md-ellipsis">
       get_backends
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_config
     </span>
   </a>
   
@@ -891,15 +891,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_backend_dict" class="md-nav__link">
-    <span class="md-ellipsis">
-      get_backend_dict
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_backend_status" class="md-nav__link">
     <span class="md-ellipsis">
       get_backend_status
@@ -912,6 +903,15 @@
   <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_backends" class="md-nav__link">
     <span class="md-ellipsis">
       get_backends
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_config
     </span>
   </a>
   
@@ -1100,16 +1100,16 @@
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">570</span>
 <span class="normal">571</span>
 <span class="normal">572</span>
 <span class="normal">573</span>
-<span class="normal">574</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbProvider</span><span class="p">(</span><span class="n">MongodbProviderExtended</span><span class="p">):</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbProvider</span><span class="p">(</span><span class="n">MongodbProviderExtended</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The access to the mongodb. This is the simplified version for people that are running devices.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1151,11 +1151,11 @@
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">MongodbLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">MongodbLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set up the neccessary keys and create the client through which all the connections will run.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1731,7 +1731,12 @@
 <span class="normal">559</span>
 <span class="normal">560</span>
 <span class="normal">561</span>
-<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">):</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The access to the mongodb</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1940,34 +1945,6 @@
             <span class="n">backend_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config_dict</span><span class="p">[</span><span class="s2">&quot;display_name&quot;</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">backend_names</span>
 
-    <span class="nd">@validate_active</span>
-    <span class="k">def</span> <span class="nf">get_backend_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaOut</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The configuration dictionary of the backend such that it can be sent out to the API to</span>
-<span class="sd">        the common user. We make sure that it is compatible with QISKIT within this function.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            display_name: The identifier of the backend</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            The full schema of the backend.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># get the database on which we work</span>
-        <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">[</span><span class="s2">&quot;backends&quot;</span><span class="p">]</span>
-        <span class="n">config_collection</span> <span class="o">=</span> <span class="n">database</span><span class="p">[</span><span class="s2">&quot;configs&quot;</span><span class="p">]</span>
-
-        <span class="c1"># create the filter for the document with display_name that is equal to display_name</span>
-        <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;display_name&quot;</span><span class="p">:</span> <span class="n">display_name</span><span class="p">}</span>
-        <span class="n">backend_config_dict</span> <span class="o">=</span> <span class="n">config_collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">document_to_find</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">backend_config_dict</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;The backend does not exist for the given storage.&quot;</span><span class="p">)</span>
-
-        <span class="n">backend_config_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_id&quot;</span><span class="p">)</span>
-        <span class="n">backend_config_info</span> <span class="o">=</span> <span class="n">BackendConfigSchemaIn</span><span class="p">(</span><span class="o">**</span><span class="n">backend_config_dict</span><span class="p">)</span>
-        <span class="n">qiskit_backend_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend_dict_to_qiskit</span><span class="p">(</span><span class="n">backend_config_info</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">qiskit_backend_dict</span>
-
     <span class="k">def</span> <span class="nf">get_backend_status</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendStatusSchemaOut</span><span class="p">:</span>
@@ -2041,6 +2018,34 @@
 
         <span class="n">config_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">24</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">config_dict</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
+
+    <span class="nd">@validate_active</span>
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The function that downloads the spooler configuration to the storage.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            display_name : The name of the backend</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            FileNotFoundError: If the backend does not exist</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The configuration of the backend in complete form.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get the database on which we work</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">[</span><span class="s2">&quot;backends&quot;</span><span class="p">]</span>
+        <span class="n">config_collection</span> <span class="o">=</span> <span class="n">database</span><span class="p">[</span><span class="s2">&quot;configs&quot;</span><span class="p">]</span>
+
+        <span class="c1"># create the filter for the document with display_name that is equal to display_name</span>
+        <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;display_name&quot;</span><span class="p">:</span> <span class="n">display_name</span><span class="p">}</span>
+        <span class="n">backend_config_dict</span> <span class="o">=</span> <span class="n">config_collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">document_to_find</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">backend_config_dict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;The backend does not exist for the given storage.&quot;</span><span class="p">)</span>
+
+        <span class="n">backend_config_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_id&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">BackendConfigSchemaIn</span><span class="p">(</span><span class="o">**</span><span class="n">backend_config_dict</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">upload_job</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">job_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
@@ -2244,21 +2249,26 @@
             <span class="n">file_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;_id&quot;</span><span class="p">]))</span>
         <span class="k">return</span> <span class="n">file_list</span>
 
-    <span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NextJobSchema</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A function that obtains the next job in the queue. It looks in the queued folder and moves the</span>
-<span class="sd">        first job to the running folder.</span>
+<span class="sd">        A function that obtains the next job in the queue. If there is no job, it returns an empty</span>
+<span class="sd">        dict. If there is a job, it moves the job from the queue to the running folder.</span>
+<span class="sd">        It also update the time stamp for when the system last looked into the file queue.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            display_name : The name of the backend</span>
+<span class="sd">            display_name: The name of the backend</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            the path towards the job</span>
+<span class="sd">            the job dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">queue_dir</span> <span class="o">=</span> <span class="s2">&quot;jobs/queued/&quot;</span> <span class="o">+</span> <span class="n">display_name</span>
         <span class="n">job_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;job_json_path&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">}</span>
         <span class="n">job_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_queue</span><span class="p">(</span><span class="n">queue_dir</span><span class="p">)</span>
+
+        <span class="c1"># update the time stamp of the last job</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestamp_queue</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
+
         <span class="c1"># if there is a job, we should move it</span>
         <span class="k">if</span> <span class="n">job_list</span><span class="p">:</span>
             <span class="n">job_id</span> <span class="o">=</span> <span class="n">job_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -2267,7 +2277,7 @@
             <span class="c1"># and move the file into the right directory</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="n">queue_dir</span><span class="p">,</span> <span class="s2">&quot;jobs/running&quot;</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
             <span class="n">job_dict</span><span class="p">[</span><span class="s2">&quot;job_json_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jobs/running&quot;</span>
-        <span class="k">return</span> <span class="n">job_dict</span>
+        <span class="k">return</span> <span class="n">NextJobSchema</span><span class="p">(</span><span class="o">**</span><span class="n">job_dict</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
 
@@ -2581,137 +2591,6 @@
 
 
 
-<h3 id="src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_backend_dict" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">get_backend_dict</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span></code>
-
-</h3>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>The configuration dictionary of the backend such that it can be sent out to the API to
-the common user. We make sure that it is compatible with QISKIT within this function.</p>
-
-
-
-  <p><strong>Parameters:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td><code>display_name</code></td>
-          <td>
-                <code><span title="src.sqooler.schemes.DisplayNameStr">DisplayNameStr</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The identifier of the backend</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-
-  <p><strong>Returns:</strong></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr>
-          <td>
-                <code><a class="autorefs autorefs-internal" title="src.sqooler.schemes.BackendConfigSchemaOut" href="../schemes/#src.sqooler.schemes.BackendConfigSchemaOut">BackendConfigSchemaOut</a></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>The full schema of the backend.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-          <details class="quote">
-            <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
-<span class="k">def</span> <span class="nf">get_backend_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaOut</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The configuration dictionary of the backend such that it can be sent out to the API to</span>
-<span class="sd">    the common user. We make sure that it is compatible with QISKIT within this function.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        display_name: The identifier of the backend</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The full schema of the backend.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># get the database on which we work</span>
-    <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">[</span><span class="s2">&quot;backends&quot;</span><span class="p">]</span>
-    <span class="n">config_collection</span> <span class="o">=</span> <span class="n">database</span><span class="p">[</span><span class="s2">&quot;configs&quot;</span><span class="p">]</span>
-
-    <span class="c1"># create the filter for the document with display_name that is equal to display_name</span>
-    <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;display_name&quot;</span><span class="p">:</span> <span class="n">display_name</span><span class="p">}</span>
-    <span class="n">backend_config_dict</span> <span class="o">=</span> <span class="n">config_collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">document_to_find</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">backend_config_dict</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;The backend does not exist for the given storage.&quot;</span><span class="p">)</span>
-
-    <span class="n">backend_config_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_id&quot;</span><span class="p">)</span>
-    <span class="n">backend_config_info</span> <span class="o">=</span> <span class="n">BackendConfigSchemaIn</span><span class="p">(</span><span class="o">**</span><span class="n">backend_config_dict</span><span class="p">)</span>
-    <span class="n">qiskit_backend_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend_dict_to_qiskit</span><span class="p">(</span><span class="n">backend_config_info</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">qiskit_backend_dict</span>
-</code></pre></div></td></tr></table></div>
-          </details>
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
 <h3 id="src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_backend_status" class="doc doc-heading">
           <code class="highlight language-python"><span class="n">get_backend_status</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span></code>
 
@@ -2802,38 +2681,38 @@ the common user. We make sure that it is compatible with QISKIT within this func
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">263</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
 <span class="normal">264</span>
 <span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_backend_status</span><span class="p">(</span>
+<span class="normal">266</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_backend_status</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendStatusSchemaOut</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2915,6 +2794,159 @@ the common user. We make sure that it is compatible with QISKIT within this func
     <span class="k">for</span> <span class="n">config_dict</span> <span class="ow">in</span> <span class="n">config_collection</span><span class="o">.</span><span class="n">find</span><span class="p">():</span>
         <span class="n">backend_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">config_dict</span><span class="p">[</span><span class="s2">&quot;display_name&quot;</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">backend_names</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_config" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span></code>
+
+</h3>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>The function that downloads the spooler configuration to the storage.</p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>display_name</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The name of the backend</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Raises:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code>FileNotFoundError</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>If the backend does not exist</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+                <code><a class="autorefs autorefs-internal" title="src.sqooler.schemes.BackendConfigSchemaIn" href="../schemes/#src.sqooler.schemes.BackendConfigSchemaIn">BackendConfigSchemaIn</a></code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The configuration of the backend in complete form.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The function that downloads the spooler configuration to the storage.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        display_name : The name of the backend</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: If the backend does not exist</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The configuration of the backend in complete form.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get the database on which we work</span>
+    <span class="n">database</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">[</span><span class="s2">&quot;backends&quot;</span><span class="p">]</span>
+    <span class="n">config_collection</span> <span class="o">=</span> <span class="n">database</span><span class="p">[</span><span class="s2">&quot;configs&quot;</span><span class="p">]</span>
+
+    <span class="c1"># create the filter for the document with display_name that is equal to display_name</span>
+    <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;display_name&quot;</span><span class="p">:</span> <span class="n">display_name</span><span class="p">}</span>
+    <span class="n">backend_config_dict</span> <span class="o">=</span> <span class="n">config_collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">document_to_find</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">backend_config_dict</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s2">&quot;The backend does not exist for the given storage.&quot;</span><span class="p">)</span>
+
+    <span class="n">backend_config_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_id&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">BackendConfigSchemaIn</span><span class="p">(</span><span class="o">**</span><span class="n">backend_config_dict</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
@@ -3282,8 +3314,9 @@ job_id: the id of the file we are about to look up</p>
 
   <div class="doc doc-contents ">
   
-      <p>A function that obtains the next job in the queue. It looks in the queued folder and moves the
-first job to the running folder.</p>
+      <p>A function that obtains the next job in the queue. If there is no job, it returns an empty
+dict. If there is a job, it moves the job from the queue to the running folder.
+It also update the time stamp for when the system last looked into the file queue.</p>
 
 
 
@@ -3301,6 +3334,7 @@ first job to the running folder.</p>
         <tr>
           <td><code>display_name</code></td>
           <td>
+                <code>str</code>
           </td>
           <td>
             <div class="doc-md-description">
@@ -3327,11 +3361,11 @@ first job to the running folder.</p>
     <tbody>
         <tr>
           <td>
-                <code>dict</code>
+                <code><a class="autorefs autorefs-internal" title="src.sqooler.schemes.NextJobSchema" href="../schemes/#src.sqooler.schemes.NextJobSchema">NextJobSchema</a></code>
           </td>
           <td>
             <div class="doc-md-description">
-              <p>the path towards the job</p>
+              <p>the job dict</p>
             </div>
           </td>
         </tr>
@@ -3363,21 +3397,31 @@ first job to the running folder.</p>
 <span class="normal">559</span>
 <span class="normal">560</span>
 <span class="normal">561</span>
-<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NextJobSchema</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A function that obtains the next job in the queue. It looks in the queued folder and moves the</span>
-<span class="sd">    first job to the running folder.</span>
+<span class="sd">    A function that obtains the next job in the queue. If there is no job, it returns an empty</span>
+<span class="sd">    dict. If there is a job, it moves the job from the queue to the running folder.</span>
+<span class="sd">    It also update the time stamp for when the system last looked into the file queue.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        display_name : The name of the backend</span>
+<span class="sd">        display_name: The name of the backend</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        the path towards the job</span>
+<span class="sd">        the job dict</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">queue_dir</span> <span class="o">=</span> <span class="s2">&quot;jobs/queued/&quot;</span> <span class="o">+</span> <span class="n">display_name</span>
     <span class="n">job_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;job_json_path&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">}</span>
     <span class="n">job_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_queue</span><span class="p">(</span><span class="n">queue_dir</span><span class="p">)</span>
+
+    <span class="c1"># update the time stamp of the last job</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">timestamp_queue</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
+
     <span class="c1"># if there is a job, we should move it</span>
     <span class="k">if</span> <span class="n">job_list</span><span class="p">:</span>
         <span class="n">job_id</span> <span class="o">=</span> <span class="n">job_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -3386,7 +3430,7 @@ first job to the running folder.</p>
         <span class="c1"># and move the file into the right directory</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="n">queue_dir</span><span class="p">,</span> <span class="s2">&quot;jobs/running&quot;</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
         <span class="n">job_dict</span><span class="p">[</span><span class="s2">&quot;job_json_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jobs/running&quot;</span>
-    <span class="k">return</span> <span class="n">job_dict</span>
+    <span class="k">return</span> <span class="n">NextJobSchema</span><span class="p">(</span><span class="o">**</span><span class="n">job_dict</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
@@ -4419,7 +4463,35 @@ job_id: the id of the file we are about to create</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">296</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
 <span class="normal">297</span>
 <span class="normal">298</span>
 <span class="normal">299</span>
@@ -4430,35 +4502,7 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
+<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="n">BackendConfigSchemaIn</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
