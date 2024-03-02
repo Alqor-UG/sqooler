@@ -41,6 +41,15 @@ BackendNameStr = Annotated[
     ),
 ]
 
+# the strings that are allowed for the wire_order
+WireOrderStr = Annotated[
+    Literal["linear", "interleaved"],
+    Field(
+        description="The wire order of the backend. Either linear or interleaved."
+        " Non standard qiskit field."
+    ),
+]
+
 
 class StatusMsgDict(BaseModel):
     """
@@ -131,9 +140,7 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
         description="Instructions supported by the backend."
     )
     num_wires: int = Field(description="The number of qubits / wires for the backend")
-    wire_order: str = Field(
-        description="The wire order of the backend. Either linear or interleaved."
-    )
+    wire_order: WireOrderStr
     num_species: int = Field(description="The number of species in the system.")
     operational: bool = Field(description="True if the backend is operational")
     pending_jobs: Optional[int] = Field(
@@ -192,12 +199,7 @@ class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
         description="Instructions supported by the backend."
     )
     cold_atom_type: ColdAtomStr
-    wire_order: str = Field(
-        description=(
-            "The wire order of the backend. Either linear or interleaved."
-            " Non standard qiskit field."
-        )
-    )
+    wire_order: WireOrderStr
     num_species: int = Field(
         description="The number of species in the system. Non standard qiskit field."
     )
@@ -213,6 +215,17 @@ class GateDict(BaseModel):
     name: str = Field(description="The name of the gate")
     wires: list[int] = Field(description="The wires on which the gate acts")
     params: list[float] = Field(description="The parameters of the gate")
+
+
+class ExperimentalInputDict(BaseModel):
+    """
+    The input for the experimental job.
+    """
+
+    instructions: list[GateDict] = Field(description="The instructions for the job")
+    num_wires: int = Field(description="The number of wires for the job")
+    shots: int = Field(description="The number of shots for the job")
+    wire_order: WireOrderStr
 
 
 class DataDict(BaseModel):
