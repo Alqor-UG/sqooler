@@ -12,6 +12,7 @@ from typing_extensions import Annotated
 import pytest
 from sqooler.schemes import (
     ExperimentDict,
+    ExperimentalInputDict,
     LabscriptParams,
     GateInstruction,
     get_init_status,
@@ -167,19 +168,15 @@ class DummyFullInstruction(GateInstruction):
 
 def dummy_gen_circuit(
     exp_name: str,
-    json_dict: dict,
+    json_dict: ExperimentalInputDict,
     job_id: Optional[str] = None,  # pylint: disable=unused-argument
 ) -> ExperimentDict:
     """
     A dummy function to generate a circuit from the experiment dict.
     """
-    pprint(json_dict)
-    raw_ins_list = json_dict["instructions"]
-    n_shots = json_dict["shots"]
-    ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
+    n_shots = json_dict.shots
+    ins_list = json_dict.instructions
     shots_array = [1, 2, 3]
-    exp_name = "test"
-    n_shots = 3
     exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots, ins_list)
     return exp_sub_dict
 

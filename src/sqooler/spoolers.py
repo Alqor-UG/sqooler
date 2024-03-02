@@ -18,6 +18,7 @@ from pydantic import ValidationError, BaseModel
 from .schemes import (
     BackendConfigSchemaIn,
     ExperimentDict,
+    ExperimentalInputDict,
     ResultDict,
     StatusMsgDict,
     GateDict,
@@ -229,6 +230,26 @@ class BaseSpooler(ABC):
         else:
             raise ValueError("display_name must be a string")
 
+    def get_exp_input_dict(self, json_dict: dict) -> ExperimentalInputDict:
+        """
+        Transforms the dictionary into an ExperimentalInputDict object.
+
+        Args:
+            json_dict: The dictionary that should be transformed.
+
+        Returns:
+            A ExperimentalInputDict object.
+        """
+        raw_ins_list = json_dict["instructions"]
+        ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
+        exp_info = ExperimentalInputDict(
+            instructions=ins_list,
+            shots=json_dict["shots"],
+            wire_order=json_dict["wire_order"],
+            num_wires=json_dict["num_wires"],
+        )
+        return exp_info
+
 
 class Spooler(BaseSpooler):
     """
@@ -236,7 +257,7 @@ class Spooler(BaseSpooler):
     """
 
     @property
-    def gen_circuit(self) -> Callable[[str, dict], ExperimentDict]:
+    def gen_circuit(self) -> Callable[[str, ExperimentalInputDict], ExperimentDict]:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
@@ -252,7 +273,9 @@ class Spooler(BaseSpooler):
         return self._gen_circuit
 
     @gen_circuit.setter
-    def gen_circuit(self, value: Callable[[str, dict], ExperimentDict]) -> None:
+    def gen_circuit(
+        self, value: Callable[[str, ExperimentalInputDict], ExperimentDict]
+    ) -> None:
         """
         The setter for the gen_circuit function. The first argument is the name of the
         experiment and the second argument is the dictionary with the instructions.
@@ -297,11 +320,10 @@ class Spooler(BaseSpooler):
             dim_err_msg, dim_ok = self.check_dimension(json_dict)
             if dim_ok:
                 for exp in json_dict:
+                    exp_info = self.get_exp_input_dict(json_dict[exp])
                     try:
                         # this assumes that we never have more than one argument here.
-                        result_dict.results.append(
-                            self.gen_circuit(exp, json_dict[exp])
-                        )
+                        result_dict.results.append(self.gen_circuit(exp, exp_info))
                     except ValueError as err:
                         status_msg_dict.detail += "; " + str(err)
                         status_msg_dict.error_message += "; " + str(err)
@@ -429,9 +451,10 @@ class LabscriptSpooler(BaseSpooler):
                     self._modify_shot_output_folder(job_id + "/" + str(exp))
 
                     # Here we generate the ciruit
+                    exp_info = self.get_exp_input_dict(json_dict[exp])
                     try:
                         result_dict.results.append(
-                            self.gen_circuit(exp, json_dict[exp], job_id)
+                            self.gen_circuit(exp, exp_info, job_id)
                         )
                     except FileNotFoundError as err:
                         error_message = str(err)
@@ -491,7 +514,7 @@ class LabscriptSpooler(BaseSpooler):
         return modified_shot_folder
 
     def gen_circuit(
-        self, exp_name: str, json_dict: dict, job_id: str
+        self, exp_name: str, json_dict: ExperimentalInputDict, job_id: str
     ) -> ExperimentDict:
         """
         This is the main script that generates the labscript file.
@@ -516,9 +539,8 @@ class LabscriptSpooler(BaseSpooler):
                 f"The path {remote_experiments_path} does not exist."
             )
 
-        n_shots = json_dict["shots"]
-        raw_ins_list = json_dict["instructions"]
-        ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
+        n_shots = json_dict.shots
+        ins_list = json_dict.instructions
 
         globals_dict = {
             "job_id": "guest",
