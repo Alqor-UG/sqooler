@@ -236,7 +236,7 @@ class Spooler(BaseSpooler):
     """
 
     @property
-    def gen_circuit(self) -> Callable[[dict], ExperimentDict]:
+    def gen_circuit(self) -> Callable[[str, dict], ExperimentDict]:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
@@ -252,9 +252,10 @@ class Spooler(BaseSpooler):
         return self._gen_circuit
 
     @gen_circuit.setter
-    def gen_circuit(self, value: Callable[[dict], ExperimentDict]) -> None:
+    def gen_circuit(self, value: Callable[[str, dict], ExperimentDict]) -> None:
         """
-        The setter for the gen_circuit function.
+        The setter for the gen_circuit function. The first argument is the name of the
+        experiment and the second argument is the dictionary with the instructions.
 
         Args:
             value: The function that generates the circuit.
@@ -296,11 +297,11 @@ class Spooler(BaseSpooler):
             dim_err_msg, dim_ok = self.check_dimension(json_dict)
             if dim_ok:
                 for exp in json_dict:
-                    exp_dict = {exp: json_dict[exp]}
-                    # Here we
                     try:
                         # this assumes that we never have more than one argument here.
-                        result_dict.results.append(self.gen_circuit(exp_dict))
+                        result_dict.results.append(
+                            self.gen_circuit(exp, json_dict[exp])
+                        )
                     except ValueError as err:
                         status_msg_dict.detail += "; " + str(err)
                         status_msg_dict.error_message += "; " + str(err)
@@ -423,14 +424,15 @@ class LabscriptSpooler(BaseSpooler):
             dim_err_msg, dim_ok = self.check_dimension(json_dict)
             if dim_ok:
                 for exp in json_dict:
-                    exp_dict = {exp: json_dict[exp]}
                     # prepare the shots folder
                     self.remote_client.reset_shot_output_folder()
                     self._modify_shot_output_folder(job_id + "/" + str(exp))
 
                     # Here we generate the ciruit
                     try:
-                        result_dict.results.append(self.gen_circuit(exp_dict, job_id))
+                        result_dict.results.append(
+                            self.gen_circuit(exp, json_dict[exp], job_id)
+                        )
                     except FileNotFoundError as err:
                         error_message = str(err)
                         status_msg_dict.detail += "; Failed to generate labscript file."
@@ -488,11 +490,14 @@ class LabscriptSpooler(BaseSpooler):
         self.remote_client.set_shot_output_folder(modified_shot_folder)
         return modified_shot_folder
 
-    def gen_circuit(self, json_dict: dict, job_id: str) -> ExperimentDict:
+    def gen_circuit(
+        self, exp_name: str, json_dict: dict, job_id: str
+    ) -> ExperimentDict:
         """
         This is the main script that generates the labscript file.
 
         Args:
+            exp_name: The name of the experiment
             json_dict: The dictionary that contains the instructions for the circuit.
             job_id: The user id of the user that is running the experiment.
 
@@ -511,10 +516,9 @@ class LabscriptSpooler(BaseSpooler):
                 f"The path {remote_experiments_path} does not exist."
             )
 
-        exp_name = next(iter(json_dict))
-        raw_ins_list = json_dict[next(iter(json_dict))]["instructions"]
+        n_shots = json_dict["shots"]
+        raw_ins_list = json_dict["instructions"]
         ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
-        n_shots = json_dict[next(iter(json_dict))]["shots"]
 
         globals_dict = {
             "job_id": "guest",

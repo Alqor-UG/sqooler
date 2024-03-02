@@ -24,6 +24,8 @@ from sqooler.spoolers import (
     LabscriptSpooler,
 )
 
+from pprint import pprint
+
 
 class DummyExperiment(BaseModel):
     """
@@ -164,14 +166,16 @@ class DummyFullInstruction(GateInstruction):
 
 
 def dummy_gen_circuit(
+    exp_name: str,
     json_dict: dict,
     job_id: Optional[str] = None,  # pylint: disable=unused-argument
 ) -> ExperimentDict:
     """
     A dummy function to generate a circuit from the experiment dict.
     """
-    exp_name = next(iter(json_dict))
-    raw_ins_list = json_dict[next(iter(json_dict))]["instructions"]
+    pprint(json_dict)
+    raw_ins_list = json_dict["instructions"]
+    n_shots = json_dict["shots"]
     ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
     shots_array = [1, 2, 3]
     exp_name = "test"
