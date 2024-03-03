@@ -128,7 +128,7 @@ class TestDropboxProvider(StorageProviderTestUtils):
 
         # test if the file_queue is working
 
-        job_list = storage_provider.get_file_queue(queue_path)
+        _ = storage_provider.get_file_queue(queue_path)
 
         # the last step is to get the next job and see if this nicely worked out
         next_job = storage_provider.get_next_job_in_queue(backend_name)
