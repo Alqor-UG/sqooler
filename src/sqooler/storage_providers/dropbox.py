@@ -579,6 +579,38 @@ class DropboxProviderExtended(StorageProvider):
             job_dict["job_json_path"] = "Backend_files/Running_Jobs"
         return NextJobSchema(**job_dict)
 
+    def delete_folder(self, folder_path: str) -> None:
+        """
+        Remove the folder from the dropbox. Attention this will remove all the files in the folder.
+        It is not a standard function for storage providers, but allows us to better clean up the
+        tests.
+
+        Args:
+            folder_path: the path where the file should be stored, but excluding the file name
+
+        Returns:
+            None
+        """
+
+        # strip trailing and leading slashes from the storage_path
+        folder_path = folder_path.strip("/")
+
+        # Create an instance of a Dropbox class, which can make requests to the API.
+        with dropbox.Dropbox(
+            app_key=self.app_key,
+            app_secret=self.app_secret,
+            oauth2_refresh_token=self.refresh_token,
+        ) as dbx:
+            # Check that the access token is valid
+            try:
+                dbx.users_get_current_account()
+            except AuthError:
+                sys.exit("ERROR: Invalid access token.")
+
+            # to remove a folder there must be no trailing slash
+            full_path = "/" + folder_path
+            _ = dbx.files_delete_v2(path=full_path)
+
 
 class DropboxProvider(DropboxProviderExtended):
     """

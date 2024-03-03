@@ -94,6 +94,8 @@ class TestDropboxProvider(StorageProviderTestUtils):
         assert backend_dict["display_name"] == config_info.display_name
 
         storage_provider.delete_file(dummy_path, "config")
+        # delete also the old folder
+        storage_provider.delete_folder(dummy_path)
 
     def test_get_next_job_in_queue(self) -> None:
         """
@@ -126,8 +128,7 @@ class TestDropboxProvider(StorageProviderTestUtils):
 
         # test if the file_queue is working
 
-        job_list = storage_provider.get_file_queue(queue_path)
-        print(job_list)
+        _ = storage_provider.get_file_queue(queue_path)
 
         # the last step is to get the next job and see if this nicely worked out
         next_job = storage_provider.get_next_job_in_queue(backend_name)
@@ -173,3 +174,23 @@ class TestDropboxProvider(StorageProviderTestUtils):
         # clean up the mess
         storage_provider.delete_file(job_finished_json_dir, job_name)
         storage_provider.delete_file(status_json_dir, status_json_name)
+
+        # remove the obsolete status from the storage folder on the dropbox
+        status_dir = "/Backend_files/Status/" + backend_name
+        storage_provider.delete_folder(status_dir)
+
+        # remove the obsolete config folder
+        config_path = "/Backend_files/Config/" + backend_name
+        storage_provider.delete_folder(config_path)
+
+        # remove the obsolete stuff in the Queued_Jobs folder
+        queued_path = "/Backend_files/Queued_Jobs/" + backend_name
+        storage_provider.delete_folder(queued_path)
+
+        # remove the obsolete result from the storage folder on the dropbox
+        result_path = "/Backend_files/Result/" + backend_name
+        storage_provider.delete_folder(result_path)
+
+        # remove the obsolete job from the storage folder on the dropbox
+        finished_dir = "/Backend_files/Finished_Jobs/" + backend_name
+        storage_provider.delete_folder(finished_dir)
