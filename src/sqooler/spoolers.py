@@ -352,8 +352,7 @@ class Spooler(BaseSpooler):
             return result_dict, status_msg_dict
 
         # now we can generate the circuit for each experiment
-        for exp_name in json_dict:
-            exp_info = clean_dict[exp_name]
+        for exp_name, exp_info in clean_dict.items():
             try:
                 result_dict.results.append(self.gen_circuit(exp_name, exp_info))
             except ValueError as err:
@@ -463,15 +462,13 @@ class LabscriptSpooler(BaseSpooler):
             status_msg_dict.status = "ERROR"
             return result_dict, status_msg_dict
 
-        for exp in clean_dict:
+        for exp_name, exp_info in clean_dict.items():
             # prepare the shots folder
             self.remote_client.reset_shot_output_folder()
-            self._modify_shot_output_folder(job_id + "/" + str(exp))
+            self._modify_shot_output_folder(job_id + "/" + str(exp_name))
 
             try:
-                result_dict.results.append(
-                    self.gen_circuit(exp, clean_dict[exp], job_id)
-                )
+                result_dict.results.append(self.gen_circuit(exp_name, exp_info, job_id))
             except FileNotFoundError as err:
                 error_message = str(err)
                 status_msg_dict.detail += "; Failed to generate labscript file."
