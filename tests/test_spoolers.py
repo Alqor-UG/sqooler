@@ -326,7 +326,7 @@ def test_spooler_check_json() -> None:
     }
     # test that it works if the instructions are not valid as the key is not known
 
-    _, exp_ok, exp_info = test_spooler.check_json_dict(job_payload)
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
     assert exp_ok is True
 
     # test that it works if the wires are not in the coupling map
@@ -339,7 +339,7 @@ def test_spooler_check_json() -> None:
         },
     }
 
-    _, exp_ok, exp_info = test_spooler.check_json_dict(job_payload)
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
     assert exp_ok is not True
 
     # test that it works if the instructions are not valid
@@ -353,7 +353,7 @@ def test_spooler_check_json() -> None:
     }
     # test that it works if the instructions are not valid as the key is not known
 
-    _, exp_ok, exp_info = test_spooler.check_json_dict(job_payload)
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
     assert exp_ok is not True
 
 
