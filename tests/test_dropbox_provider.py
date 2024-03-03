@@ -94,6 +94,8 @@ class TestDropboxProvider(StorageProviderTestUtils):
         assert backend_dict["display_name"] == config_info.display_name
 
         storage_provider.delete_file(dummy_path, "config")
+        # delete also the old folder
+        storage_provider.delete_folder(dummy_path)
 
     def test_get_next_job_in_queue(self) -> None:
         """

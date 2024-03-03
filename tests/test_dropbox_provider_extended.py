@@ -149,7 +149,11 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
             == f"dropboxtest_{config_info.display_name}_simulator"
         )
 
+        # delete the old config file
         storage_provider.delete_file(dummy_path, "config")
+
+        # delete also the old folder
+        storage_provider.delete_folder(dummy_path)
 
     def test_jobs(self) -> None:
         """
@@ -200,6 +204,10 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         status_dir = "/Backend_files/Status/" + backend_name + "/" + username
         status_name = "status-" + job_id
         storage_provider.delete_file(status_dir, status_name)
+
+        # remove the obsolete config folder
+        config_path = "/Backend_files/Config/" + backend_name
+        storage_provider.delete_folder(config_path)
 
         # remove the obsolete result from the storage folder on the dropbox
         storage_provider.delete_file(result_json_dir, result_json_name)
