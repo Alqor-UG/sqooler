@@ -420,7 +420,7 @@ class LabscriptSpooler(BaseSpooler):
         self.run = run
 
     def add_job(
-        self, json_dict: dict, status_msg_dict: StatusMsgDict
+        self, json_dict: dict[str, dict], status_msg_dict: StatusMsgDict
     ) -> tuple[ResultDict, StatusMsgDict]:
         """
         The function that translates the json with the instructions into some circuit
