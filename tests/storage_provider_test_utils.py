@@ -8,7 +8,7 @@ import uuid
 from decouple import config
 import pytest
 from pydantic import ValidationError
-from sqooler.schemes import BackendConfigSchemaIn
+from sqooler.schemes import BackendConfigSchemaIn, ResultDict
 from sqooler.storage_providers.base import StorageProvider
 
 
@@ -109,7 +109,10 @@ class StorageProviderTestUtils:
         """
         # create a storageprovider object
         storage_provider_class = self.get_storage_provider()
-        storage_provider = storage_provider_class(self.get_login(), db_name)
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
 
         # create a dummy config
         dummy_id = uuid.uuid4().hex[:5]
@@ -189,4 +192,25 @@ class StorageProviderTestUtils:
         backend_config = storage_provider.get_config(backend_name)
         assert backend_config.last_queue_check
 
+        # we now also need to test the update_in_database part of the storage provider
+        result_dict = ResultDict(
+            display_name=backend_name,
+            backend_version="0.0.1",
+            job_id=next_job.job_id,
+            status="INITIALIZING",
+        )
+
+        job_status.status = "DONE"
+        storage_provider.update_in_database(
+            result_dict, job_status, next_job.job_id, backend_name
+        )
+
+        # we now need to check if the job is in the finished jobs folder
+        obtained_result = storage_provider.get_result(
+            display_name=backend_name,
+            username=username,
+            job_id=next_job.job_id,
+        )
+
+        assert obtained_result.backend_version == "0.0.1"
         return backend_name, job_id, username, storage_provider
