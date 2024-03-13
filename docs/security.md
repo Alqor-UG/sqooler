@@ -31,7 +31,20 @@ with open(private_key_file_name, "wb") as pem_file:
     pem_file.write(private_bytes)
 ```
 
-This will create a private key and store it in a file called `private_key_test.pem`.
+This will create a private key and store it in a file called `private_key_test.pem`. A second option to store the private key is to have it directly printed out as a b64 encoded string. This can be done by running the following code:
+
+```python
+import base64
+
+private_key = Ed25519PrivateKey.generate()
+private_bytes = private_key.private_bytes_raw()
+
+private_b64 = base64.urlsafe_b64encode(private_bytes).decode("utf-8")
+
+print(private_b64)
+```
+You might then safe the output to the `PRIVATE_RESULT_KEY`in your `.env` file.
+
 
 !!! warning
     The private key should be kept secret and should not be shared with anyone. Never ever ever. Don't do it.

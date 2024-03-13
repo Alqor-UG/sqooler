@@ -446,6 +446,7 @@ class LocalProviderExtended(StorageProvider):
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + display_name
+
             self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":

@@ -12,9 +12,13 @@ from collections.abc import Callable
 from typing import Type, Any, Optional
 from time import sleep
 
+from decouple import config
 from abc import ABC
 
 from pydantic import ValidationError, BaseModel
+
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from .security import JWSDict, JWSHeader, payload_to_base64url, sign_payload
 from .schemes import (
     BackendConfigSchemaIn,
     ExperimentDict,
@@ -25,6 +29,8 @@ from .schemes import (
     LabscriptParams,
     ColdAtomStr,
 )
+
+from .security import JWSDict
 
 
 class BaseSpooler(ABC):
@@ -42,6 +48,7 @@ class BaseSpooler(ABC):
         wire_order: the order of the wires
         num_species: the number of atomic species in the experiment
         operational: is the backend ready for access by remote users ?
+        sign: sign the results of the job
     """
 
     def __init__(
@@ -57,6 +64,7 @@ class BaseSpooler(ABC):
         wire_order: str = "interleaved",
         num_species: int = 1,
         operational: bool = True,
+        sign: bool = False,
     ):
         """
         The constructor of the class.
@@ -73,6 +81,7 @@ class BaseSpooler(ABC):
         self.num_species = num_species
         self._display_name: str = ""
         self.operational = operational
+        self.sign = sign
 
     def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
@@ -258,6 +267,21 @@ class BaseSpooler(ABC):
         )
         return exp_info
 
+    def sign_result(
+        self, result_dict: ResultDict, private_key: Ed25519PrivateKey
+    ) -> JWSDict:
+        """
+        Sign the result of the job.
+
+        Args:
+            result_dict: The result of the job.
+            private_key: The private key to use for signing.
+
+        Returns:
+            The signed result of the job.
+        """
+        raise NotImplementedError
+
 
 class Spooler(BaseSpooler):
     """
@@ -364,6 +388,28 @@ class Spooler(BaseSpooler):
                     Shots sent to solver."
         status_msg_dict.status = "DONE"
         return result_dict, status_msg_dict
+
+    def sign_result(
+        self, result_dict: ResultDict, private_key: Ed25519PrivateKey
+    ) -> JWSDict:
+        """
+        Sign the result of the job.
+
+        Args:
+            result_dict: The result of the job.
+
+        Returns:
+            The signed result of the job.
+        """
+        # we have to put the appropiate kid at some point
+        # what should this become ? Most likely it has to be set by the backend name but
+        # it should also include some version name to make it clear which version the key has
+        # so maybe a JKT would even make sense here...
+
+        payload = result_dict.model_dump()
+        signed_result = sign_payload(payload, private_key, "test_key")
+
+        return signed_result
 
 
 class LabscriptSpooler(BaseSpooler):

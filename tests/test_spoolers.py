@@ -8,6 +8,8 @@ import shutil
 from typing import Literal, Optional, Iterator, Callable
 from pydantic import ValidationError, BaseModel, Field
 
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
 from typing_extensions import Annotated
 import pytest
 from sqooler.schemes import (
@@ -16,6 +18,7 @@ from sqooler.schemes import (
     LabscriptParams,
     GateInstruction,
     get_init_status,
+    get_init_results,
 )
 
 from sqooler.spoolers import (
@@ -286,6 +289,28 @@ def test_spooler_add_job() -> None:
     assert status_msg_dict.status == "DONE", "Job failed"
 
 
+def test_sign_result() -> None:
+    """
+    Is it possible to sign a result ?
+    """
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        operational=False,
+        sign=True,
+    )
+
+    private_key = Ed25519PrivateKey.generate()
+    test_result = get_init_results()
+    signed_result = test_spooler.sign_result(test_result, private_key)
+    assert signed_result.signature
+    # and now we can verify the signature
+    public_key = private_key.public_key()
+    assert signed_result.verify_signature(public_key)
+    print(signed_result)
+
+
 def test_gate_dict() -> None:
     """
     Test that it is possible to create the a nice instruction.
@@ -535,7 +560,7 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         with open(file_path, "w", encoding="UTF-8") as file:
             file.write("test")
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
-    assert status_msg_dict.status == "DONE", "Job should have failed"
+    assert status_msg_dict.status == "DONE", "Job should not have failed"
 
 
 def test_create_memory_data() -> None:
