@@ -50,22 +50,6 @@ def test_sign_payload() -> None:
     public_key.verify(signature_from_jws, full_message)
 
 
-def test_sign_and_verify_jws() -> None:
-    """
-    Test the ability to sign a payload and then verify the signature
-    """
-    payload = {"test": "test"}
-    signed_pl = sign_payload(payload, private_key, "test_key")
-
-    # and now we can verify the signature
-    assert signed_pl.verify_signature(public_key)
-
-    wrong_private_key = Ed25519PrivateKey.generate()
-    wrong_public_key = wrong_private_key.public_key()
-    assert not signed_pl.verify_signature(wrong_public_key)
-    assert signed_pl.header.alg == "EdDSA"
-
-
 def test_jwk() -> None:
     """
     Test the ability to create, dump and load a JWK
@@ -85,3 +69,25 @@ def test_jwk() -> None:
     print(reloaded_jwk)
     assert reloaded_jwk.x == private_jwk.x
     assert reloaded_jwk.kid == private_jwk.kid
+
+
+def test_sign_and_verify_jws() -> None:
+    """
+    Test the ability to sign a payload and then verify the signature
+    """
+    payload = {"test": "test"}
+    private_base64 = base64.urlsafe_b64encode(private_key.private_bytes_raw())
+    public_base64 = base64.urlsafe_b64encode(public_key.public_bytes_raw())
+    private_jwk = JWK(
+        key_ops="sign", kid="testing_key", d=private_base64, x=public_base64
+    )
+
+    signed_pl = sign_payload(payload, private_jwk)
+
+    # and now we can verify the signature
+    assert signed_pl.verify_signature(public_key)
+
+    wrong_private_key = Ed25519PrivateKey.generate()
+    wrong_public_key = wrong_private_key.public_key()
+    assert not signed_pl.verify_signature(wrong_public_key)
+    assert signed_pl.header.alg == "EdDSA"

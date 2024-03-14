@@ -18,7 +18,7 @@ from abc import ABC
 from pydantic import ValidationError, BaseModel
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from .security import JWSDict, JWSHeader, payload_to_base64url, sign_payload
+from .security import JWSDict, JWSHeader, payload_to_base64url, sign_payload, JWK
 from .schemes import (
     BackendConfigSchemaIn,
     ExperimentDict,
@@ -267,15 +267,13 @@ class BaseSpooler(ABC):
         )
         return exp_info
 
-    def sign_result(
-        self, result_dict: ResultDict, private_key: Ed25519PrivateKey
-    ) -> JWSDict:
+    def sign_result(self, result_dict: ResultDict, private_jwk: JWK) -> JWSDict:
         """
         Sign the result of the job.
 
         Args:
             result_dict: The result of the job.
-            private_key: The private key to use for signing.
+            private_jwk: The private JWK to use for signing.
 
         Returns:
             The signed result of the job.
@@ -389,14 +387,13 @@ class Spooler(BaseSpooler):
         status_msg_dict.status = "DONE"
         return result_dict, status_msg_dict
 
-    def sign_result(
-        self, result_dict: ResultDict, private_key: Ed25519PrivateKey
-    ) -> JWSDict:
+    def sign_result(self, result_dict: ResultDict, private_jwk: JWK) -> JWSDict:
         """
         Sign the result of the job.
 
         Args:
             result_dict: The result of the job.
+            private_jwk: The private JWK to use for signing.
 
         Returns:
             The signed result of the job.
@@ -407,7 +404,7 @@ class Spooler(BaseSpooler):
         # so maybe a JKT would even make sense here...
 
         payload = result_dict.model_dump()
-        signed_result = sign_payload(payload, private_key, "test_key")
+        signed_result = sign_payload(payload, private_jwk)
 
         return signed_result
 

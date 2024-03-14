@@ -104,28 +104,6 @@ def payload_to_base64url(payload: dict) -> bytes:
     return base64_encoded
 
 
-def sign_payload(payload: dict, private_key: Ed25519PrivateKey, kid: str) -> JWSDict:
-    """
-    Convert a payload to a JWS object. We will assumar that
-
-    Args:
-        payload : The payload to convert
-        private_key: The private key to use for signing
-        kid: The key id of the private that you use for signing.
-
-    Returns:
-        JWS : The JWS object
-    """
-    header = JWSHeader(kid=kid)
-    header_base64 = header.to_base64url()
-    payload_base64 = payload_to_base64url(payload)
-    full_message = header_base64 + b"." + payload_base64
-
-    signature = private_key.sign(full_message)
-    signature_base64 = base64.urlsafe_b64encode(signature)
-    return JWSDict(header=header, payload=payload, signature=signature_base64)
-
-
 class JWK(BaseModel):
     """
     The JSON Web Key (JWK) for Ed25519 as standardized in
@@ -141,7 +119,8 @@ class JWK(BaseModel):
     )
     kid: str = Field(description="The key id of the key")
     d: Optional[bytes] = Field(
-        description="Contains the private key encoded using the base64url encoding."
+        default=None,
+        description="Contains the private key encoded using the base64url encoding.",
     )
     kty: Literal["OKP"] = Field(
         default="OKP",
@@ -189,6 +168,38 @@ def jwk_from_config_str(jwk_base64_str: str) -> JWK:
     jwk_dict = json.loads(jwk_json_str)
     jwk = JWK(**jwk_dict)
     return jwk
+
+
+def sign_payload(payload: dict, jwk: JWK) -> JWSDict:
+    """
+    Convert a payload to a JWS object.
+
+    Args:
+        payload : The payload to convert
+        private_key: The private key to use for signing
+        kid: The key id of the private that you use for signing.
+
+    Returns:
+        JWS : The JWS object
+    """
+
+    header = JWSHeader(kid=jwk.kid)
+    header_base64 = header.to_base64url()
+    payload_base64 = payload_to_base64url(payload)
+    full_message = header_base64 + b"." + payload_base64
+    # create the private key from the JWK
+    # make sure that the key is intended for signing and contains the private key
+    if not jwk.key_ops == "sign":
+        raise ValueError("The key is not intended for signing")
+    if jwk.d is None:
+        raise ValueError("The private key is missing from the JWK")
+
+    private_bytes = base64.urlsafe_b64decode(jwk.d)
+    private_key = Ed25519PrivateKey.from_private_bytes(private_bytes)
+
+    signature = private_key.sign(full_message)
+    signature_base64 = base64.urlsafe_b64encode(signature)
+    return JWSDict(header=header, payload=payload, signature=signature_base64)
 
 
 def create_key_pair() -> tuple[Ed25519PrivateKey, Ed25519PublicKey]:

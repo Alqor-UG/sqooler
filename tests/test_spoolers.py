@@ -9,6 +9,7 @@ from typing import Literal, Optional, Iterator, Callable
 from pydantic import ValidationError, BaseModel, Field
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+import base64
 
 from typing_extensions import Annotated
 import pytest
@@ -27,6 +28,8 @@ from sqooler.spoolers import (
     create_memory_data,
     LabscriptSpooler,
 )
+
+from sqooler.security import JWK
 
 
 class DummyExperiment(BaseModel):
@@ -302,8 +305,16 @@ def test_sign_result() -> None:
     )
 
     private_key = Ed25519PrivateKey.generate()
+    public_key = private_key.public_key()
+    private_base64 = base64.urlsafe_b64encode(private_key.private_bytes_raw())
+    public_base64 = base64.urlsafe_b64encode(public_key.public_bytes_raw())
+
+    private_jwk = JWK(
+        key_ops="sign", kid="testing_key", d=private_base64, x=public_base64
+    )
+
     test_result = get_init_results()
-    signed_result = test_spooler.sign_result(test_result, private_key)
+    signed_result = test_spooler.sign_result(test_result, private_jwk)
     assert signed_result.signature
     # and now we can verify the signature
     public_key = private_key.public_key()
