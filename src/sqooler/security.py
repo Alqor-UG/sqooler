@@ -5,6 +5,7 @@ Any suggestions for improvements will be very welcome."""
 
 import json
 import base64
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 from cryptography.exceptions import InvalidSignature
@@ -19,7 +20,7 @@ class JWSHeader(BaseModel):
     The header of a JWS object
     """
 
-    alg: str = Field(default="Ed25519", description="The algorithm used for signing")
+    alg: str = Field(default="EdDSA", description="The algorithm used for signing")
     kid: str = Field(description="The key id of the key used for signing")
     typ: str = Field(default="JWS", description="The type of the signature")
     version: str = Field(
@@ -123,6 +124,71 @@ def sign_payload(payload: dict, private_key: Ed25519PrivateKey, kid: str) -> JWS
     signature = private_key.sign(full_message)
     signature_base64 = base64.urlsafe_b64encode(signature)
     return JWSDict(header=header, payload=payload, signature=signature_base64)
+
+
+class JWK(BaseModel):
+    """
+    The JSON Web Key (JWK) for Ed25519 as standardized in
+
+    https://datatracker.ietf.org/doc/html/rfc8037
+    """
+
+    x: bytes = Field(
+        description="Contain the public key encoded using the base64url encoding"
+    )
+    key_ops: Literal["sign", "verify"] = Field(
+        description="Identifies the operation for which the key is intended to be used"
+    )
+    kid: str = Field(description="The key id of the key")
+    d: Optional[bytes] = Field(
+        description="Contains the private key encoded using the base64url encoding."
+    )
+    kty: Literal["OKP"] = Field(
+        default="OKP",
+        description="Identifies the cryptographic algorithm family used with the key",
+    )
+    alg: Literal["EdDSA"] = Field(
+        default="EdDSA", description="The algorithm used for signing"
+    )
+    crv: Literal["Ed25519"] = Field(
+        default="Ed25519", description="Identifies the cryptographic curve used"
+    )
+
+    def to_config_str(self) -> str:
+        """
+        Convert the JWK to a string that can be stored in a config file.
+        """
+        # now it would be nice to have the whole thing as a string
+        jwk_string = self.model_dump_json()
+
+        # create a byte string
+        jwk_bytes = jwk_string.encode("utf-8")
+
+        # and now we can base64 encode it
+        jwk_base64 = base64.urlsafe_b64encode(jwk_bytes)
+
+        # and for storing it in a file we would like to decode it
+        jwk_base64_str = jwk_base64.decode("utf-8")
+        return jwk_base64_str
+
+
+def jwk_from_config_str(jwk_base64_str: str) -> JWK:
+    """
+    Create a JWK from a string that was stored in a config file.
+
+    Args:
+        jwk_base64_str : The base64 encoded JWK
+
+    Returns:
+        JWK : The JWK object
+    """
+    jwk_base64 = jwk_base64_str.encode("utf-8")
+    jwk_bytes = base64.urlsafe_b64decode(jwk_base64)
+
+    jwk_json_str = jwk_bytes.decode("utf-8")
+    jwk_dict = json.loads(jwk_json_str)
+    jwk = JWK(**jwk_dict)
+    return jwk
 
 
 def create_key_pair() -> tuple[Ed25519PrivateKey, Ed25519PublicKey]:
