@@ -22,6 +22,8 @@ from ..schemes import (
     BackendNameStr,
 )
 
+from ..security import JWK
+
 
 def validate_active(func: Callable) -> Callable:
     """
@@ -264,6 +266,31 @@ class StorageProvider(ABC):
 
         Returns:
             The configuration of the backend in complete form.
+        """
+
+    @abstractmethod
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+
+    @abstractmethod
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
         """
 
     @abstractmethod

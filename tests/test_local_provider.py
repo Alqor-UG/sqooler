@@ -186,6 +186,12 @@ class TestLocalProvider(StorageProviderTestUtils):
         storage_provider.delete_file(job_finished_json_dir, job_id)
         storage_provider.delete_file(status_json_dir, job_id)
 
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)
+
     def test_signing(self) -> None:
         """
         Is it possible to work through the queue of jobs?

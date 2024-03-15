@@ -22,6 +22,7 @@ from ..schemes import (
 )
 
 from .base import StorageProvider, validate_active
+from ..security import JWK
 
 
 class LocalProviderExtended(StorageProvider):
@@ -376,7 +377,7 @@ class LocalProviderExtended(StorageProvider):
         """
         # path of the configs
         config_path = os.path.join(self.base_path, "backends/configs")
-        config_path = os.path.normpath(os.path.join(self.base_path, "backends/configs"))
+        config_path = os.path.normpath(config_path)
         # test if the config path already exists. If it does not, create it
         if not os.path.exists(config_path):
             os.makedirs(config_path)
@@ -412,6 +413,63 @@ class LocalProviderExtended(StorageProvider):
             raise FileNotFoundError("The backend does not exist for the given storage.")
 
         return BackendConfigSchemaIn(**backend_config_dict)
+
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+        # first make sure that the public key is intended for verification
+        if not public_jwk.key_ops == "verify":
+            raise ValueError("The key is not intended for verification")
+
+        # make sure that the key does not contain a private key
+        if public_jwk.d is not None:
+            raise ValueError("The key contains a private key")
+
+        # path of the public keys
+        key_path = os.path.join(self.base_path, "backends/public_keys")
+        key_path = os.path.normpath(key_path)
+        # test if the config path already exists. If it does not, create it
+        if not os.path.exists(key_path):
+            os.makedirs(key_path)
+
+        # this should most likely depend on the kid at some point
+        file_name = display_name + ".json"
+        full_json_path = os.path.join(key_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "w", encoding="utf-8") as json_file:
+            json_file.write(public_jwk.model_dump_json())
+
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+
+        # path of the configs
+        key_path = os.path.join(self.base_path, "backends/public_keys")
+        file_name = display_name + ".json"
+        full_json_path = os.path.join(key_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "r", encoding="utf-8") as json_file:
+            public_key_dict = json.load(json_file)
+
+        if not public_key_dict:
+            raise FileNotFoundError("The backend does not exist for the given storage.")
+
+        return JWK(**public_key_dict)
 
     def update_in_database(
         self,

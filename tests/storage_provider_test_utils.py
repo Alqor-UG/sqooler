@@ -11,6 +11,8 @@ from pydantic import ValidationError
 from sqooler.schemes import BackendConfigSchemaIn, ResultDict
 from sqooler.storage_providers.base import StorageProvider
 
+from sqooler.security import create_jwk_pair
+
 
 class StorageProviderTestUtils:
     """
@@ -99,6 +101,33 @@ class StorageProviderTestUtils:
             storage_provider = storage_provider_class(
                 self.get_login(), "Whatever%/iswrong"
             )
+
+    def signature_tests(self, db_name: str) -> None:
+        """
+        Test that we can create a signature.
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+        dummy_id = uuid.uuid4().hex[:5]
+        backend_name = f"dummy{dummy_id}"
+
+        # create a dummy key
+        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
+
+        with pytest.raises(ValueError):
+            storage_provider.upload_public_key(private_jwk, display_name=backend_name)
+
+        # now test that we can also get the public key
+        obtained_public_jwk = storage_provider.get_public_key(backend_name)
+        assert obtained_public_jwk.x == public_jwk.x
+
+        with pytest.raises(FileNotFoundError):
+            obtained_public_jwk = storage_provider.get_public_key("random")
 
     def job_tests(self, db_name: str) -> Tuple[str, str, str, Any]:
         """
