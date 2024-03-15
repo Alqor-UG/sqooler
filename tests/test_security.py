@@ -16,6 +16,7 @@ from sqooler.security import (
     payload_to_base64url,
     sign_payload,
     jwk_from_config_str,
+    create_jwk_pair,
 )
 
 private_key = Ed25519PrivateKey.generate()
@@ -66,28 +67,23 @@ def test_jwk() -> None:
 
     # now test that we can reload it
     reloaded_jwk = jwk_from_config_str(private_jwk_base64_str)
-    print(reloaded_jwk)
     assert reloaded_jwk.x == private_jwk.x
     assert reloaded_jwk.kid == private_jwk.kid
 
 
 def test_sign_and_verify_jws() -> None:
     """
-    Test the ability to sign a payload and then verify the signature
+    Test the ability to sign and verify a payload with a JWK
     """
     payload = {"test": "test"}
-    private_base64 = base64.urlsafe_b64encode(private_key.private_bytes_raw())
-    public_base64 = base64.urlsafe_b64encode(public_key.public_bytes_raw())
-    private_jwk = JWK(
-        key_ops="sign", kid="testing_key", d=private_base64, x=public_base64
-    )
+    private_jwk, public_jwk = create_jwk_pair("test_kid")
 
     signed_pl = sign_payload(payload, private_jwk)
 
     # and now we can verify the signature
-    assert signed_pl.verify_signature(public_key)
+    assert signed_pl.verify_signature(public_jwk)
 
-    wrong_private_key = Ed25519PrivateKey.generate()
-    wrong_public_key = wrong_private_key.public_key()
-    assert not signed_pl.verify_signature(wrong_public_key)
+    _, wrong_public_jwk = create_jwk_pair("test_kid")
+
+    assert not signed_pl.verify_signature(wrong_public_jwk)
     assert signed_pl.header.alg == "EdDSA"

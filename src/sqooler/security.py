@@ -46,42 +46,6 @@ class JWSHeader(BaseModel):
         return base64_encoded
 
 
-class JWSDict(BaseModel):
-    """
-    A JSON Web Signature in a dictionary form. We follow the JWS standard as defined in RFC 7515.
-
-    https://datatracker.ietf.org/doc/html/rfc7515
-    """
-
-    header: JWSHeader = Field(description="The header of the JWS object")
-    payload: dict = Field(description="The payload of the JWS object")
-    signature: bytes = Field(description="The signature of the JWS object")
-
-    def verify_signature(self, public_key: Ed25519PublicKey) -> bool:
-        """
-        Verify the integraty of JWS object.
-
-        Args:
-            jws_obj : The JWS object to verify
-            public_key: The public key to use for verification
-
-        Returns:
-            if the signature can be verified
-        """
-
-        signature_decoded = base64.urlsafe_b64decode(self.signature)
-
-        header_base64 = self.header.to_base64url()
-        payload_base64 = payload_to_base64url(self.payload)
-        full_message = header_base64 + b"." + payload_base64
-
-        try:
-            public_key.verify(signature_decoded, full_message)
-            return True
-        except InvalidSignature:
-            return False
-
-
 def payload_to_base64url(payload: dict) -> bytes:
     """
     Convert an arbitrary payload to a base64url encoded string.
@@ -151,6 +115,47 @@ class JWK(BaseModel):
         return jwk_base64_str
 
 
+class JWSDict(BaseModel):
+    """
+    A JSON Web Signature in a dictionary form. We follow the JWS standard as defined in RFC 7515.
+
+    https://datatracker.ietf.org/doc/html/rfc7515
+    """
+
+    header: JWSHeader = Field(description="The header of the JWS object")
+    payload: dict = Field(description="The payload of the JWS object")
+    signature: bytes = Field(description="The signature of the JWS object")
+
+    def verify_signature(self, public_jwk: JWK) -> bool:
+        """
+        Verify the integraty of JWS object.
+
+        Args:
+            public_jwk: The public key to use for verification
+
+        Returns:
+            if the signature can be verified
+        """
+
+        if not public_jwk.key_ops == "verify":
+            raise ValueError("The key is not intended for verification")
+
+        public_bytes = base64.urlsafe_b64decode(public_jwk.x)
+        public_key = Ed25519PublicKey.from_public_bytes(public_bytes)
+
+        signature_decoded = base64.urlsafe_b64decode(self.signature)
+
+        header_base64 = self.header.to_base64url()
+        payload_base64 = payload_to_base64url(self.payload)
+        full_message = header_base64 + b"." + payload_base64
+
+        try:
+            public_key.verify(signature_decoded, full_message)
+            return True
+        except InvalidSignature:
+            return False
+
+
 def jwk_from_config_str(jwk_base64_str: str) -> JWK:
     """
     Create a JWK from a string that was stored in a config file.
@@ -200,6 +205,31 @@ def sign_payload(payload: dict, jwk: JWK) -> JWSDict:
     signature = private_key.sign(full_message)
     signature_base64 = base64.urlsafe_b64encode(signature)
     return JWSDict(header=header, payload=payload, signature=signature_base64)
+
+
+def create_jwk_pair(kid: str) -> tuple[JWK, JWK]:
+    """
+    Create a pair of JWKs designed for signing and verification.
+
+    Args:
+        kid : The key id of the key
+
+    Returns:
+        JWK : The JWK object
+    """
+
+    # create a new key pair
+    private_key = Ed25519PrivateKey.generate()
+    public_key = private_key.public_key()
+
+    # transform the keys into base64url encoded strings
+    private_base64 = base64.urlsafe_b64encode(private_key.private_bytes_raw())
+    public_base64 = base64.urlsafe_b64encode(public_key.public_bytes_raw())
+
+    # create the JWK
+    private_jwk = JWK(key_ops="sign", kid=kid, d=private_base64, x=public_base64)
+    public_jwk = JWK(key_ops="verify", kid=kid, x=public_base64)
+    return private_jwk, public_jwk
 
 
 def create_key_pair() -> tuple[Ed25519PrivateKey, Ed25519PublicKey]:

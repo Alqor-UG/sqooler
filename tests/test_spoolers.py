@@ -8,8 +8,6 @@ import shutil
 from typing import Literal, Optional, Iterator, Callable
 from pydantic import ValidationError, BaseModel, Field
 
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-import base64
 
 from typing_extensions import Annotated
 import pytest
@@ -29,7 +27,7 @@ from sqooler.spoolers import (
     LabscriptSpooler,
 )
 
-from sqooler.security import JWK
+from sqooler.security import JWK, create_jwk_pair, jwk_from_config_str
 
 
 class DummyExperiment(BaseModel):
@@ -304,22 +302,24 @@ def test_sign_result() -> None:
         sign=True,
     )
 
-    private_key = Ed25519PrivateKey.generate()
-    public_key = private_key.public_key()
-    private_base64 = base64.urlsafe_b64encode(private_key.private_bytes_raw())
-    public_base64 = base64.urlsafe_b64encode(public_key.public_bytes_raw())
-
-    private_jwk = JWK(
-        key_ops="sign", kid="testing_key", d=private_base64, x=public_base64
-    )
+    private_jwk, public_jwk = create_jwk_pair("test_spooler_pair")
 
     test_result = get_init_results()
     signed_result = test_spooler.sign_result(test_result, private_jwk)
     assert signed_result.signature
+
     # and now we can verify the signature
-    public_key = private_key.public_key()
-    assert signed_result.verify_signature(public_key)
-    print(signed_result)
+    assert signed_result.verify_signature(public_jwk)
+
+    # now the same test with a jwk that was put into a config string
+    private_jwk, public_jwk = create_jwk_pair("test_spooler_pair")
+    private_jwk_str = private_jwk.to_config_str()
+    private_jwk = jwk_from_config_str(private_jwk_str)
+    signed_result = test_spooler.sign_result(test_result, private_jwk)
+    assert signed_result.signature
+
+    # and now we can verify the signature
+    assert signed_result.verify_signature(public_jwk)
 
 
 def test_gate_dict() -> None:
