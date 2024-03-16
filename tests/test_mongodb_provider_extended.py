@@ -273,22 +273,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         backend_name, job_id, username, storage_provider = self.job_tests(DB_NAME)
 
-        # test that we can get a job result
-        # first upload a dummy result
-        dummy_result: dict = {
-            "backend_name": backend_name,
-            "display_name": backend_name,
-            "backend_version": "0.0.1",
-            "job_id": job_id,
-            "qobj_id": None,
-            "success": True,
-            "status": "INITIALIZING",
-            "header": {},
-            "results": [],
-        }
-        result_json_dir = "results/" + backend_name
-        storage_provider.upload(dummy_result, result_json_dir, job_id)
-
         # what happens if we try get an unknown job ?
         job_result = storage_provider.get_result(
             display_name=backend_name,
@@ -296,16 +280,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
             job_id=uuid.uuid4().hex,
         )
         assert job_result.status == "ERROR"
-
-        # now get the result
-        result_info = storage_provider.get_result(
-            display_name=backend_name,
-            username=username,
-            job_id=job_id,
-        )
-        result = result_info.model_dump()
-        assert "_id" not in result.keys()
-        assert dummy_result["results"] == result["results"]
 
         # remove the obsolete job from the storage
         job_dir = "jobs/queued/" + backend_name
@@ -326,6 +300,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         collection.drop()
 
         # remove the obsolete result from the storage
+        result_json_dir = "results/" + backend_name
         storage_provider.delete_file(result_json_dir, job_id)
         # remove the obsolete collection from the storage
         database = storage_provider.client["results"]

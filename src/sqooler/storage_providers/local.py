@@ -358,10 +358,9 @@ class LocalProviderExtended(StorageProvider):
                 header={},
                 results=[],
             )
-        # let us see if we should verify the result
-        # we should do this by checking if the result has a header key
-
-        if "header" in result_dict:
+        # done day we should verify the result before we send it out
+        expected_keys_for_jws = {"header", "payload", "signature"}
+        if set(result_dict.keys()) == expected_keys_for_jws:
             result_payload = result_dict["payload"]
             result_payload["backend_name"] = backend_config_info.backend_name
             typed_result = ResultDict(**result_payload)
