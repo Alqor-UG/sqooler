@@ -27,7 +27,7 @@ from sqooler.spoolers import (
     LabscriptSpooler,
 )
 
-from sqooler.security import JWK, create_jwk_pair, jwk_from_config_str
+from sqooler.security import create_jwk_pair, jwk_from_config_str
 
 
 class DummyExperiment(BaseModel):

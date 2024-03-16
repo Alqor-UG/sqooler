@@ -122,7 +122,7 @@ class TestLocalProvider(StorageProviderTestUtils):
         Is it possible to work through the queue of jobs?
         """
         storage_provider = LocalProvider(self.get_login())
-        private_jwk, public_jwk = create_jwk_pair("test")
+        private_jwk, _ = create_jwk_pair("test")
         # create a dummy config
         backend_name, backend_info = self.get_dummy_config()
         storage_provider.upload_config(backend_info, backend_name)

@@ -86,6 +86,7 @@ def test_update_backends(utils_storage_setup_teardown: Callable) -> None:
 
     # test that the keys are there too
     public_jwk = storage_provider.get_public_key("test")
+    assert public_jwk.kid == "test"
 
 
 def test_main(utils_storage_setup_teardown: Callable) -> None:
