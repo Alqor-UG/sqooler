@@ -451,17 +451,7 @@ class MongodbProviderExtended(StorageProvider):
                 results=[],
             )
         backend_config_info = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_info.backend_name
-
-        if "header" in result_dict:
-            result_payload = result_dict["payload"]
-            result_payload["backend_name"] = backend_config_info.backend_name
-            typed_result = ResultDict(**result_payload)
-        else:
-            result_dict["backend_name"] = backend_config_info.backend_name
-            typed_result = ResultDict(**result_dict)
-
-        return typed_result
+        return self._adapt_result_dict(result_dict, backend_config_info)
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """

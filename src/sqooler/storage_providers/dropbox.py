@@ -6,7 +6,7 @@ import sys
 import uuid
 import json
 
-from typing import Mapping
+from typing import Mapping, Optional
 
 # necessary for the dropbox provider
 import datetime
@@ -24,7 +24,7 @@ from ..schemes import (
     NextJobSchema,
     DisplayNameStr,
 )
-
+from ..security import JWK, sign_payload
 from .base import StorageProvider, validate_active
 
 
@@ -258,12 +258,52 @@ class DropboxProviderExtended(StorageProvider):
         config_path = "Backend_files/Config/" + display_name
         self.upload_string(config_dict.model_dump_json(), config_path, "config")
 
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+        # first make sure that the public key is intended for verification
+        if not public_jwk.key_ops == "verify":
+            raise ValueError("The key is not intended for verification")
+
+        # make sure that the key does not contain a private key
+        if public_jwk.d is not None:
+            raise ValueError("The key contains a private key")
+
+        pk_paths = "Backend_files/public_keys"
+
+        self.upload_string(public_jwk.model_dump_json(), pk_paths, display_name)
+
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+        pk_paths = "Backend_files/public_keys"
+        public_jwk_dict = self.get_file_content(
+            storage_path=pk_paths, job_id=display_name
+        )
+        return JWK(**public_jwk_dict)
+
     def update_in_database(
         self,
         result_dict: ResultDict,
         status_msg_dict: StatusMsgDict,
         job_id: str,
         display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the dropbox.
@@ -294,7 +334,22 @@ class DropboxProviderExtended(StorageProvider):
                 "/Backend_files/Result/" + display_name + "/" + extracted_username + "/"
             )
             result_json_name = "result-" + job_id
-            self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
+
+            # let us see if we should sign the result
+            backend_config = self.get_config(display_name)
+            if backend_config.sign:
+                # get the private key
+                if private_jwk is None:
+                    raise ValueError(
+                        "The private key is not given, but the backend is configured to sign."
+                    )
+                # we should sign the result
+                signed_result = sign_payload(result_dict.model_dump(), private_jwk)
+                self.upload(
+                    signed_result.model_dump(), result_json_dir, result_json_name
+                )
+            else:
+                self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = (
@@ -545,10 +600,7 @@ class DropboxProviderExtended(StorageProvider):
                 results=[],
             )
         backend_config_info = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_info.backend_name
-
-        typed_result = ResultDict(**result_dict)
-        return typed_result
+        return self._adapt_result_dict(result_dict, backend_config_info)
 
     def get_next_job_in_queue(self, display_name: DisplayNameStr) -> NextJobSchema:
         """

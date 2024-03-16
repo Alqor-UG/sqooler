@@ -358,16 +358,7 @@ class LocalProviderExtended(StorageProvider):
                 header={},
                 results=[],
             )
-        # done day we should verify the result before we send it out
-        expected_keys_for_jws = {"header", "payload", "signature"}
-        if set(result_dict.keys()) == expected_keys_for_jws:
-            result_payload = result_dict["payload"]
-            result_payload["backend_name"] = backend_config_info.backend_name
-            typed_result = ResultDict(**result_payload)
-        else:
-            result_dict["backend_name"] = backend_config_info.backend_name
-            typed_result = ResultDict(**result_dict)
-        return typed_result
+        return self._adapt_result_dict(result_dict, backend_config_info)
 
     def upload_config(
         self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
