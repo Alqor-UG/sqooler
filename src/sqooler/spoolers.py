@@ -18,7 +18,14 @@ from abc import ABC
 from pydantic import ValidationError, BaseModel
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from .security import JWSDict, JWSHeader, payload_to_base64url, sign_payload, JWK
+from .security import (
+    JWSDict,
+    JWSHeader,
+    payload_to_base64url,
+    sign_payload,
+    JWK,
+    jwk_from_config_str,
+)
 from .schemes import (
     BackendConfigSchemaIn,
     ExperimentDict,
@@ -279,6 +286,16 @@ class BaseSpooler(ABC):
             The signed result of the job.
         """
         raise NotImplementedError
+
+    def get_private_jwk(self) -> JWK:
+        """
+        Get the private JWK for the spooler.
+
+        Returns:
+            The private JWK for the spooler.
+        """
+        private_jwk_str = config("PRIVATE_JWK_STR")
+        return jwk_from_config_str(private_jwk_str)
 
 
 class Spooler(BaseSpooler):

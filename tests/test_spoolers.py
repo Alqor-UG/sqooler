@@ -321,6 +321,8 @@ def test_sign_result() -> None:
     # and now we can verify the signature
     assert signed_result.verify_signature(public_jwk)
 
+    # test with a loaded signature
+
 
 def test_gate_dict() -> None:
     """

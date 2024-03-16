@@ -235,6 +235,34 @@ def create_jwk_pair(kid: str) -> tuple[JWK, JWK]:
     return private_jwk, public_jwk
 
 
+def public_from_private_jwk(private_jwk: JWK) -> JWK:
+    """
+    Create a public JWK from a private JWK.
+
+    Args:
+        private_jwk : The private JWK
+
+    Returns:
+        JWK : The public JWK
+
+    Raises:
+        ValueError : If the private key is not intended for signing
+    """
+
+    # is the key intended for signing?
+    if not private_jwk.key_ops == "sign" or private_jwk.d is None:
+        raise ValueError(
+            "The private key is not intended for signing. Might not be a private key."
+        )
+
+    public_jwk = JWK(
+        key_ops="verify",
+        kid=private_jwk.kid,
+        x=private_jwk.x,
+    )
+    return public_jwk
+
+
 def create_key_pair() -> tuple[Ed25519PrivateKey, Ed25519PublicKey]:
     """
     Create a new key pair for signing and verification.

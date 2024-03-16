@@ -10,6 +10,7 @@ import regex as re
 from .schemes import get_init_results, get_init_status
 from .spoolers import Spooler
 from .storage_providers.base import StorageProvider
+from .security import public_from_private_jwk
 
 
 def update_backends(
@@ -30,6 +31,12 @@ def update_backends(
 
         # upload the content through the storage provider
         storage_provider.upload_config(backend_config_dict, requested_backend)
+
+        # upload the public key if the backend has one and is designed to sign
+        if spooler.sign:
+            private_jwk = spooler.get_private_jwk()
+            public_jwk = public_from_private_jwk(private_jwk)
+            storage_provider.upload_public_key(public_jwk, requested_backend)
 
 
 def main(

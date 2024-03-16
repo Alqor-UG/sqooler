@@ -17,6 +17,7 @@ from sqooler.security import (
     sign_payload,
     jwk_from_config_str,
     create_jwk_pair,
+    public_from_private_jwk,
 )
 
 private_key = Ed25519PrivateKey.generate()
@@ -69,6 +70,11 @@ def test_jwk() -> None:
     reloaded_jwk = jwk_from_config_str(private_jwk_base64_str)
     assert reloaded_jwk.x == private_jwk.x
     assert reloaded_jwk.kid == private_jwk.kid
+
+    # can we also get the public key from the private key?
+    reloaded_public = public_from_private_jwk(reloaded_jwk)
+    assert reloaded_public.d is None
+    assert reloaded_public.x == public_base64
 
 
 def test_sign_and_verify_jws() -> None:

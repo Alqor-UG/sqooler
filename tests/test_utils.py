@@ -44,7 +44,9 @@ class DummyExperiment(BaseModel):
     seed: Optional[int] = None
 
 
-test_spooler = Spooler(ins_schema_dict={}, device_config=DummyExperiment, n_wires=2)
+test_spooler = Spooler(
+    ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=True
+)
 
 backends = {"test": test_spooler}
 
@@ -82,6 +84,9 @@ def test_update_backends(utils_storage_setup_teardown: Callable) -> None:
     # test that the file is there
     assert os.path.exists(full_json_path)
 
+    # test that the keys are there too
+    public_jwk = storage_provider.get_public_key("test")
+
 
 def test_main(utils_storage_setup_teardown: Callable) -> None:
     """
@@ -110,6 +115,10 @@ def test_main(utils_storage_setup_teardown: Callable) -> None:
     storage_provider.upload(status_dict, status_path, job_id=job_id)
 
     main(storage_provider, backends, num_iter=1)
+
+    # test if we can get the result
+    result_dict = storage_provider.get_result(backend_name, "test", job_id)
+    assert result_dict.job_id == job_id
 
 
 def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
