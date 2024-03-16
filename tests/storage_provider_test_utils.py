@@ -37,10 +37,12 @@ class StorageProviderTestUtils:
         """
         raise NotImplementedError
 
-    def get_dummy_config(self) -> Tuple[str, BackendConfigSchemaIn]:
+    def get_dummy_config(self, sign: bool = True) -> Tuple[str, BackendConfigSchemaIn]:
         """
         Generate the dummy config of the fermion type.
 
+        Args:
+            sign: Whether to sign the files.
         Returns:
             The backend name and the backend config input.
         """
@@ -62,7 +64,7 @@ class StorageProviderTestUtils:
         dummy_dict["wire_order"] = "interleaved"
         dummy_dict["num_species"] = 1
         dummy_dict["operational"] = True
-        dummy_dict["sign"] = True
+        dummy_dict["sign"] = sign
 
         backend_info = BackendConfigSchemaIn(**dummy_dict)
         return backend_name, backend_info
