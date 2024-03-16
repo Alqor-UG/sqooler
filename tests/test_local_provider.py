@@ -7,12 +7,14 @@ import json
 import shutil
 from typing import Any
 
+import pytest
+
 # get the environment variables
 from decouple import config
 
 from sqooler.storage_providers.local import LocalProvider
 from sqooler.schemes import ResultDict, LocalLoginInformation
-
+from sqooler.security import create_jwk_pair
 from .storage_provider_test_utils import StorageProviderTestUtils
 
 
@@ -120,7 +122,7 @@ class TestLocalProvider(StorageProviderTestUtils):
         Is it possible to work through the queue of jobs?
         """
         storage_provider = LocalProvider(self.get_login())
-
+        private_jwk, public_jwk = create_jwk_pair("test")
         # create a dummy config
         backend_name, backend_info = self.get_dummy_config()
         storage_provider.upload_config(backend_info, backend_name)
@@ -168,10 +170,19 @@ class TestLocalProvider(StorageProviderTestUtils):
         )
 
         status_msg_dict.status = "DONE"
-        storage_provider.update_in_database(
-            result_dict, status_msg_dict, next_job.job_id, backend_name
-        )
 
+        with pytest.raises(ValueError):
+            storage_provider.update_in_database(
+                result_dict, status_msg_dict, next_job.job_id, backend_name
+            )
+
+        storage_provider.update_in_database(
+            result_dict,
+            status_msg_dict,
+            next_job.job_id,
+            backend_name,
+            private_jwk=private_jwk,
+        )
         # we now need to check if the job is in the finished jobs folder
         job_finished_json_dir = "jobs/finished/" + backend_name
 

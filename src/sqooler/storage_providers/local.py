@@ -358,8 +358,16 @@ class LocalProviderExtended(StorageProvider):
                 header={},
                 results=[],
             )
-        result_dict["backend_name"] = backend_config_info.backend_name
-        typed_result = ResultDict(**result_dict)
+        # let us see if we should verify the result
+        # we should do this by checking if the result has a header key
+
+        if "header" in result_dict:
+            result_payload = result_dict["payload"]
+            result_payload["backend_name"] = backend_config_info.backend_name
+            typed_result = ResultDict(**result_payload)
+        else:
+            result_dict["backend_name"] = backend_config_info.backend_name
+            typed_result = ResultDict(**result_dict)
         return typed_result
 
     def upload_config(

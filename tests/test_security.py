@@ -87,3 +87,14 @@ def test_sign_and_verify_jws() -> None:
 
     assert not signed_pl.verify_signature(wrong_public_jwk)
     assert signed_pl.header.alg == "EdDSA"
+
+
+def test_jws_serialization() -> None:
+    """
+    Test the possibility to serialize a jws object
+    """
+    payload = {"test": "test"}
+    private_jwk, public_jwk = create_jwk_pair("test_kid")
+
+    signed_pl = sign_payload(payload, private_jwk)
+    signed_pl_str = signed_pl.model_dump_json()

@@ -223,7 +223,11 @@ class StorageProviderTestUtils:
             )
 
         storage_provider.update_in_database(
-            result_dict, job_status, next_job.job_id, backend_name, private_jwk
+            result_dict,
+            job_status,
+            next_job.job_id,
+            backend_name,
+            private_jwk=private_jwk,
         )
 
         # we now need to check if the job is in the finished jobs folder
