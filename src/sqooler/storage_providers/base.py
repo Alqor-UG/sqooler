@@ -6,7 +6,7 @@ storage for the jobs. It creates an abstract API layer for the storage providers
 from abc import ABC, abstractmethod
 import re
 
-from typing import Mapping, Callable, Any
+from typing import Mapping, Callable, Any, Optional
 import functools
 
 from datetime import datetime, timezone
@@ -300,6 +300,7 @@ class StorageProvider(ABC):
         status_msg_dict: StatusMsgDict,
         job_id: str,
         display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.

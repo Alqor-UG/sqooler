@@ -62,6 +62,7 @@ class StorageProviderTestUtils:
         dummy_dict["wire_order"] = "interleaved"
         dummy_dict["num_species"] = 1
         dummy_dict["operational"] = True
+        dummy_dict["sign"] = True
 
         backend_info = BackendConfigSchemaIn(**dummy_dict)
         return backend_name, backend_info
@@ -143,27 +144,12 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        # create a dummy config
-        dummy_id = uuid.uuid4().hex[:5]
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["name"] = "Dummy"
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["num_species"] = 1
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["max_shots"] = 5
-        dummy_dict["max_experiments"] = 5
-        dummy_dict["description"] = "Dummy simulator for testing"
-        dummy_dict["operational"] = True
-        backend_name = f"dummy{dummy_id}"
-        dummy_dict["display_name"] = backend_name
-        dummy_dict["simulator"] = True
-
-        config_info = BackendConfigSchemaIn(**dummy_dict)
+        backend_name, config_info = self.get_dummy_config()
         storage_provider.upload_config(config_info, display_name=backend_name)
+
+        # create a dummy key
+        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
 
         # let us first test the we can upload a dummy job
         job_payload = {
@@ -230,8 +216,14 @@ class StorageProviderTestUtils:
         )
 
         job_status.status = "DONE"
+        # this should fail as the signing key is missing
+        with pytest.raises(ValueError):
+            storage_provider.update_in_database(
+                result_dict, job_status, next_job.job_id, backend_name
+            )
+
         storage_provider.update_in_database(
-            result_dict, job_status, next_job.job_id, backend_name
+            result_dict, job_status, next_job.job_id, backend_name, private_jwk
         )
 
         # we now need to check if the job is in the finished jobs folder

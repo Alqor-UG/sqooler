@@ -5,7 +5,7 @@ The module that contains all the necessary logic for communication with the loca
 import uuid
 import json
 
-from typing import Mapping
+from typing import Mapping, Optional
 
 # necessary for the local provider
 import shutil
@@ -22,7 +22,7 @@ from ..schemes import (
 )
 
 from .base import StorageProvider, validate_active
-from ..security import JWK
+from ..security import JWK, sign_payload
 
 
 class LocalProviderExtended(StorageProvider):
@@ -477,6 +477,7 @@ class LocalProviderExtended(StorageProvider):
         status_msg_dict: StatusMsgDict,
         job_id: str,
         display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -486,6 +487,7 @@ class LocalProviderExtended(StorageProvider):
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
             display_name: the name of the backend
+            private_jwk: the private key of the backend
 
         Returns:
             None
@@ -500,7 +502,20 @@ class LocalProviderExtended(StorageProvider):
                 )
             # let us create the result json file
             result_json_dir = "results/" + display_name
-            self.upload(result_dict.model_dump(), result_json_dir, job_id)
+
+            # let us see if we should sign the result
+            backend_config = self.get_config(display_name)
+            if backend_config.sign:
+                # get the private key
+                if private_jwk is None:
+                    raise ValueError(
+                        "The private key is not given, but the backend is configured to sign."
+                    )
+                # we should sign the result
+                signed_result = sign_payload(result_dict.model_dump(), private_jwk)
+                self.upload(signed_result.model_dump(), result_json_dir, job_id)
+            else:
+                self.upload(result_dict.model_dump(), result_json_dir, job_id)
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + display_name
