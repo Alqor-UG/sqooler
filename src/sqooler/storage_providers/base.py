@@ -310,6 +310,7 @@ class StorageProvider(ABC):
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
             display_name: the name of the backend
+            private_jwk: the private JWK to sign the result with
 
         Returns:
             None

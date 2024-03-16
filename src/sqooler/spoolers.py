@@ -11,21 +11,19 @@ import os
 from collections.abc import Callable
 from typing import Type, Any, Optional
 from time import sleep
+from abc import ABC
 
 from decouple import config
-from abc import ABC
 
 from pydantic import ValidationError, BaseModel
 
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from .security import (
     JWSDict,
-    JWSHeader,
-    payload_to_base64url,
     sign_payload,
     JWK,
     jwk_from_config_str,
 )
+
 from .schemes import (
     BackendConfigSchemaIn,
     ExperimentDict,
@@ -36,8 +34,6 @@ from .schemes import (
     LabscriptParams,
     ColdAtomStr,
 )
-
-from .security import JWSDict
 
 
 class BaseSpooler(ABC):

@@ -144,10 +144,10 @@ class JWSDict(BaseModel):
 
         public_bytes = base64.urlsafe_b64decode(public_jwk.x)
         public_key = Ed25519PublicKey.from_public_bytes(public_bytes)
-        signature_base64 = self.signature.encode("utf-8")
+        signature_base64 = self.signature.encode("utf-8")  # pylint: disable=no-member
         signature_decoded = base64.urlsafe_b64decode(signature_base64)
 
-        header_base64 = self.header.to_base64url()
+        header_base64 = self.header.to_base64url()  # pylint: disable=no-member
         payload_base64 = payload_to_base64url(self.payload)
         full_message = header_base64 + b"." + payload_base64
 
@@ -183,11 +183,10 @@ def sign_payload(payload: dict, jwk: JWK) -> JWSDict:
 
     Args:
         payload : The payload to convert
-        private_key: The private key to use for signing
-        kid: The key id of the private that you use for signing.
+        jwk: The private JWK to use for signing
 
     Returns:
-        JWS : The JWS object
+        JWSDict : The JWS object
     """
 
     header = JWSHeader(kid=jwk.kid)
