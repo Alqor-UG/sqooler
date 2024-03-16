@@ -8,43 +8,20 @@ In this section we will discuss some of the cryptographic work that we started a
 
 ## Setting up the key
 
-We have decided to work with the widely used crypotgraphic python library [cryptography](https://cryptography.io/en/latest/). To use it, we first need to create and store a private key. This is best done This is done by running the following code in the terminal:
+We have decided to work with the widely used crypotgraphic python library [cryptography](https://cryptography.io/en/latest/). To use it, we first need to create and store a private key. This done with [Json Web Keys](https://datatracker.ietf.org/doc/html/rfc7517) as they allow us also to store some context around the key.
+
+This is done by running the following code in the terminal:
 
 ```python
 
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from sqooler.security import create_jwk_pair
 
-# to save the private key
-from cryptography.hazmat.primitives.serialization import (
-    Encoding,
-    PrivateFormat,
-    NoEncryption,
-)
+private_jwk, public_jwk = create_jwk_pair("doc_example_key")
 
-private_key = Ed25519PrivateKey.generate()
-private_key_file_name = "private_key_test.pem"
-private_bytes = private_key.private_bytes(
-    encoding=Encoding.PEM, format=PrivateFormat.PKCS8, encryption_algorithm=NoEncryption()
-)
-
-with open(private_key_file_name, "wb") as pem_file:
-    pem_file.write(private_bytes)
+print(private_jwk.to_config_str())
 ```
 
-This will create a private key and store it in a file called `private_key_test.pem`. A second option to store the private key is to have it directly printed out as a b64 encoded string. This can be done by running the following code:
-
-```python
-import base64
-
-private_key = Ed25519PrivateKey.generate()
-private_bytes = private_key.private_bytes_raw()
-
-private_b64 = base64.urlsafe_b64encode(private_bytes).decode("utf-8")
-
-print(private_b64)
-```
-You might then safe the output to the `PRIVATE_RESULT_KEY`in your `.env` file.
-
+You can then copy this string into your preferred storage from which we load it.
 
 !!! warning
     The private key should be kept secret and should not be shared with anyone. Never ever ever. Don't do it.
