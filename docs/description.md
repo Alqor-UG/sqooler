@@ -24,7 +24,7 @@ sequenceDiagram
         Bob->>Bob: Execute the job!
         Bob->>Bob: Save the results in a nice fashion!
   end
-  Bob->>Alice: Here are the results.
+  Bob->>Alice: Here are the (signed) results.
 ```
 
 In the typical collaboration between experimental and theoretical physicists the whole process would be done in long and detailled discussions. However, with `sqooler` we standardize the process and make it more efficient. This standardization comes with the following choices:
