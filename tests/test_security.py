@@ -50,6 +50,14 @@ def test_sign_payload() -> None:
     signature_from_jws = base64.urlsafe_b64decode(jws_obj.signature)
     public_key.verify(signature_from_jws, full_message)
 
+    # test with poor payload
+
+    poor_payload = {"test": "test1"}
+    poor_payload_base64 = payload_to_base64url(poor_payload)
+    poor_message = header_base64 + b"." + poor_payload_base64
+    with pytest.raises(InvalidSignature):
+        public_key.verify(signature, poor_message)
+
 
 def test_jwk() -> None:
     """
@@ -92,6 +100,11 @@ def test_sign_and_verify_jws() -> None:
 
     assert not signed_pl.verify_signature(wrong_public_jwk)
     assert signed_pl.header.alg == "EdDSA"  # pylint: disable=no-member
+
+    # also test with the wrong payload
+    signed_pl.payload = {"test": "test1"}
+
+    assert not signed_pl.verify_signature(public_jwk)
 
 
 def test_jws_serialization() -> None:
