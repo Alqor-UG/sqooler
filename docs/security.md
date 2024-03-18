@@ -21,6 +21,10 @@ private_jwk, public_jwk = create_jwk_pair("doc_example_key")
 print(private_jwk.to_config_str())
 ```
 
+## Signing the result 
+
+Once we have the private key, we can use it to sign the result. This is directly enabled by setting the `sign` flag for your `Spooler` object. The rest has been integrated directly into the code. 
+
 You can then copy this string into your preferred storage from which we load it.
 
 !!! warning

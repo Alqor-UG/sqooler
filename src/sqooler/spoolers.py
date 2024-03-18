@@ -18,8 +18,6 @@ from decouple import config
 from pydantic import ValidationError, BaseModel
 
 from .security import (
-    JWSDict,
-    sign_payload,
     JWK,
     jwk_from_config_str,
 )
@@ -270,19 +268,6 @@ class BaseSpooler(ABC):
         )
         return exp_info
 
-    def sign_result(self, result_dict: ResultDict, private_jwk: JWK) -> JWSDict:
-        """
-        Sign the result of the job.
-
-        Args:
-            result_dict: The result of the job.
-            private_jwk: The private JWK to use for signing.
-
-        Returns:
-            The signed result of the job.
-        """
-        raise NotImplementedError
-
     def get_private_jwk(self) -> JWK:
         """
         Get the private JWK for the spooler.
@@ -399,27 +384,6 @@ class Spooler(BaseSpooler):
                     Shots sent to solver."
         status_msg_dict.status = "DONE"
         return result_dict, status_msg_dict
-
-    def sign_result(self, result_dict: ResultDict, private_jwk: JWK) -> JWSDict:
-        """
-        Sign the result of the job.
-
-        Args:
-            result_dict: The result of the job.
-            private_jwk: The private JWK to use for signing.
-
-        Returns:
-            The signed result of the job.
-        """
-        # we have to put the appropiate kid at some point
-        # what should this become ? Most likely it has to be set by the backend name but
-        # it should also include some version name to make it clear which version the key has
-        # so maybe a JKT would even make sense here...
-
-        payload = result_dict.model_dump()
-        signed_result = sign_payload(payload, private_jwk)
-
-        return signed_result
 
 
 class LabscriptSpooler(BaseSpooler):

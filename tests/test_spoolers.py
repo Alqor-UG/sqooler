@@ -17,7 +17,6 @@ from sqooler.schemes import (
     LabscriptParams,
     GateInstruction,
     get_init_status,
-    get_init_results,
 )
 
 from sqooler.spoolers import (
@@ -26,8 +25,6 @@ from sqooler.spoolers import (
     create_memory_data,
     LabscriptSpooler,
 )
-
-from sqooler.security import create_jwk_pair, jwk_from_config_str
 
 
 class DummyExperiment(BaseModel):
@@ -288,40 +285,6 @@ def test_spooler_add_job() -> None:
     test_spooler.gen_circuit = dummy_gen_circuit
     _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
     assert status_msg_dict.status == "DONE", "Job failed"
-
-
-def test_sign_result() -> None:
-    """
-    Is it possible to sign a result ?
-    """
-    test_spooler = Spooler(
-        ins_schema_dict={"test": DummyInstruction},
-        device_config=DummyExperiment,
-        n_wires=2,
-        operational=False,
-        sign=True,
-    )
-
-    private_jwk, public_jwk = create_jwk_pair("test_spooler_pair")
-
-    test_result = get_init_results()
-    signed_result = test_spooler.sign_result(test_result, private_jwk)
-    assert signed_result.signature
-
-    # and now we can verify the signature
-    assert signed_result.verify_signature(public_jwk)
-
-    # now the same test with a jwk that was put into a config string
-    private_jwk, public_jwk = create_jwk_pair("test_spooler_pair")
-    private_jwk_str = private_jwk.to_config_str()
-    private_jwk = jwk_from_config_str(private_jwk_str)
-    signed_result = test_spooler.sign_result(test_result, private_jwk)
-    assert signed_result.signature
-
-    # and now we can verify the signature
-    assert signed_result.verify_signature(public_jwk)
-
-    # test with a loaded signature
 
 
 def test_gate_dict() -> None:
