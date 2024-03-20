@@ -40,7 +40,19 @@ As Bob you can then copy this string into your preferred storage from which we l
     The private key should be kept secret and should not be shared with anyone. Never ever ever. Don't do it.
     Even if you are a good person and you want to share it with your friends, don't do it.
 
-## Signing the result 
 
-Once Bob has the private key, we can use it to sign the result. This is directly enabled by setting the `sign` flag for your `Spooler` object. The rest has been integrated directly into the code. 
+## The public key
 
+Once the private is set up, Bob can upload the public key to the `StorageProvider`. This is done by the `upload_public_key` method, which stores the public key at the appropiate point in the storage. The public key can then be be accessed by anyone through the `get_public_key` method. A few important points are here to note about the public key:
+
+- We store the public key as [Json Web Key (JWK)](https://datatracker.ietf.org/doc/html/rfc7517) in the storage. This allows us to store some context around the key.
+- Importantly this also allows us to add the algorithm and a key id.
+- However, for the moment anyone with access to the storage can access and change the public key. This is a security risk that we have not yet addressed. The key challenge will be that the public key is stored and immutable once it is published. 
+- Another collusion can happen right now if two backends have the same backend name. This might happen by accident or by malice. But using the private keys and some authentication we can already reduce the accidental risks and then move on to problems of authentification.
+
+## Verifying the results
+
+Right now we have not yet implemented the verification of the results. This will have to be part of the API of `qlued`. The future workflow for the verification would be:
+
+- Alice has the full result JWS including header, payload and signature.
+- Alice has the appropiate public key the corresponds to the `kid` from the JWS header. She can now verify the signature. 
