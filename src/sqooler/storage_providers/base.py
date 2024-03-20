@@ -237,6 +237,16 @@ class StorageProvider(ABC):
     def delete_file(self, storage_path: str, job_id: str) -> None:
         """
         Delete the file from the storage
+
+        Args:
+            storage_path: The path to the file
+            job_id: The id of the job
+
+        Raises:
+            FileNotFoundError: If the file is not found
+
+        Returns:
+            None
         """
 
     @abstractmethod

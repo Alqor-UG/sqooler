@@ -160,6 +160,9 @@ class LocalProviderExtended(StorageProvider):
             storage_path: the path where the file is currently stored, but excluding the file name
             job_id: the name of the file
 
+        Raises:
+            FileNotFoundError: If the file is not found
+
         Returns:
             None
         """
