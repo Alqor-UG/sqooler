@@ -85,7 +85,7 @@ class TestDropboxProvider(StorageProviderTestUtils):
         """
         storage_provider = DropboxProvider(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config()
+        backend_name, config_info = self.get_dummy_config(sign=False)
         storage_provider.upload_config(config_info, backend_name)
 
         # can we get the backend in the list ?
@@ -104,7 +104,7 @@ class TestDropboxProvider(StorageProviderTestUtils):
         storage_provider = DropboxProvider(self.get_login())
 
         # create a dummy backend
-        backend_name, backend_info = self.get_dummy_config()
+        backend_name, backend_info = self.get_dummy_config(sign=False)
         storage_provider.upload_config(backend_info, backend_name)
 
         username = "test_user"

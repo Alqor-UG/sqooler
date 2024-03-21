@@ -8,6 +8,7 @@ theme:
     - navigation.expand
     - navigation.footer
     - toc.follow
+    - content.code.copy
 
   custom_dir: docs/overrides
 
@@ -20,6 +21,7 @@ nav:
     - "Schemes": "schemes.md"
     - "Utils": "utils.md"
     - "Spoolers": "spoolers.md"
+    - "Security": "security.md"
   - "Storage Providers":
     - "Basics": "storage_providers.md"
     - "MongoDB": "mongodb.md"

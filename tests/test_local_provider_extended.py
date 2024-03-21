@@ -338,7 +338,7 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         assert dummy_result["results"] == result["results"]
 
         # remove the obsolete job from the storage
-        job_dir = "jobs/running/"
+        job_dir = f"jobs/finished/{backend_name}"
         storage_provider.delete_file(job_dir, job_id)
 
         # remove the obsolete collection from the storage
@@ -352,6 +352,45 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         # remove the obsolete collection from the storage
         full_path = os.path.join(storage_provider.base_path, status_dir)
         os.rmdir(full_path)
+
+        # remove the obsolete result from the storage
+        storage_provider.delete_file(result_json_dir, job_id)
+        # remove the obsolete collection from the storage
+        full_path = os.path.join(storage_provider.base_path, result_json_dir)
+        os.rmdir(full_path)
+
+    def test_get_unsigned_results(self) -> None:
+        """
+        Test that we can get the results of a job.
+        """
+        backend_name, job_id, username, storage_provider = self.job_tests(DB_NAME)
+
+        # test that we can get a job result
+        # first upload a dummy result
+        dummy_result: dict = {
+            "backend_name": backend_name,
+            "display_name": backend_name,
+            "backend_version": "0.0.1",
+            "job_id": job_id,
+            "qobj_id": None,
+            "success": True,
+            "status": "INITIALIZING",
+            "header": {},
+            "results": [],
+        }
+
+        result_json_dir = "results/" + backend_name
+        storage_provider.upload(dummy_result, result_json_dir, job_id)
+
+        # now get the result
+        result_info = storage_provider.get_result(
+            display_name=backend_name,
+            username=username,
+            job_id=job_id,
+        )
+        result = result_info.model_dump()
+        assert not "_id" in result.keys()
+        assert dummy_result["results"] == result["results"]
 
         # remove the obsolete result from the storage
         storage_provider.delete_file(result_json_dir, job_id)

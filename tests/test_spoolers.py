@@ -8,6 +8,7 @@ import shutil
 from typing import Literal, Optional, Iterator, Callable
 from pydantic import ValidationError, BaseModel, Field
 
+
 from typing_extensions import Annotated
 import pytest
 from sqooler.schemes import (
@@ -535,7 +536,7 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         with open(file_path, "w", encoding="UTF-8") as file:
             file.write("test")
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
-    assert status_msg_dict.status == "DONE", "Job should have failed"
+    assert status_msg_dict.status == "DONE", "Job should not have failed"
 
 
 def test_create_memory_data() -> None:

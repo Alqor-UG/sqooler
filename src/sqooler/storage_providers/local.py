@@ -5,7 +5,7 @@ The module that contains all the necessary logic for communication with the loca
 import uuid
 import json
 
-from typing import Mapping
+from typing import Mapping, Optional
 
 # necessary for the local provider
 import shutil
@@ -22,6 +22,7 @@ from ..schemes import (
 )
 
 from .base import StorageProvider, validate_active
+from ..security import JWK, sign_payload
 
 
 class LocalProviderExtended(StorageProvider):
@@ -357,9 +358,7 @@ class LocalProviderExtended(StorageProvider):
                 header={},
                 results=[],
             )
-        result_dict["backend_name"] = backend_config_info.backend_name
-        typed_result = ResultDict(**result_dict)
-        return typed_result
+        return self._adapt_result_dict(result_dict, backend_config_info)
 
     def upload_config(
         self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
@@ -376,7 +375,7 @@ class LocalProviderExtended(StorageProvider):
         """
         # path of the configs
         config_path = os.path.join(self.base_path, "backends/configs")
-        config_path = os.path.normpath(os.path.join(self.base_path, "backends/configs"))
+        config_path = os.path.normpath(config_path)
         # test if the config path already exists. If it does not, create it
         if not os.path.exists(config_path):
             os.makedirs(config_path)
@@ -413,12 +412,70 @@ class LocalProviderExtended(StorageProvider):
 
         return BackendConfigSchemaIn(**backend_config_dict)
 
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+        # first make sure that the public key is intended for verification
+        if not public_jwk.key_ops == "verify":
+            raise ValueError("The key is not intended for verification")
+
+        # make sure that the key does not contain a private key
+        if public_jwk.d is not None:
+            raise ValueError("The key contains a private key")
+
+        # path of the public keys
+        key_path = os.path.join(self.base_path, "backends/public_keys")
+        key_path = os.path.normpath(key_path)
+        # test if the config path already exists. If it does not, create it
+        if not os.path.exists(key_path):
+            os.makedirs(key_path)
+
+        # this should most likely depend on the kid at some point
+        file_name = display_name + ".json"
+        full_json_path = os.path.join(key_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "w", encoding="utf-8") as json_file:
+            json_file.write(public_jwk.model_dump_json())
+
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+
+        # path of the configs
+        key_path = os.path.join(self.base_path, "backends/public_keys")
+        file_name = display_name + ".json"
+        full_json_path = os.path.join(key_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "r", encoding="utf-8") as json_file:
+            public_key_dict = json.load(json_file)
+
+        if not public_key_dict:
+            raise FileNotFoundError("The backend does not exist for the given storage.")
+
+        return JWK(**public_key_dict)
+
     def update_in_database(
         self,
         result_dict: ResultDict,
         status_msg_dict: StatusMsgDict,
         job_id: str,
         display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -428,6 +485,7 @@ class LocalProviderExtended(StorageProvider):
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
             display_name: the name of the backend
+            private_jwk: the private key of the backend
 
         Returns:
             None
@@ -442,10 +500,24 @@ class LocalProviderExtended(StorageProvider):
                 )
             # let us create the result json file
             result_json_dir = "results/" + display_name
-            self.upload(result_dict.model_dump(), result_json_dir, job_id)
+
+            # let us see if we should sign the result
+            backend_config = self.get_config(display_name)
+            if backend_config.sign:
+                # get the private key
+                if private_jwk is None:
+                    raise ValueError(
+                        "The private key is not given, but the backend is configured to sign."
+                    )
+                # we should sign the result
+                signed_result = sign_payload(result_dict.model_dump(), private_jwk)
+                self.upload(signed_result.model_dump(), result_json_dir, job_id)
+            else:
+                self.upload(result_dict.model_dump(), result_json_dir, job_id)
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + display_name
+
             self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":

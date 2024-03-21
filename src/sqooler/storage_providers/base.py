@@ -6,7 +6,7 @@ storage for the jobs. It creates an abstract API layer for the storage providers
 from abc import ABC, abstractmethod
 import re
 
-from typing import Mapping, Callable, Any
+from typing import Mapping, Callable, Any, Optional
 import functools
 
 from datetime import datetime, timezone
@@ -21,6 +21,8 @@ from ..schemes import (
     DisplayNameStr,
     BackendNameStr,
 )
+
+from ..security import JWK
 
 
 def validate_active(func: Callable) -> Callable:
@@ -267,12 +269,38 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+
+    @abstractmethod
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+
+    @abstractmethod
     def update_in_database(
         self,
         result_dict: ResultDict,
         status_msg_dict: StatusMsgDict,
         job_id: str,
         display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -282,6 +310,7 @@ class StorageProvider(ABC):
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
             display_name: the name of the backend
+            private_jwk: the private JWK to sign the result with
 
         Returns:
             None
@@ -312,6 +341,30 @@ class StorageProvider(ABC):
         Returns:
             the job dict
         """
+
+    def _adapt_result_dict(
+        self, result_dict: dict, backend_config_info: BackendConfigSchemaOut
+    ) -> ResultDict:
+        """
+        This function adapts the result dict to the standard format that we use in the system.
+
+        Args:
+            result_dict: The result dictionary
+            backend_config_info: The configuration of the backend
+
+        Returns:
+            The result dict in the standard format
+        """
+        # done day we should verify the result before we send it out
+        expected_keys_for_jws = {"header", "payload", "signature"}
+        if set(result_dict.keys()) == expected_keys_for_jws:
+            result_payload = result_dict["payload"]
+            result_payload["backend_name"] = backend_config_info.backend_name
+            typed_result = ResultDict(**result_payload)
+        else:
+            result_dict["backend_name"] = backend_config_info.backend_name
+            typed_result = ResultDict(**result_dict)
+        return typed_result
 
     def timestamp_queue(self, display_name: DisplayNameStr) -> None:
         """
