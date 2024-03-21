@@ -363,6 +363,42 @@ class LocalProviderExtended(StorageProvider):
             )
         return self._adapt_result_dict(result_dict, backend_config_info)
 
+    def update_config(
+        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+    ) -> None:
+        """
+        The function that updates the spooler configuration on the storage.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+        # path of the configs
+        config_path = os.path.join(self.base_path, "backends/configs")
+        config_path = os.path.normpath(config_path)
+        # test if the config path already exists. If it does not, create it
+        if not os.path.exists(config_path):
+            os.makedirs(config_path)
+
+        file_name = display_name + ".json"
+        full_json_path = os.path.join(config_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+
+        # check if the file already exists
+        if not os.path.exists(secure_path):
+            raise FileNotFoundError(
+                (
+                    f"The file {secure_path} does not exist and should not be updated."
+                    "Use the upload_config method instead."
+                )
+            )
+
+        with open(secure_path, "w", encoding="utf-8") as json_file:
+            json_file.write(config_dict.model_dump_json())
+
     def upload_config(
         self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
     ) -> None:
@@ -386,6 +422,13 @@ class LocalProviderExtended(StorageProvider):
         file_name = display_name + ".json"
         full_json_path = os.path.join(config_path, file_name)
         secure_path = os.path.normpath(full_json_path)
+
+        # check if the file already exists
+        if os.path.exists(secure_path):
+            raise FileExistsError(
+                f"The file {secure_path} already exists and should not be overwritten."
+            )
+
         with open(secure_path, "w", encoding="utf-8") as json_file:
             json_file.write(config_dict.model_dump_json())
 

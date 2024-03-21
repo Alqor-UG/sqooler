@@ -164,6 +164,12 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
             storage_provider.get_backend_dict("dummy_non_existing")
         storage_provider.delete_file(config_path, backend_name)
 
+    def test_upload_and_update_config(self) -> None:
+        """
+        Test that we can upload and update a config.
+        """
+        self.config_tests(DB_NAME)
+
     def test_status(self) -> None:
         """
         Test that we are able to obtain the status of the backend.

@@ -262,6 +262,27 @@ class StorageProvider(ABC):
             config_dict: The model containing the configuration
             display_name : The name of the backend
 
+        Raises:
+            ValueError: If the configuration already exists
+
+        Returns:
+            None
+        """
+
+    @abstractmethod
+    def update_config(
+        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+    ) -> None:
+        """
+        The function that updates an existing spooler configuration for the storage.
+
+        Args:
+            config_dict: The model containing the configuration
+            display_name : The name of the backend
+
+        Raises:
+            FileNotFoundError: If the configuration does not exist
+
         Returns:
             None
         """
@@ -398,7 +419,7 @@ class StorageProvider(ABC):
         config_dict.last_queue_check = current_time
 
         # upload the new configuration
-        self.upload_config(config_dict, display_name)
+        self.update_config(config_dict, display_name)
 
     def backend_dict_to_qiskit(
         self, backend_config_info: BackendConfigSchemaIn

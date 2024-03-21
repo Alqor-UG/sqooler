@@ -142,6 +142,44 @@ class StorageProviderTestUtils:
                 self.get_login(), "Whatever%/iswrong"
             )
 
+    def config_tests(self, db_name: str) -> None:
+        """
+        Test that we can create a config and update it.
+
+        Args:
+            db_name: The name of the database.
+        """
+
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        backend_name, config_info = self.get_dummy_config()
+        storage_provider.upload_config(config_info, display_name=backend_name)
+
+        # now test that we can also get the config
+        obtained_config = storage_provider.get_config(backend_name)
+        assert obtained_config.display_name == backend_name
+
+        with pytest.raises(FileNotFoundError):
+            obtained_config = storage_provider.get_config("random")
+
+        # now test that we can also update the config
+        with pytest.raises(FileExistsError):
+            storage_provider.upload_config(config_info, display_name=backend_name)
+
+        config_info.cold_atom_type = "boson"
+
+        storage_provider.update_config(config_info, display_name=backend_name)
+
+        with pytest.raises(FileNotFoundError):
+            storage_provider.update_config(config_info, display_name="randonname")
+        print("Here we go")
+        print(config_info)
+
     def signature_tests(self, db_name: str) -> None:
         """
         Test that we can create a signature.
