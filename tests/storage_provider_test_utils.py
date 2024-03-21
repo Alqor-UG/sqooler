@@ -94,6 +94,10 @@ class StorageProviderTestUtils:
         with pytest.raises(FileNotFoundError):
             storage_provider.delete_file(storage_path, "non_existing")
 
+        with pytest.raises(FileNotFoundError):
+            job_id_test = uuid.uuid4().hex[:24]
+            storage_provider.delete_file(storage_path, job_id_test)
+
         # clean up our mess
         storage_provider.delete_file(storage_path, job_id)
 

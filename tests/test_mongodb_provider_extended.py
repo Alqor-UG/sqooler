@@ -94,6 +94,12 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         self.storage_object_tests(DB_NAME)
 
+    def test_file_remove(self) -> None:
+        """
+        Test that it is possible to remove a file and we raise the right errors.
+        """
+        self.remove_file_not_found_test(DB_NAME)
+
     def test_not_active(self) -> None:
         """
         Test that we cannot work with the provider if it is not active.
@@ -158,7 +164,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # create a mongodb object
         storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
         backend_name, backend_config_info = self.get_dummy_config()
-        mongo_id = uuid.uuid4().hex[:24]
         config_path = "backends/configs"
 
         storage_provider.upload_config(backend_config_info, backend_name)
@@ -178,7 +183,14 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         with pytest.raises(FileNotFoundError):
             storage_provider.get_backend_dict("dummy_non_existing")
 
-        storage_provider.delete_file(config_path, mongo_id)
+        # test how we can delete a backend. main challenge is to get the id of the config
+        document_to_find = {"display_name": backend_name}
+
+        database = storage_provider.client["backends"]
+        collection = database["configs"]
+
+        result_found = collection.find_one(document_to_find)
+        storage_provider.delete_file(config_path, str(result_found["_id"]))
 
     def test_update_raise_error(self) -> None:
         """
@@ -245,7 +257,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         dummy_dict["status_msg"] = "All good"
 
         config_path = "backends/configs"
-        mongo_id = uuid.uuid4().hex[:24]
         config_info = BackendConfigSchemaIn(**dummy_dict)
         storage_provider.upload_config(config_info, backend_name)
 
@@ -265,7 +276,15 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         assert status_dict["backend_version"] == dummy_dict["version"]
         assert status_dict["pending_jobs"] == dummy_dict["pending_jobs"]
         assert status_dict["status_msg"] == dummy_dict["status_msg"]
-        storage_provider.delete_file(config_path, mongo_id)
+
+        # test how we can delete a backend. main challenge is to get the id of the config
+        document_to_find = {"display_name": backend_name}
+
+        database = storage_provider.client["backends"]
+        collection = database["configs"]
+
+        result_found = collection.find_one(document_to_find)
+        storage_provider.delete_file(config_path, str(result_found["_id"]))
 
     def test_jobs(self) -> None:
         """
@@ -307,10 +326,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         assert "_id" not in result.keys()
         assert dummy_result["results"] == result["results"]
 
-        # remove the obsolete job from the storage
-        job_dir = "jobs/queued/" + backend_name
-        storage_provider.delete_file(job_dir, job_id)
-
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
         collection = database[f"queued.{backend_name}"]
@@ -334,5 +349,10 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
 
         # remove the obsolete config from the storage
         config_path = "backends/configs"
-        mongo_id = uuid.uuid4().hex[:24]
-        storage_provider.delete_file(config_path, mongo_id)
+        document_to_find = {"display_name": backend_name}
+
+        database = storage_provider.client["backends"]
+        collection = database["configs"]
+
+        result_found = collection.find_one(document_to_find)
+        storage_provider.delete_file(config_path, str(result_found["_id"]))
