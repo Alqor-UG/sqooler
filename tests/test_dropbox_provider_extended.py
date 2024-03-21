@@ -56,6 +56,12 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         """
         self.storage_object_tests(DB_NAME)
 
+    def test_file_remove(self) -> None:
+        """
+        Test that it is possible to remove a file and we raise the right errors.
+        """
+        self.remove_file_not_found_test(DB_NAME)
+
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
