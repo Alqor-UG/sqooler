@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.12">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.14">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.7e359304.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.10ba22f1.min.css">
       
       
 
@@ -1189,18 +1189,18 @@
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">673</span>
 <span class="normal">674</span>
 <span class="normal">675</span>
 <span class="normal">676</span>
 <span class="normal">677</span>
 <span class="normal">678</span>
-<span class="normal">679</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProvider</span><span class="p">(</span><span class="n">DropboxProviderExtended</span><span class="p">):</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProvider</span><span class="p">(</span><span class="n">DropboxProviderExtended</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class that implements the dropbox storage provider.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1273,13 +1273,13 @@
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">DropboxLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">DropboxLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Args:</span>
 <span class="sd">        login_dict: The dictionary that contains the login information</span>
@@ -1955,7 +1955,12 @@
 <span class="normal">662</span>
 <span class="normal">663</span>
 <span class="normal">664</span>
-<span class="normal">665</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">):</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class that implements the dropbox storage provider.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2163,7 +2168,12 @@
                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Invalid access token.&quot;</span><span class="p">)</span>
 
             <span class="n">full_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">storage_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">job_id</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span>
-            <span class="n">_</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_delete_v2</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">full_path</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_delete_v2</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">full_path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ApiError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Could not delete file under </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
 
     <span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="n">BackendConfigSchemaIn</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span>
@@ -2826,7 +2836,12 @@
 <span class="normal">236</span>
 <span class="normal">237</span>
 <span class="normal">238</span>
-<span class="normal">239</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">delete_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove the file from the dropbox</span>
@@ -2855,7 +2870,12 @@
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Invalid access token.&quot;</span><span class="p">)</span>
 
         <span class="n">full_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">storage_path</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">job_id</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span>
-        <span class="n">_</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_delete_v2</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">full_path</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_delete_v2</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">full_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ApiError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Could not delete file under </span><span class="si">{</span><span class="n">full_path</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>
@@ -2935,12 +2955,7 @@ tests.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">635</span>
-<span class="normal">636</span>
-<span class="normal">637</span>
-<span class="normal">638</span>
-<span class="normal">639</span>
-<span class="normal">640</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">640</span>
 <span class="normal">641</span>
 <span class="normal">642</span>
 <span class="normal">643</span>
@@ -2965,7 +2980,12 @@ tests.</p>
 <span class="normal">662</span>
 <span class="normal">663</span>
 <span class="normal">664</span>
-<span class="normal">665</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove the folder from the dropbox. Attention this will remove all the files in the folder.</span>
 <span class="sd">    It is not a standard function for storage providers, but allows us to better clean up the</span>
@@ -3073,12 +3093,7 @@ tests.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">462</span>
 <span class="normal">463</span>
 <span class="normal">464</span>
 <span class="normal">465</span>
@@ -3091,7 +3106,12 @@ tests.</p>
 <span class="normal">472</span>
 <span class="normal">473</span>
 <span class="normal">474</span>
-<span class="normal">475</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_backend_status</span><span class="p">(</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_backend_status</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendStatusSchemaOut</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -3133,12 +3153,7 @@ tests.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
@@ -3155,7 +3170,12 @@ tests.</p>
 <span class="normal">433</span>
 <span class="normal">434</span>
 <span class="normal">435</span>
-<span class="normal">436</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">get_backends</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of all the backends that the provider offers.</span>
@@ -3278,12 +3298,7 @@ tests.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">443</span>
 <span class="normal">444</span>
 <span class="normal">445</span>
 <span class="normal">446</span>
@@ -3295,7 +3310,12 @@ tests.</p>
 <span class="normal">452</span>
 <span class="normal">453</span>
 <span class="normal">454</span>
-<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that downloads the spooler configuration to the storage.</span>
 
@@ -3476,12 +3496,7 @@ job_id: the name of the file. Is a json file</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">378</span>
 <span class="normal">379</span>
 <span class="normal">380</span>
 <span class="normal">381</span>
@@ -3515,7 +3530,12 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">409</span>
 <span class="normal">410</span>
 <span class="normal">411</span>
-<span class="normal">412</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of files. Typically we are looking for the queued jobs of a backend here.</span>
 
@@ -3705,12 +3725,7 @@ job_id: the id of the file we are about to look up</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">611</span>
 <span class="normal">612</span>
 <span class="normal">613</span>
 <span class="normal">614</span>
@@ -3732,7 +3747,12 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">630</span>
 <span class="normal">631</span>
 <span class="normal">632</span>
-<span class="normal">633</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NextJobSchema</span><span class="p">:</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NextJobSchema</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A function that obtains the next job in the queue.</span>
 
@@ -3836,12 +3856,7 @@ job_id: the id of the file we are about to look up</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">289</span>
 <span class="normal">290</span>
 <span class="normal">291</span>
 <span class="normal">292</span>
@@ -3850,7 +3865,12 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">295</span>
 <span class="normal">296</span>
 <span class="normal">297</span>
-<span class="normal">298</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that gets the spooler public JWK for the device.</span>
 
@@ -3980,12 +4000,7 @@ job_id: the id of the file we are about to look up</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">576</span>
 <span class="normal">577</span>
 <span class="normal">578</span>
 <span class="normal">579</span>
@@ -4013,7 +4028,12 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">601</span>
 <span class="normal">602</span>
 <span class="normal">603</span>
-<span class="normal">604</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_result</span><span class="p">(</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_result</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4152,12 +4172,7 @@ job_id: the id of the file we are about to look up</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span>
-<span class="normal">543</span>
-<span class="normal">544</span>
-<span class="normal">545</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">545</span>
 <span class="normal">546</span>
 <span class="normal">547</span>
 <span class="normal">548</span>
@@ -4181,7 +4196,12 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">566</span>
 <span class="normal">567</span>
 <span class="normal">568</span>
-<span class="normal">569</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatusMsgDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4631,12 +4651,7 @@ job_id: the name of the file. Is a json file</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">305</span>
 <span class="normal">306</span>
 <span class="normal">307</span>
 <span class="normal">308</span>
@@ -4702,7 +4717,12 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">368</span>
 <span class="normal">369</span>
 <span class="normal">370</span>
-<span class="normal">371</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result_dict</span><span class="p">:</span> <span class="n">ResultDict</span><span class="p">,</span>
     <span class="n">status_msg_dict</span><span class="p">:</span> <span class="n">StatusMsgDict</span><span class="p">,</span>
@@ -4974,12 +4994,7 @@ For each backend there is a separate folder in which the configuration is stored
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
@@ -4992,7 +5007,12 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
-<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">:</span> <span class="n">BackendConfigSchemaIn</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -5116,12 +5136,7 @@ For each backend there is a separate folder in which the configuration is stored
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">477</span>
-<span class="normal">478</span>
-<span class="normal">479</span>
-<span class="normal">480</span>
-<span class="normal">481</span>
-<span class="normal">482</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">482</span>
 <span class="normal">483</span>
 <span class="normal">484</span>
 <span class="normal">485</span>
@@ -5147,7 +5162,12 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">505</span>
 <span class="normal">506</span>
 <span class="normal">507</span>
-<span class="normal">508</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_job</span><span class="p">(</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_job</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">job_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -5269,12 +5289,7 @@ For each backend there is a separate folder in which the configuration is stored
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
 <span class="normal">269</span>
@@ -5290,7 +5305,12 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">279</span>
 <span class="normal">280</span>
 <span class="normal">281</span>
-<span class="normal">282</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that uploads the spooler public JWK to the storage.</span>
 
@@ -5417,12 +5437,7 @@ For each backend there is a separate folder in which the configuration is stored
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">515</span>
 <span class="normal">516</span>
 <span class="normal">517</span>
 <span class="normal">518</span>
@@ -5445,7 +5460,12 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">535</span>
 <span class="normal">536</span>
 <span class="normal">537</span>
-<span class="normal">538</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_status</span><span class="p">(</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_status</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatusMsgDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -5777,7 +5797,7 @@ For each backend there is a separate folder in which the configuration is stored
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.footer", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.c8d2eff1.min.js"></script>
+      <script src="../assets/javascripts/bundle.bd41221c.min.js"></script>
       
     
   </body>
