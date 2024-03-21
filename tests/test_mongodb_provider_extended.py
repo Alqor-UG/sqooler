@@ -300,10 +300,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         )
         assert job_result.status == "ERROR"
 
-        # remove the obsolete job from the storage
-        job_dir = "jobs/queued/" + backend_name
-        storage_provider.delete_file(job_dir, job_id)
-
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
         collection = database[f"queued.{backend_name}"]
