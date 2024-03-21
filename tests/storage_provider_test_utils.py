@@ -158,7 +158,19 @@ class StorageProviderTestUtils:
             storage_provider = storage_provider_class(self.get_login())
 
         backend_name, config_info = self.get_dummy_config()
-        storage_provider.upload_config(config_info, display_name=backend_name)
+        private_jwk, public_jwk = create_jwk_pair(backend_name)
+
+        # does it fail if we try to upload the config without a private key?
+        with pytest.raises(ValueError):
+            storage_provider.upload_config(config_info, display_name=backend_name)
+
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
+        # now test that we can cannot upload the config again
+        with pytest.raises(FileExistsError):
+            storage_provider.upload_config(config_info, display_name=backend_name)
 
         # now test that we can also get the config
         obtained_config = storage_provider.get_config(backend_name)
@@ -166,10 +178,6 @@ class StorageProviderTestUtils:
 
         with pytest.raises(FileNotFoundError):
             obtained_config = storage_provider.get_config("random")
-
-        # now test that we can also update the config
-        with pytest.raises(FileExistsError):
-            storage_provider.upload_config(config_info, display_name=backend_name)
 
         config_info.cold_atom_type = "boson"
 
@@ -222,10 +230,14 @@ class StorageProviderTestUtils:
             storage_provider = storage_provider_class(self.get_login())
 
         backend_name, config_info = self.get_dummy_config()
-        storage_provider.upload_config(config_info, display_name=backend_name)
 
         # create a dummy key
         private_jwk, public_jwk = create_jwk_pair(backend_name)
+
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
         storage_provider.upload_public_key(public_jwk, display_name=backend_name)
 
         # let us first test the we can upload a dummy job

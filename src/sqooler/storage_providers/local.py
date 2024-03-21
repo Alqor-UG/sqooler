@@ -400,7 +400,10 @@ class LocalProviderExtended(StorageProvider):
             json_file.write(config_dict.model_dump_json())
 
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
@@ -408,6 +411,7 @@ class LocalProviderExtended(StorageProvider):
         Args:
             config_dict: The dictionary containing the configuration
             display_name : The name of the backend
+            private_jwk: The private key of the backend
 
         Returns:
             None
@@ -429,8 +433,20 @@ class LocalProviderExtended(StorageProvider):
                 f"The file {secure_path} already exists and should not be overwritten."
             )
 
+        if config_dict.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend is configured to sign."
+                )
+            # we should sign the result
+            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
+            upload_dict_str = signed_config.model_dump_json()
+        else:
+            upload_dict_str = config_dict.model_dump_json()
+
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json_file.write(config_dict.model_dump_json())
+            json_file.write(upload_dict_str)
 
     def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
         """
@@ -456,7 +472,14 @@ class LocalProviderExtended(StorageProvider):
         if not backend_config_dict:
             raise FileNotFoundError("The backend does not exist for the given storage.")
 
-        return BackendConfigSchemaIn(**backend_config_dict)
+        # done day we should verify the result before we send it out
+        expected_keys_for_jws = {"header", "payload", "signature"}
+        if set(backend_config_dict.keys()) == expected_keys_for_jws:
+            payload = backend_config_dict["payload"]
+            typed_config = BackendConfigSchemaIn(**payload)
+        else:
+            typed_config = BackendConfigSchemaIn(**backend_config_dict)
+        return typed_config
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """
