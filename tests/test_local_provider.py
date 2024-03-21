@@ -7,13 +7,18 @@ import json
 import shutil
 from typing import Any
 
+import pytest
+
 # get the environment variables
 from decouple import config
 
 from sqooler.storage_providers.local import LocalProvider
 from sqooler.schemes import ResultDict, LocalLoginInformation
-
+from sqooler.security import create_jwk_pair
 from .storage_provider_test_utils import StorageProviderTestUtils
+
+
+DB_NAME = "storage"
 
 
 class TestLocalProvider(StorageProviderTestUtils):
@@ -38,7 +43,7 @@ class TestLocalProvider(StorageProviderTestUtils):
         """
         Remove the `storage` folder.
         """
-        shutil.rmtree("storage")
+        shutil.rmtree(config("BASE_PATH"))
 
     def get_login(self) -> LocalLoginInformation:
         """
@@ -117,7 +122,7 @@ class TestLocalProvider(StorageProviderTestUtils):
         Is it possible to work through the queue of jobs?
         """
         storage_provider = LocalProvider(self.get_login())
-
+        private_jwk, _ = create_jwk_pair("test")
         # create a dummy config
         backend_name, backend_info = self.get_dummy_config()
         storage_provider.upload_config(backend_info, backend_name)
@@ -165,10 +170,19 @@ class TestLocalProvider(StorageProviderTestUtils):
         )
 
         status_msg_dict.status = "DONE"
-        storage_provider.update_in_database(
-            result_dict, status_msg_dict, next_job.job_id, backend_name
-        )
 
+        with pytest.raises(ValueError):
+            storage_provider.update_in_database(
+                result_dict, status_msg_dict, next_job.job_id, backend_name
+            )
+
+        storage_provider.update_in_database(
+            result_dict,
+            status_msg_dict,
+            next_job.job_id,
+            backend_name,
+            private_jwk=private_jwk,
+        )
         # we now need to check if the job is in the finished jobs folder
         job_finished_json_dir = "jobs/finished/" + backend_name
 
@@ -182,3 +196,15 @@ class TestLocalProvider(StorageProviderTestUtils):
         # clean up the mess
         storage_provider.delete_file(job_finished_json_dir, job_id)
         storage_provider.delete_file(status_json_dir, job_id)
+
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)
+
+    def test_signing(self) -> None:
+        """
+        Is it possible to work through the queue of jobs?
+        """
+        self.job_tests(DB_NAME)

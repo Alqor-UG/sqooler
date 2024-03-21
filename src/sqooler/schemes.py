@@ -152,6 +152,10 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
     last_queue_check: Optional[datetime] = Field(
         default=None, description="The last time the queue was checked."
     )
+    sign: bool = Field(
+        default=False,
+        description="True if the results are signed by the backend provider.",
+    )
 
 
 class BackendConfigSchemaOut(BaseModel, validate_assignment=True):

@@ -3,7 +3,7 @@ The module that contains all the necessary logic for communication with the Mong
 """
 
 import uuid
-
+from typing import Optional
 
 # necessary for the mongodb provider
 from pymongo.mongo_client import MongoClient
@@ -21,6 +21,7 @@ from ..schemes import (
 )
 
 from .base import StorageProvider, validate_active
+from ..security import JWK, sign_payload
 
 
 class MongodbProviderExtended(StorageProvider):
@@ -458,10 +459,77 @@ class MongodbProviderExtended(StorageProvider):
                 results=[],
             )
         backend_config_info = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_info.backend_name
+        return self._adapt_result_dict(result_dict, backend_config_info)
 
-        typed_result = ResultDict(**result_dict)
-        return typed_result
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+        # first make sure that the public key is intended for verification
+        if not public_jwk.key_ops == "verify":
+            raise ValueError("The key is not intended for verification")
+
+        # make sure that the key does not contain a private key
+        if public_jwk.d is not None:
+            raise ValueError("The key contains a private key")
+
+        pk_paths = "backends/public_keys"
+
+        # first we have to check if the device already exists in the database
+
+        document_to_find = {"display_name": display_name}
+
+        # get the database on which we work
+        database = self.client["backends"]
+
+        # get the collection on which we work
+        collection = database["public_keys"]
+
+        result_found = collection.find_one(document_to_find)
+        if result_found:
+            # update the file
+            self.update_file(
+                content_dict=public_jwk.model_dump(),
+                storage_path=pk_paths,
+                job_id=result_found["_id"],
+            )
+            return
+
+        # if the device does not exist, we have to create it
+
+        config_id = uuid.uuid4().hex[:24]
+        self.upload(public_jwk.model_dump(), pk_paths, config_id)
+
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+        # get the database on which we work
+        database = self.client["backends"]
+        collection = database["public_keys"]
+
+        # create the filter for the document with display_name that is equal to display_name
+        document_to_find = {"display_name": display_name}
+        public_jwk_dict = collection.find_one(document_to_find)
+
+        if not public_jwk_dict:
+            raise FileNotFoundError("The backend does not exist for the given storage.")
+
+        public_jwk_dict.pop("_id")
+        return JWK(**public_jwk_dict)
 
     def update_in_database(
         self,
@@ -469,6 +537,7 @@ class MongodbProviderExtended(StorageProvider):
         status_msg_dict: StatusMsgDict,
         job_id: str,
         display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -482,6 +551,7 @@ class MongodbProviderExtended(StorageProvider):
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
             display_name: the name of the backend
+            private_jwk: the private JWK to sign the result with
 
         Returns:
             None
@@ -500,7 +570,20 @@ class MongodbProviderExtended(StorageProvider):
                 )
             # let us create the result json file
             result_json_dir = "results/" + display_name
-            self.upload(result_dict.model_dump(), result_json_dir, job_id)
+
+            # let us see if we should sign the result
+            backend_config = self.get_config(display_name)
+            if backend_config.sign:
+                # get the private key
+                if private_jwk is None:
+                    raise ValueError(
+                        "The private key is not given, but the backend is configured to sign."
+                    )
+                # we should sign the result
+                signed_result = sign_payload(result_dict.model_dump(), private_jwk)
+                self.upload(signed_result.model_dump(), result_json_dir, job_id)
+            else:
+                self.upload(result_dict.model_dump(), result_json_dir, job_id)
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + display_name

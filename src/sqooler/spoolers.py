@@ -11,10 +11,17 @@ import os
 from collections.abc import Callable
 from typing import Type, Any, Optional
 from time import sleep
-
 from abc import ABC
 
+from decouple import config
+
 from pydantic import ValidationError, BaseModel
+
+from .security import (
+    JWK,
+    jwk_from_config_str,
+)
+
 from .schemes import (
     BackendConfigSchemaIn,
     ExperimentDict,
@@ -42,6 +49,7 @@ class BaseSpooler(ABC):
         wire_order: the order of the wires
         num_species: the number of atomic species in the experiment
         operational: is the backend ready for access by remote users ?
+        sign: sign the results of the job
     """
 
     def __init__(
@@ -57,6 +65,7 @@ class BaseSpooler(ABC):
         wire_order: str = "interleaved",
         num_species: int = 1,
         operational: bool = True,
+        sign: bool = False,
     ):
         """
         The constructor of the class.
@@ -73,6 +82,7 @@ class BaseSpooler(ABC):
         self.num_species = num_species
         self._display_name: str = ""
         self.operational = operational
+        self.sign = sign
 
     def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
@@ -257,6 +267,16 @@ class BaseSpooler(ABC):
             num_wires=json_dict["num_wires"],
         )
         return exp_info
+
+    def get_private_jwk(self) -> JWK:
+        """
+        Get the private JWK for the spooler.
+
+        Returns:
+            The private JWK for the spooler.
+        """
+        private_jwk_str = config("PRIVATE_JWK_STR")
+        return jwk_from_config_str(private_jwk_str)
 
 
 class Spooler(BaseSpooler):

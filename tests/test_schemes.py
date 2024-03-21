@@ -101,6 +101,26 @@ def test_config_in_out() -> None:
             status_msg="test",
         )
 
+    # test that we can append a public key
+    BackendConfigSchemaIn(
+        description="Whatever",
+        version="1.0.0",
+        display_name="nicename",
+        cold_atom_type="fermion",
+        gates=[],
+        max_experiments=1,
+        max_shots=1,
+        simulator=True,
+        supported_instructions=[],
+        num_wires=1,
+        wire_order="interleaved",
+        num_species=1,
+        operational=True,
+        pending_jobs=1,
+        status_msg="test",
+        sign=True,
+    )
+
 
 def test_get_init_status() -> None:
     """

@@ -8,8 +8,10 @@ import uuid
 from decouple import config
 import pytest
 from pydantic import ValidationError
-from sqooler.schemes import BackendConfigSchemaIn
+from sqooler.schemes import BackendConfigSchemaIn, ResultDict
 from sqooler.storage_providers.base import StorageProvider
+
+from sqooler.security import create_jwk_pair
 
 
 class StorageProviderTestUtils:
@@ -35,10 +37,12 @@ class StorageProviderTestUtils:
         """
         raise NotImplementedError
 
-    def get_dummy_config(self) -> Tuple[str, BackendConfigSchemaIn]:
+    def get_dummy_config(self, sign: bool = True) -> Tuple[str, BackendConfigSchemaIn]:
         """
         Generate the dummy config of the fermion type.
 
+        Args:
+            sign: Whether to sign the files.
         Returns:
             The backend name and the backend config input.
         """
@@ -60,6 +64,7 @@ class StorageProviderTestUtils:
         dummy_dict["wire_order"] = "interleaved"
         dummy_dict["num_species"] = 1
         dummy_dict["operational"] = True
+        dummy_dict["sign"] = sign
 
         backend_info = BackendConfigSchemaIn(**dummy_dict)
         return backend_name, backend_info
@@ -137,6 +142,33 @@ class StorageProviderTestUtils:
                 self.get_login(), "Whatever%/iswrong"
             )
 
+    def signature_tests(self, db_name: str) -> None:
+        """
+        Test that we can create a signature.
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+        dummy_id = uuid.uuid4().hex[:5]
+        backend_name = f"dummy{dummy_id}"
+
+        # create a dummy key
+        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
+
+        with pytest.raises(ValueError):
+            storage_provider.upload_public_key(private_jwk, display_name=backend_name)
+
+        # now test that we can also get the public key
+        obtained_public_jwk = storage_provider.get_public_key(backend_name)
+        assert obtained_public_jwk.x == public_jwk.x
+
+        with pytest.raises(FileNotFoundError):
+            obtained_public_jwk = storage_provider.get_public_key("random")
+
     def job_tests(self, db_name: str) -> Tuple[str, str, str, Any]:
         """
         Test the job upload and download.
@@ -146,29 +178,17 @@ class StorageProviderTestUtils:
         """
         # create a storageprovider object
         storage_provider_class = self.get_storage_provider()
-        storage_provider = storage_provider_class(self.get_login(), db_name)
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
 
-        # create a dummy config
-        dummy_id = uuid.uuid4().hex[:5]
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["name"] = "Dummy"
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["num_species"] = 1
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["max_shots"] = 5
-        dummy_dict["max_experiments"] = 5
-        dummy_dict["description"] = "Dummy simulator for testing"
-        dummy_dict["operational"] = True
-        backend_name = f"dummy{dummy_id}"
-        dummy_dict["display_name"] = backend_name
-        dummy_dict["simulator"] = True
-
-        config_info = BackendConfigSchemaIn(**dummy_dict)
+        backend_name, config_info = self.get_dummy_config()
         storage_provider.upload_config(config_info, display_name=backend_name)
+
+        # create a dummy key
+        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
 
         # let us first test the we can upload a dummy job
         job_payload = {
@@ -226,4 +246,35 @@ class StorageProviderTestUtils:
         backend_config = storage_provider.get_config(backend_name)
         assert backend_config.last_queue_check
 
+        # we now also need to test the update_in_database part of the storage provider
+        result_dict = ResultDict(
+            display_name=backend_name,
+            backend_version="0.0.1",
+            job_id=next_job.job_id,
+            status="INITIALIZING",
+        )
+
+        job_status.status = "DONE"
+        # this should fail as the signing key is missing
+        with pytest.raises(ValueError):
+            storage_provider.update_in_database(
+                result_dict, job_status, next_job.job_id, backend_name
+            )
+
+        storage_provider.update_in_database(
+            result_dict,
+            job_status,
+            next_job.job_id,
+            backend_name,
+            private_jwk=private_jwk,
+        )
+
+        # we now need to check if the job is in the finished jobs folder
+        obtained_result = storage_provider.get_result(
+            display_name=backend_name,
+            username=username,
+            job_id=next_job.job_id,
+        )
+
+        assert obtained_result.backend_version == "0.0.1"
         return backend_name, job_id, username, storage_provider

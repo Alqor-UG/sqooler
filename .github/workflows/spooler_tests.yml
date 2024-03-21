@@ -18,6 +18,7 @@ jobs:
       MONGODB_DATABASE_URL: ${{secrets.MONGODB_DATABASE_URL}}
       BASE_PATH: ${{secrets.BASE_PATH}}
       TEST_USERNAME: ${{secrets.TEST_USERNAME}}
+      PRIVATE_JWK_STR: ${{secrets.PRIVATE_JWK_STR}}
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
