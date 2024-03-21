@@ -214,9 +214,17 @@ class MongodbProviderExtended(StorageProvider):
         # get the collection on which we work
         collection_name = ".".join(storage_path.split("/")[1:])
         collection = database[collection_name]
-
-        document_to_find = {"_id": ObjectId(job_id)}
-        collection.delete_one(document_to_find)
+        try:
+            document_to_find = {"_id": ObjectId(job_id)}
+        except InvalidId as err:
+            raise FileNotFoundError(
+                f"The job_id {job_id} is not valid. Please check the job_id."
+            ) from err
+        result = collection.delete_one(document_to_find)
+        if result.deleted_count == 0:
+            raise FileNotFoundError(
+                f"Could not find a file under {storage_path} with the id {job_id}."
+            )
 
     @validate_active
     def get_backends(self) -> list[DisplayNameStr]:

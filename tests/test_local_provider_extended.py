@@ -111,6 +111,12 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
+    def test_file_remove(self) -> None:
+        """
+        Test that it is possible to remove a file and we raise the right errors.
+        """
+        self.remove_file_not_found_test(DB_NAME)
+
     def test_configs(self) -> None:
         """
         Test that we are able to obtain a list of backends.

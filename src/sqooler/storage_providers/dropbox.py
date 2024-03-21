@@ -236,7 +236,12 @@ class DropboxProviderExtended(StorageProvider):
                 sys.exit("ERROR: Invalid access token.")
 
             full_path = "/" + storage_path + "/" + job_id + ".json"
-            _ = dbx.files_delete_v2(path=full_path)
+            try:
+                _ = dbx.files_delete_v2(path=full_path)
+            except ApiError as err:
+                raise FileNotFoundError(
+                    f"Could not delete file under {full_path}"
+                ) from err
 
     def upload_config(
         self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
