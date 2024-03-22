@@ -185,10 +185,14 @@ class StorageProviderTestUtils:
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
 
+        # test that we cannot update the config with a wrong private key
+        wrong_private_jwk, _ = create_jwk_pair(backend_name)
+        with pytest.raises(ValueError):
+            storage_provider.update_config(
+                config_info, display_name=backend_name, private_jwk=wrong_private_jwk
+            )
         with pytest.raises(FileNotFoundError):
             storage_provider.update_config(config_info, display_name="randonname")
-        print("Here we go")
-        print(config_info)
 
     def signature_tests(self, db_name: str) -> None:
         """
