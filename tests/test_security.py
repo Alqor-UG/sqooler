@@ -6,6 +6,8 @@ import base64
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.exceptions import InvalidSignature
 
+from datetime import datetime, timezone
+
 import pytest
 
 from sqooler.security import (
@@ -105,6 +107,11 @@ def test_sign_and_verify_jws() -> None:
     signed_pl.payload = {"test": "test1"}
 
     assert not signed_pl.verify_signature(public_jwk)
+
+    # test if we can sign a payload with a datetime
+    current_time = datetime.now(timezone.utc)
+    payload_dt = {"test": "test", "last_queued": current_time}
+    signed_pl_dt = sign_payload(payload_dt, private_jwk)
 
 
 def test_jws_serialization() -> None:

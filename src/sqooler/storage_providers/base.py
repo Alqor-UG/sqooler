@@ -271,7 +271,10 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def update_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that updates an existing spooler configuration for the storage.
@@ -279,6 +282,7 @@ class StorageProvider(ABC):
         Args:
             config_dict: The model containing the configuration
             display_name : The name of the backend
+            private_jwk: The private JWK to sign the result with
 
         Raises:
             FileNotFoundError: If the configuration does not exist
@@ -397,7 +401,9 @@ class StorageProvider(ABC):
             typed_result = ResultDict(**result_dict)
         return typed_result
 
-    def timestamp_queue(self, display_name: DisplayNameStr) -> None:
+    def timestamp_queue(
+        self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
+    ) -> None:
         """
         Updates the time stamp for when the system last looked into the file queue.
         This allows us to track if the system is actually online or not.
@@ -419,7 +425,7 @@ class StorageProvider(ABC):
         config_dict.last_queue_check = current_time
 
         # upload the new configuration
-        self.update_config(config_dict, display_name)
+        self.update_config(config_dict, display_name, private_jwk)
 
     def backend_dict_to_qiskit(
         self, backend_config_info: BackendConfigSchemaIn

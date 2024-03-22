@@ -181,7 +181,9 @@ class StorageProviderTestUtils:
 
         config_info.cold_atom_type = "boson"
 
-        storage_provider.update_config(config_info, display_name=backend_name)
+        storage_provider.update_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
 
         with pytest.raises(FileNotFoundError):
             storage_provider.update_config(config_info, display_name="randonname")
@@ -229,7 +231,7 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config()
+        backend_name, config_info = self.get_dummy_config(sign=True)
 
         # create a dummy key
         private_jwk, public_jwk = create_jwk_pair(backend_name)
@@ -290,7 +292,7 @@ class StorageProviderTestUtils:
         assert backend_config.last_queue_check is None
 
         # now test that we can move through the queue
-        next_job = storage_provider.get_next_job_in_queue(backend_name)
+        next_job = storage_provider.get_next_job_in_queue(backend_name, private_jwk)
         assert next_job.job_id == job_id
         # now also make sure that we updated the time stamp for the queue
         backend_config = storage_provider.get_config(backend_name)

@@ -189,13 +189,8 @@ class LocalProviderExtended(StorageProvider):
         # Filter out only the JSON files
         json_files = [item for item in all_items if item.endswith(".json")]
 
-        for file_name in json_files:
-            full_json_path = os.path.join(config_path, file_name)
-            secure_path = os.path.normpath(full_json_path)
-
-            with open(secure_path, "r", encoding="utf-8") as json_file:
-                config_dict = json.load(json_file)
-                backend_names.append(config_dict["display_name"])
+        # Get the backend names
+        backend_names = [os.path.splitext(file_name)[0] for file_name in json_files]
         return backend_names
 
     def get_backend_status(
@@ -364,7 +359,10 @@ class LocalProviderExtended(StorageProvider):
         return self._adapt_result_dict(result_dict, backend_config_info)
 
     def update_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that updates the spooler configuration on the storage.
@@ -372,6 +370,7 @@ class LocalProviderExtended(StorageProvider):
         Args:
             config_dict: The dictionary containing the configuration
             display_name : The name of the backend
+            private_jwk: The private key of the backend
 
         Returns:
             None
@@ -379,9 +378,6 @@ class LocalProviderExtended(StorageProvider):
         # path of the configs
         config_path = os.path.join(self.base_path, "backends/configs")
         config_path = os.path.normpath(config_path)
-        # test if the config path already exists. If it does not, create it
-        if not os.path.exists(config_path):
-            os.makedirs(config_path)
 
         file_name = display_name + ".json"
         full_json_path = os.path.join(config_path, file_name)
@@ -396,8 +392,40 @@ class LocalProviderExtended(StorageProvider):
                 )
             )
 
+        # now read the old config
+        with open(secure_path, "r", encoding="utf-8") as json_file:
+            old_config_jws = json.load(json_file)
+
+        # now we should check if the old config is signed
+        expected_keys_for_jws = {"header", "payload", "signature"}
+
+        # now check if we need a private key
+        # this is the case if the old config is signed or the new one should be signed
+        if set(old_config_jws.keys()) == expected_keys_for_jws or config_dict.sign:
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend is configured to sign."
+                )
+            if set(old_config_jws.keys()) == expected_keys_for_jws:
+                # the old config is signed and we need to check if the private key is the same
+                payload = old_config_jws["payload"]
+
+                # now proof that the new private key would create the same signature for the old
+                # config to validate that we still have the same private key
+                test_signature = sign_payload(payload, private_jwk)
+                if not test_signature.signature == old_config_jws["signature"]:
+                    raise ValueError(
+                        "The new private key does not create the same signature as the old one."
+                    )
+
+            # now that we know that the private key is the same, we can sign the new config
+            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
+            upload_dict_str = signed_config.model_dump_json()
+        else:
+            # the old and the new are not signed
+            upload_dict_str = config_dict.model_dump_json()
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json_file.write(config_dict.model_dump_json())
+            json_file.write(upload_dict_str)
 
     def upload_config(
         self,
@@ -437,14 +465,13 @@ class LocalProviderExtended(StorageProvider):
             # get the private key
             if private_jwk is None:
                 raise ValueError(
-                    "The private key is not given, but the backend is configured to sign."
+                    "The private key is not given, but the backend needs to be signed."
                 )
             # we should sign the result
             signed_config = sign_payload(config_dict.model_dump(), private_jwk)
             upload_dict_str = signed_config.model_dump_json()
         else:
             upload_dict_str = config_dict.model_dump_json()
-
         with open(secure_path, "w", encoding="utf-8") as json_file:
             json_file.write(upload_dict_str)
 
@@ -615,12 +642,15 @@ class LocalProviderExtended(StorageProvider):
             return []
         return os.listdir(full_path)
 
-    def get_next_job_in_queue(self, display_name: str) -> NextJobSchema:
+    def get_next_job_in_queue(
+        self, display_name: str, private_jwk: Optional[JWK] = None
+    ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue.
 
         Args:
             display_name: The name of the backend
+            private_jwk: The private key of the backend
 
         Returns:
             the dict of the next job
@@ -630,7 +660,7 @@ class LocalProviderExtended(StorageProvider):
         job_list = self.get_file_queue(queue_dir)
 
         # update the time stamp of the last job
-        self.timestamp_queue(display_name)
+        self.timestamp_queue(display_name, private_jwk)
 
         # if there is a job, we should move it
         if job_list:
