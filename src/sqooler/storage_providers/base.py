@@ -417,6 +417,7 @@ class StorageProvider(ABC):
 
         Args:
             display_name : The name of the backend
+            private_jwk: The private JWK to sign the result with
 
         Returns:
             None

@@ -90,6 +90,9 @@ class TestMongodbProvider(StorageProviderTestUtils):
                 collection.drop()
 
     def test_config_upload(self) -> None:
+        """
+        Test that we can upload a config and modify it properly.
+        """
         self.config_tests(DB_NAME)
         self.config_tests(DB_NAME, sign=False)
 
@@ -142,7 +145,7 @@ class TestMongodbProvider(StorageProviderTestUtils):
         # get the backend and test that it was uploaded properly
         config_dict = storage_provider.get_config(backend_name)
         print(config_dict)
-        assert config_dict.sign == False
+        assert config_dict.sign is False
         # first we have to upload a dummy job
         job_id = (uuid.uuid4().hex)[:24]
         job_dict = {"job_id": job_id, "job_json_path": "None"}

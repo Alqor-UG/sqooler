@@ -148,7 +148,7 @@ class StorageProviderTestUtils:
 
         Args:
             db_name: The name of the database.
-            should I run the tests with signing?
+            sign: should I run the tests with signing?
         """
 
         # create a storageprovider object
@@ -159,7 +159,7 @@ class StorageProviderTestUtils:
             storage_provider = storage_provider_class(self.get_login())
 
         backend_name, config_info = self.get_dummy_config(sign)
-        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        private_jwk, _ = create_jwk_pair(backend_name)
 
         # does it fail if we try to upload the config without a private key?
         if sign:

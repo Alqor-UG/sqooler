@@ -48,18 +48,18 @@ class JWSHeader(BaseModel):
         return base64_encoded
 
 
-def datetime_handler(input: Any) -> str:
+def datetime_handler(in_var: Any) -> str:
     """
     Convert a datetime object to a string.
 
     Args:
-        input : The object to convert
+        in_var : The object to convert
 
     Returns:
         str : The string representation of the object
     """
-    if isinstance(input, datetime.datetime):
-        return input.isoformat()
+    if isinstance(in_var, datetime.datetime):
+        return in_var.isoformat()
     raise TypeError("Unknown type")
 
 

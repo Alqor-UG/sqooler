@@ -3,7 +3,6 @@ The tests for the storage provider using mongodb
 """
 
 import uuid
-import json
 import shutil
 from typing import Any
 

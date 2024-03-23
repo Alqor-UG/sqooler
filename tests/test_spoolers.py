@@ -199,7 +199,7 @@ def test_spooler_jwk() -> None:
         ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=True
     )
 
-    private_jwk = test_spooler.get_private_jwk()
+    test_spooler.get_private_jwk()
 
 
 def test_spooler_cold_atom() -> None:

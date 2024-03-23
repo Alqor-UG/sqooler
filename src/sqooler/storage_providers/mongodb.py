@@ -9,7 +9,6 @@ from typing import Optional
 from pymongo.mongo_client import MongoClient
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
-from icecream import ic
 
 from ..schemes import (
     ResultDict,
@@ -404,7 +403,7 @@ class MongodbProviderExtended(StorageProvider):
                 storage_path=config_path,
                 job_id=result_found["_id"],
             )
-            return None
+            return
 
         # the old config was signed
 
@@ -763,6 +762,7 @@ class MongodbProviderExtended(StorageProvider):
 
         Args:
             display_name: The name of the backend
+            private_jwk: The private JWK to sign the result with
 
         Returns:
             the job dict
