@@ -330,10 +330,9 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
 
         # remove the obsolete config from the storage
         config_path = "backends/configs"
-        document_to_find = {"display_name": backend_name}
 
         database = storage_provider.client["backends"]
         collection = database["configs"]
-
+        document_to_find = {"payload.display_name": backend_name}
         result_found = collection.find_one(document_to_find)
         storage_provider.delete_file(config_path, str(result_found["_id"]))

@@ -368,7 +368,9 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> NextJobSchema:
+    def get_next_job_in_queue(
+        self, display_name: DisplayNameStr, private_jwk: Optional[JWK]
+    ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue. If there is no job, it returns an empty
         dict. If there is a job, it moves the job from the queue to the running folder.
@@ -376,6 +378,7 @@ class StorageProvider(ABC):
 
         Args:
             display_name: The name of the backend
+            private_jwk: The private JWK to sign the result with
 
         Returns:
             the job dict

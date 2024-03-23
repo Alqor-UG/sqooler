@@ -239,10 +239,13 @@ class MongodbProviderExtended(StorageProvider):
         # get all the documents in the collection configs and save the disply_name in a list
         backend_names: list[DisplayNameStr] = []
         for config_dict in config_collection.find():
+            config_dict.pop("_id")
             expected_keys_for_jws = {"header", "payload", "signature"}
             if set(config_dict.keys()) == expected_keys_for_jws:
                 backend_names.append(config_dict["payload"]["display_name"])
             else:
+                if not "display_name" in config_dict:
+                    print(config_dict)
                 backend_names.append(config_dict["display_name"])
         return backend_names
 
@@ -749,7 +752,9 @@ class MongodbProviderExtended(StorageProvider):
             file_list.append(str(result["_id"]))
         return file_list
 
-    def get_next_job_in_queue(self, display_name: str) -> NextJobSchema:
+    def get_next_job_in_queue(
+        self, display_name: str, private_jwk: Optional[JWK]
+    ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue. If there is no job, it returns an empty
         dict. If there is a job, it moves the job from the queue to the running folder.
@@ -767,7 +772,7 @@ class MongodbProviderExtended(StorageProvider):
         job_list = self.get_file_queue(queue_dir)
 
         # update the time stamp of the last job
-        self.timestamp_queue(display_name)
+        self.timestamp_queue(display_name, private_jwk)
 
         # if there is a job, we should move it
         if job_list:
