@@ -369,7 +369,7 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def get_next_job_in_queue(
-        self, display_name: DisplayNameStr, private_jwk: Optional[JWK]
+        self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
     ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue. If there is no job, it returns an empty

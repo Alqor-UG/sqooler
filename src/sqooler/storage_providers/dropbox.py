@@ -243,8 +243,66 @@ class DropboxProviderExtended(StorageProvider):
                     f"Could not delete file under {full_path}"
                 ) from err
 
+    def update_config(
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
+    ) -> None:
+        """
+        The function that updates the spooler configuration to the storage.
+
+        All the configurations are stored in the Backend_files/Config folder.
+        For each backend there is a separate folder in which the configuration is stored as a json file.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            display_name : The name of the backend
+            private_jwk: The private JWK to sign the configuration with
+
+        Returns:
+            None
+        """
+
+        # check that the file exists
+        config_path = "Backend_files/Config/" + display_name
+        old_config_jws = self.get_file_content(config_path, "config")
+
+        # now we should check if the old config is signed
+        expected_keys_for_jws = {"header", "payload", "signature"}
+
+        # now check if we need a private key
+        # this is the case if the old config is signed or the new one should be signed
+        if set(old_config_jws.keys()) == expected_keys_for_jws or config_dict.sign:
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend is configured to sign."
+                )
+            if set(old_config_jws.keys()) == expected_keys_for_jws:
+                # the old config is signed and we need to check if the private key is the same
+                payload = old_config_jws["payload"]
+
+                # now proof that the new private key would create the same signature for the old
+                # config to validate that we still have the same private key
+                test_signature = sign_payload(payload, private_jwk)
+                if not test_signature.signature == old_config_jws["signature"]:
+                    raise ValueError(
+                        "The new private key does not create the same signature as the old one."
+                    )
+
+            # now that we know that the private key is the same, we can sign the new config
+            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
+            upload_dict_str = signed_config.model_dump_json()
+        else:
+            # the old and the new are not signed
+            upload_dict_str = config_dict.model_dump_json()
+        self.upload_string(upload_dict_str, config_path, "config")
+
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
@@ -255,13 +313,35 @@ class DropboxProviderExtended(StorageProvider):
         Args:
             config_dict: The dictionary containing the configuration
             display_name : The name of the backend
+            private_jwk: The private JWK to sign the configuration with
 
         Returns:
             None
         """
 
         config_path = "Backend_files/Config/" + display_name
-        self.upload_string(config_dict.model_dump_json(), config_path, "config")
+        # check if the file already exists
+        try:
+            self.get_file_content(storage_path=config_path, job_id="config")
+            raise FileExistsError(
+                f"The configuration for {display_name} already exists and should not be overwritten."
+            )
+        except FileNotFoundError:
+            pass
+
+        if config_dict.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend needs to be signed."
+                )
+            # we should sign the result
+            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
+            upload_dict_str = signed_config.model_dump_json()
+        else:
+            upload_dict_str = config_dict.model_dump_json()
+
+        self.upload_string(upload_dict_str, config_path, "config")
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """
@@ -457,7 +537,14 @@ class DropboxProviderExtended(StorageProvider):
         backend_config_dict = self.get_file_content(
             storage_path=backend_json_path, job_id="config"
         )
-        return BackendConfigSchemaIn(**backend_config_dict)
+        # done day we should verify the result before we send it out
+        expected_keys_for_jws = {"header", "payload", "signature"}
+        if set(backend_config_dict.keys()) == expected_keys_for_jws:
+            payload = backend_config_dict["payload"]
+            typed_config = BackendConfigSchemaIn(**payload)
+        else:
+            typed_config = BackendConfigSchemaIn(**backend_config_dict)
+        return typed_config
 
     def get_backend_status(
         self, display_name: DisplayNameStr
@@ -608,12 +695,16 @@ class DropboxProviderExtended(StorageProvider):
         backend_config_info = self.get_backend_dict(display_name)
         return self._adapt_result_dict(result_dict, backend_config_info)
 
-    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> NextJobSchema:
+    def get_next_job_in_queue(
+        self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
+    ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue.
 
         Args:
             display_name: The name of the backend
+            private_jwk: The private JWK to sign the job with
+
 
         Returns:
             the path towards the job
@@ -623,7 +714,7 @@ class DropboxProviderExtended(StorageProvider):
         job_list = self.get_file_queue(job_json_dir)
 
         # time stamp when we last looked for a job
-        self.timestamp_queue(display_name)
+        self.timestamp_queue(display_name, private_jwk)
 
         # if there is a job, we should move it
         if job_list:

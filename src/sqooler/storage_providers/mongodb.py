@@ -404,6 +404,7 @@ class MongodbProviderExtended(StorageProvider):
                 storage_path=config_path,
                 job_id=result_found["_id"],
             )
+            return None
 
         # the old config was signed
 
@@ -753,7 +754,7 @@ class MongodbProviderExtended(StorageProvider):
         return file_list
 
     def get_next_job_in_queue(
-        self, display_name: str, private_jwk: Optional[JWK]
+        self, display_name: str, private_jwk: Optional[JWK] = None
     ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue. If there is no job, it returns an empty

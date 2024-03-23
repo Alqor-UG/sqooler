@@ -13,6 +13,8 @@ from sqooler.schemes import ResultDict, MongodbLoginInformation
 
 from .storage_provider_test_utils import StorageProviderTestUtils
 
+DB_NAME = "mongodbtest"
+
 
 class TestMongodbProvider(StorageProviderTestUtils):
     """
@@ -87,6 +89,10 @@ class TestMongodbProvider(StorageProviderTestUtils):
                 collection = database[collection_name]
                 collection.drop()
 
+    def test_config_upload(self) -> None:
+        self.config_tests(DB_NAME)
+        self.config_tests(DB_NAME, sign=False)
+
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
@@ -123,37 +129,6 @@ class TestMongodbProvider(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
-    def test_upload_configs(self) -> None:
-        """
-        We would like to make sure that we can properly upload the configuration files
-        that come from the spoolers.
-        """
-
-        storage_provider = MongodbProvider(self.get_login())
-
-        backend_name, backend_config_info = self.get_dummy_config(sign=False)
-        storage_provider.upload_config(backend_config_info, backend_name)
-
-        # can we get the backend in the list ?
-        # get the database on which we work
-        database = storage_provider.client["backends"]
-        configs = database["configs"]
-        document_to_find = {"display_name": backend_name}
-
-        result_found = configs.find_one(document_to_find)
-        if result_found is None:
-            raise ValueError("The backend was not uploaded properly.")
-        assert result_found["display_name"] == backend_config_info.display_name
-
-        # make sure that the upload of the same backend does only update it.
-        backend_config_info.num_wires = 4
-        storage_provider.upload_config(backend_config_info, backend_name)
-        results_found = configs.find(document_to_find)
-        assert len(list(results_found)) == 1
-
-        # clean up our mess
-        configs.delete_one(document_to_find)
-
     def test_get_next_job_in_queue(self) -> None:
         """
         Is it possible to work through the queue of jobs?
@@ -164,6 +139,10 @@ class TestMongodbProvider(StorageProviderTestUtils):
         backend_name, backend_info = self.get_dummy_config(sign=False)
         storage_provider.upload_config(backend_info, backend_name)
 
+        # get the backend and test that it was uploaded properly
+        config_dict = storage_provider.get_config(backend_name)
+        print(config_dict)
+        assert config_dict.sign == False
         # first we have to upload a dummy job
         job_id = (uuid.uuid4().hex)[:24]
         job_dict = {"job_id": job_id, "job_json_path": "None"}

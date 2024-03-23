@@ -169,6 +169,7 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         Test that we can upload and update a config.
         """
         self.config_tests(DB_NAME)
+        self.config_tests(DB_NAME, sign=False)
 
     def test_status(self) -> None:
         """
