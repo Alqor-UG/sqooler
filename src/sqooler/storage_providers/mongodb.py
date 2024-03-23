@@ -20,6 +20,7 @@ from ..schemes import (
     DisplayNameStr,
 )
 
+from icecream import ic
 from .base import StorageProvider, validate_active
 from ..security import JWK, sign_payload
 
@@ -326,19 +327,7 @@ class MongodbProviderExtended(StorageProvider):
                 f"The configuration for {display_name} already exists and should not be overwritten."
             )
 
-        # if the device does not exist, we have to create it
-        if config_dict.sign:
-            # get the private key
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend needs to be signed."
-                )
-            # we should sign the result
-            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
-            upload_dict = signed_config.model_dump()
-        else:
-            upload_dict = config_dict.model_dump()
-        print(upload_dict)
+        upload_dict = self._format_config_dict(config_dict, private_jwk)
         config_id = uuid.uuid4().hex[:24]
         self.upload(upload_dict, config_path, config_id)
 
@@ -376,59 +365,28 @@ class MongodbProviderExtended(StorageProvider):
         signed_document_to_find = {"payload.display_name": display_name}
         signed_backend_config_dict = collection.find_one(signed_document_to_find)
 
-        if (not result_found) and (not signed_backend_config_dict):
+        if result_found:
+            old_config_jws = result_found
+            job_id = result_found["_id"]
+        elif signed_backend_config_dict:
+            old_config_jws = signed_backend_config_dict
+            job_id = signed_backend_config_dict["_id"]
+            old_config_jws.pop("_id")
+        else:
             raise FileNotFoundError(
                 (
                     f"The config for {display_name} does not exist and should not be updated."
                     "Use the upload_config method instead."
                 )
             )
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
 
-        # we now know that the file exists
-        if result_found:
-            # now we need to check if the new config is signed
-            if config_dict.sign:
-                # get the private key
-                if private_jwk is None:
-                    raise ValueError(
-                        "The private key is not given, but the backend needs to be signed."
-                    )
-                # we should sign the result
-                signed_config = sign_payload(config_dict.model_dump(), private_jwk)
-                upload_dict = signed_config.model_dump()
-            else:
-                upload_dict = config_dict.model_dump()
-            self.update_file(
-                content_dict=upload_dict,
-                storage_path=config_path,
-                job_id=result_found["_id"],
-            )
-            return
-
-        # the old config was signed
-
-        # look that we have a private key
-        if private_jwk is None:
-            raise ValueError(
-                "The private key is not given, but the backend is configured to sign."
-            )
-
-        payload = signed_backend_config_dict["payload"]
-
-        # now proof that the new private key would create the same signature for the old
-        # config to validate that we still have the same private key
-        test_signature = sign_payload(payload, private_jwk)
-        if not test_signature.signature == signed_backend_config_dict["signature"]:
-            raise ValueError(
-                "The new private key does not create the same signature as the old one."
-            )
-
-        # now that we know that the private key is the same, we can sign the new config
-        signed_config = sign_payload(config_dict.model_dump(), private_jwk)
         self.update_file(
-            content_dict=signed_config.model_dump(),
+            content_dict=upload_dict,
             storage_path=config_path,
-            job_id=signed_backend_config_dict["_id"],
+            job_id=job_id,
         )
 
     @validate_active

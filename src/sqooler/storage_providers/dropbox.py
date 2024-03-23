@@ -25,7 +25,7 @@ from ..schemes import (
     DisplayNameStr,
 )
 from ..security import JWK, sign_payload
-from .base import StorageProvider, validate_active
+from .base import StorageProvider, validate_active, datetime_handler
 
 
 class DropboxProviderExtended(StorageProvider):
@@ -89,7 +89,7 @@ class DropboxProviderExtended(StorageProvider):
         """
 
         # create the appropriate string for the dropbox API
-        dump_str = json.dumps(content_dict)
+        dump_str = json.dumps(content_dict, default=datetime_handler)
 
         self.upload_string(dump_str, storage_path, job_id)
 
@@ -268,35 +268,11 @@ class DropboxProviderExtended(StorageProvider):
         config_path = "Backend_files/Config/" + display_name
         old_config_jws = self.get_file_content(config_path, "config")
 
-        # now we should check if the old config is signed
-        expected_keys_for_jws = {"header", "payload", "signature"}
-
-        # now check if we need a private key
-        # this is the case if the old config is signed or the new one should be signed
-        if set(old_config_jws.keys()) == expected_keys_for_jws or config_dict.sign:
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend is configured to sign."
-                )
-            if set(old_config_jws.keys()) == expected_keys_for_jws:
-                # the old config is signed and we need to check if the private key is the same
-                payload = old_config_jws["payload"]
-
-                # now proof that the new private key would create the same signature for the old
-                # config to validate that we still have the same private key
-                test_signature = sign_payload(payload, private_jwk)
-                if not test_signature.signature == old_config_jws["signature"]:
-                    raise ValueError(
-                        "The new private key does not create the same signature as the old one."
-                    )
-
-            # now that we know that the private key is the same, we can sign the new config
-            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
-            upload_dict_str = signed_config.model_dump_json()
-        else:
-            # the old and the new are not signed
-            upload_dict_str = config_dict.model_dump_json()
-        self.upload_string(upload_dict_str, config_path, "config")
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
+        # maybe this should rather become the update_file function
+        self.upload(upload_dict, config_path, "config")
 
     def upload_config(
         self,
@@ -329,19 +305,8 @@ class DropboxProviderExtended(StorageProvider):
         except FileNotFoundError:
             pass
 
-        if config_dict.sign:
-            # get the private key
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend needs to be signed."
-                )
-            # we should sign the result
-            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
-            upload_dict_str = signed_config.model_dump_json()
-        else:
-            upload_dict_str = config_dict.model_dump_json()
-
-        self.upload_string(upload_dict_str, config_path, "config")
+        upload_dict = self._format_config_dict(config_dict, private_jwk)
+        self.upload(upload_dict, config_path, "config")
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """

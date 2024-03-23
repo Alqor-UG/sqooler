@@ -21,7 +21,7 @@ from ..schemes import (
     DisplayNameStr,
 )
 
-from .base import StorageProvider, validate_active
+from .base import StorageProvider, validate_active, datetime_handler
 from ..security import JWK, sign_payload
 
 
@@ -52,6 +52,11 @@ class LocalProviderExtended(StorageProvider):
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
+
+        Args:
+            content_dict: The dictionary containing the content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
         """
         # strip trailing and leading slashes from the storage_path
         storage_path = storage_path.strip("/")
@@ -67,7 +72,7 @@ class LocalProviderExtended(StorageProvider):
         secure_path = os.path.normpath(full_json_path)
 
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json.dump(content_dict, json_file)
+            json.dump(content_dict, json_file, default=datetime_handler)
 
     @validate_active
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
@@ -396,36 +401,15 @@ class LocalProviderExtended(StorageProvider):
         with open(secure_path, "r", encoding="utf-8") as json_file:
             old_config_jws = json.load(json_file)
 
-        # now we should check if the old config is signed
-        expected_keys_for_jws = {"header", "payload", "signature"}
-
-        # now check if we need a private key
-        # this is the case if the old config is signed or the new one should be signed
-        if set(old_config_jws.keys()) == expected_keys_for_jws or config_dict.sign:
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend is configured to sign."
-                )
-            if set(old_config_jws.keys()) == expected_keys_for_jws:
-                # the old config is signed and we need to check if the private key is the same
-                payload = old_config_jws["payload"]
-
-                # now proof that the new private key would create the same signature for the old
-                # config to validate that we still have the same private key
-                test_signature = sign_payload(payload, private_jwk)
-                if not test_signature.signature == old_config_jws["signature"]:
-                    raise ValueError(
-                        "The new private key does not create the same signature as the old one."
-                    )
-
-            # now that we know that the private key is the same, we can sign the new config
-            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
-            upload_dict_str = signed_config.model_dump_json()
-        else:
-            # the old and the new are not signed
-            upload_dict_str = config_dict.model_dump_json()
-        with open(secure_path, "w", encoding="utf-8") as json_file:
-            json_file.write(upload_dict_str)
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
+        # maybe this should rather become the update method
+        self.upload(
+            content_dict=upload_dict,
+            storage_path="backends/configs",
+            job_id=display_name,
+        )
 
     def upload_config(
         self,
@@ -461,19 +445,12 @@ class LocalProviderExtended(StorageProvider):
                 f"The file {secure_path} already exists and should not be overwritten."
             )
 
-        if config_dict.sign:
-            # get the private key
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend needs to be signed."
-                )
-            # we should sign the result
-            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
-            upload_dict_str = signed_config.model_dump_json()
-        else:
-            upload_dict_str = config_dict.model_dump_json()
-        with open(secure_path, "w", encoding="utf-8") as json_file:
-            json_file.write(upload_dict_str)
+        upload_dict = self._format_config_dict(config_dict, private_jwk)
+        self.upload(
+            content_dict=upload_dict,
+            storage_path="backends/configs",
+            job_id=display_name,
+        )
 
     def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
         """

@@ -22,7 +22,7 @@ from ..schemes import (
     BackendNameStr,
 )
 
-from ..security import JWK
+from ..security import JWK, sign_payload
 
 
 def validate_active(func: Callable) -> Callable:
@@ -384,6 +384,82 @@ class StorageProvider(ABC):
             the job dict
         """
 
+    def _format_config_dict(
+        self, config_dict: BackendConfigSchemaIn, private_jwk: Optional[JWK] = None
+    ) -> dict:
+        """
+        Format the config dict to a string that can be written to a file.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            private_jwk: The private key of the backend
+
+        Returns:
+            The dict representation of the config dict
+
+        Raises:
+            ValueError: If the backend is configured to be signed, but no private key is given
+        """
+        if config_dict.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend needs to be signed."
+                )
+            # we should sign the result
+            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
+            upload_dict = signed_config.model_dump()
+        else:
+            upload_dict = config_dict.model_dump()
+        return upload_dict
+
+    def _format_update_config(
+        self,
+        old_config_jws: dict,
+        config_dict: BackendConfigSchemaIn,
+        private_jwk: Optional[JWK] = None,
+    ) -> dict:
+        """
+        The function that formats the config_dict for the update.
+
+        Args:
+            old_config_jws: The old configuration in JWS format
+            config_dict: The dictionary containing the configuration
+            private_jwk: The private JWK to sign the configuration with
+
+        Returns:
+            dict: The formatted dictionary
+        """
+        # now we should check if the old config is signed
+        expected_keys_for_jws = {"header", "payload", "signature"}
+
+        # now check if we need a private key
+        # this is the case if the old config is signed or the new one should be signed
+        if set(old_config_jws.keys()) == expected_keys_for_jws or config_dict.sign:
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend is configured to sign."
+                )
+            if set(old_config_jws.keys()) == expected_keys_for_jws:
+                # the old config is signed and we need to check if the private key is the same
+                payload = old_config_jws["payload"]
+
+                # now proof that the new private key would create the same signature for the old
+                # config to validate that we still have the same private key
+                test_signature = sign_payload(payload, private_jwk)
+                if not test_signature.signature == old_config_jws["signature"]:
+                    raise ValueError(
+                        "The new private key does not create the same signature as the old one."
+                    )
+
+            # now that we know that the private key is the same, we can sign the new config
+            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
+            upload_dict = signed_config.model_dump()
+        else:
+            # the old and the new are not signed
+            upload_dict = config_dict.model_dump()
+        return upload_dict
+
     def _adapt_result_dict(
         self, result_dict: dict, backend_config_info: BackendConfigSchemaOut
     ) -> ResultDict:
@@ -537,3 +613,18 @@ class StorageProvider(ABC):
         else:
             backend_status_dict["status_msg"] = ""
         return BackendStatusSchemaOut(**backend_status_dict)
+
+
+def datetime_handler(in_var: Any) -> str:
+    """
+    Convert a datetime object to a string.
+
+    Args:
+        in_var : The object to convert
+
+    Returns:
+        str : The string representation of the object
+    """
+    if isinstance(in_var, datetime):
+        return in_var.isoformat()
+    raise TypeError("Unknown type")
