@@ -20,7 +20,6 @@ from ..schemes import (
     DisplayNameStr,
 )
 
-from icecream import ic
 from .base import StorageProvider, validate_active
 from ..security import JWK, sign_payload
 
@@ -414,17 +413,18 @@ class MongodbProviderExtended(StorageProvider):
         signed_document_to_find = {"payload.display_name": display_name}
         signed_backend_config_dict = config_collection.find_one(signed_document_to_find)
 
-        if (not backend_config_dict) and (not signed_backend_config_dict):
-            raise FileNotFoundError("The backend does not exist for the given storage.")
-
         # work with the unsigned backend
         if backend_config_dict:
             backend_config_dict.pop("_id")
             return BackendConfigSchemaIn(**backend_config_dict)
 
-        # work with the signed backend
-        payload = signed_backend_config_dict["payload"]
-        return BackendConfigSchemaIn(**payload)
+        # work with the signed backend this is working normally due to the mongodb API, but to make
+        # mypy happy, we have to check if the signed_backend_config_dict is not None
+        elif signed_backend_config_dict:
+            payload = signed_backend_config_dict["payload"]
+            return BackendConfigSchemaIn(**payload)
+
+        raise FileNotFoundError("The backend does not exist for the given storage.")
 
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str
