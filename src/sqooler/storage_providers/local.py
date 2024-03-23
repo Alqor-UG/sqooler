@@ -466,23 +466,9 @@ class LocalProviderExtended(StorageProvider):
             The configuration of the backend in complete form.
         """
         # path of the configs
-        config_path = self.base_path + "/backends/configs"
-        file_name = display_name + ".json"
-        full_json_path = os.path.join(config_path, file_name)
-        secure_path = os.path.normpath(full_json_path)
-        with open(secure_path, "r", encoding="utf-8") as json_file:
-            backend_config_dict = json.load(json_file)
-
-        if not backend_config_dict:
-            raise FileNotFoundError("The backend does not exist for the given storage.")
-
-        # done day we should verify the result before we send it out
-        expected_keys_for_jws = {"header", "payload", "signature"}
-        if set(backend_config_dict.keys()) == expected_keys_for_jws:
-            payload = backend_config_dict["payload"]
-            typed_config = BackendConfigSchemaIn(**payload)
-        else:
-            typed_config = BackendConfigSchemaIn(**backend_config_dict)
+        config_path = "/backends/configs"
+        backend_config_dict = self.get_file_content(config_path, job_id=display_name)
+        typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:

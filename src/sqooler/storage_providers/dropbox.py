@@ -502,13 +502,7 @@ class DropboxProviderExtended(StorageProvider):
         backend_config_dict = self.get_file_content(
             storage_path=backend_json_path, job_id="config"
         )
-        # done day we should verify the result before we send it out
-        expected_keys_for_jws = {"header", "payload", "signature"}
-        if set(backend_config_dict.keys()) == expected_keys_for_jws:
-            payload = backend_config_dict["payload"]
-            typed_config = BackendConfigSchemaIn(**payload)
-        else:
-            typed_config = BackendConfigSchemaIn(**backend_config_dict)
+        typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
 
     def get_backend_status(

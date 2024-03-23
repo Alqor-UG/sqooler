@@ -460,6 +460,25 @@ class StorageProvider(ABC):
             upload_dict = config_dict.model_dump()
         return upload_dict
 
+    def _adapt_get_config(self, config_dict: dict) -> BackendConfigSchemaIn:
+        """
+        Adapt the config dict to the BackendConfigSchemaIn.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+
+        Returns:
+            The adapted config dict
+        """
+        # we should verify the result before we send it out
+        expected_keys_for_jws = {"header", "payload", "signature"}
+        if set(config_dict.keys()) == expected_keys_for_jws:
+            payload = config_dict["payload"]
+            typed_config = BackendConfigSchemaIn(**payload)
+        else:
+            typed_config = BackendConfigSchemaIn(**config_dict)
+        return typed_config
+
     def _adapt_result_dict(
         self, result_dict: dict, backend_config_info: BackendConfigSchemaOut
     ) -> ResultDict:
