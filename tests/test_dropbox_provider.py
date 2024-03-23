@@ -16,6 +16,9 @@ from sqooler.schemes import ResultDict, DropboxLoginInformation
 from .storage_provider_test_utils import StorageProviderTestUtils
 
 
+DB_NAME = "dropboxtest"
+
+
 class TestDropboxProvider(StorageProviderTestUtils):
     """
     The class that contains all the tests for the dropbox provider.
@@ -78,24 +81,12 @@ class TestDropboxProvider(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(second_path, file_id)
 
-    def test_upload_configs(self) -> None:
+    def test_upload_and_update_config(self) -> None:
         """
-        We would like to make sure that we can properly upload the configuration files
-        that come from the spoolers.
+        Test that we can upload and update a config.
         """
-        storage_provider = DropboxProvider(self.get_login())
-
-        backend_name, config_info = self.get_dummy_config(sign=False)
-        storage_provider.upload_config(config_info, backend_name)
-
-        # can we get the backend in the list ?
-        dummy_path = f"Backend_files/Config/{backend_name}"
-        backend_dict = storage_provider.get_file_content(dummy_path, "config")
-        assert backend_dict["display_name"] == config_info.display_name
-
-        storage_provider.delete_file(dummy_path, "config")
-        # delete also the old folder
-        storage_provider.delete_folder(dummy_path)
+        self.config_tests(DB_NAME)
+        self.config_tests(DB_NAME, sign=False)
 
     def test_get_next_job_in_queue(self) -> None:
         """

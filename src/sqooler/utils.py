@@ -17,7 +17,7 @@ def update_backends(
     storage_provider: StorageProvider, backends: dict[str, Spooler]
 ) -> None:
     """
-    Update the backends on the storage.
+    Update the backends on the storage. Uploads it as a new one if it fails.
 
     Args:
         storage_provider: The storage provider that should be used.
@@ -28,15 +28,32 @@ def update_backends(
         backend_config_dict = spooler.get_configuration()
         # set the display name
         backend_config_dict.display_name = requested_backend
-
-        # upload the content through the storage provider
-        storage_provider.upload_config(backend_config_dict, requested_backend)
-
         # upload the public key if the backend has one and is designed to sign
         if spooler.sign:
             private_jwk = spooler.get_private_jwk()
             public_jwk = public_from_private_jwk(private_jwk)
             storage_provider.upload_public_key(public_jwk, requested_backend)
+        else:
+            private_jwk = None
+
+        # upload the content through the storage provider
+        try:
+            storage_provider.update_config(
+                backend_config_dict, requested_backend, private_jwk=private_jwk
+            )
+        except FileNotFoundError:
+            # this should become a log
+            print(
+                f"Failed to update the configuration for {requested_backend}. Uploading it as a new one."
+            )
+            if spooler.sign:
+                storage_provider.upload_config(
+                    backend_config_dict, requested_backend, private_jwk
+                )
+            else:
+                storage_provider.upload_config(
+                    backend_config_dict, requested_backend, private_jwk=None
+                )
 
 
 def main(

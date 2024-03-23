@@ -131,6 +131,13 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(storage_path, job_id)
 
+    def test_upload_and_update_config(self) -> None:
+        """
+        Test that we can upload and update a config.
+        """
+        self.config_tests(DB_NAME)
+        self.config_tests(DB_NAME, sign=False)
+
     def test_configs(self) -> None:
         """
         Test that we are able to obtain a list of backends.
@@ -139,7 +146,7 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         # create a dropbox object
         storage_provider = DropboxProviderExtended(self.get_login(), DB_NAME)
 
-        backend_name, config_info = self.get_dummy_config()
+        backend_name, config_info = self.get_dummy_config(sign=False)
         storage_provider.upload_config(config_info, backend_name)
         dummy_path = f"Backend_files/Config/{backend_name}"
 

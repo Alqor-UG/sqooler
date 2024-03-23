@@ -22,7 +22,7 @@ from ..schemes import (
     BackendNameStr,
 )
 
-from ..security import JWK
+from ..security import JWK, sign_payload
 
 
 def validate_active(func: Callable) -> Callable:
@@ -253,7 +253,10 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK],
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
@@ -261,6 +264,32 @@ class StorageProvider(ABC):
         Args:
             config_dict: The model containing the configuration
             display_name : The name of the backend
+            private_jwk: The private JWK to sign the result with
+
+        Raises:
+            ValueError: If the configuration already exists
+
+        Returns:
+            None
+        """
+
+    @abstractmethod
+    def update_config(
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
+    ) -> None:
+        """
+        The function that updates an existing spooler configuration for the storage.
+
+        Args:
+            config_dict: The model containing the configuration
+            display_name : The name of the backend
+            private_jwk: The private JWK to sign the result with
+
+        Raises:
+            FileNotFoundError: If the configuration does not exist
 
         Returns:
             None
@@ -339,7 +368,9 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> NextJobSchema:
+    def get_next_job_in_queue(
+        self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
+    ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue. If there is no job, it returns an empty
         dict. If there is a job, it moves the job from the queue to the running folder.
@@ -347,10 +378,106 @@ class StorageProvider(ABC):
 
         Args:
             display_name: The name of the backend
+            private_jwk: The private JWK to sign the result with
 
         Returns:
             the job dict
         """
+
+    def _format_config_dict(
+        self, config_dict: BackendConfigSchemaIn, private_jwk: Optional[JWK] = None
+    ) -> dict:
+        """
+        Format the config dict to a string that can be written to a file.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            private_jwk: The private key of the backend
+
+        Returns:
+            The dict representation of the config dict
+
+        Raises:
+            ValueError: If the backend is configured to be signed, but no private key is given
+        """
+        if config_dict.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend needs to be signed."
+                )
+            # we should sign the result
+            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
+            upload_dict = signed_config.model_dump()
+        else:
+            upload_dict = config_dict.model_dump()
+        return upload_dict
+
+    def _format_update_config(
+        self,
+        old_config_jws: dict,
+        config_dict: BackendConfigSchemaIn,
+        private_jwk: Optional[JWK] = None,
+    ) -> dict:
+        """
+        The function that formats the config_dict for the update.
+
+        Args:
+            old_config_jws: The old configuration in JWS format
+            config_dict: The dictionary containing the configuration
+            private_jwk: The private JWK to sign the configuration with
+
+        Returns:
+            dict: The formatted dictionary
+        """
+        # now we should check if the old config is signed
+        expected_keys_for_jws = {"header", "payload", "signature"}
+
+        # now check if we need a private key
+        # this is the case if the old config is signed or the new one should be signed
+        if set(old_config_jws.keys()) == expected_keys_for_jws or config_dict.sign:
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend is configured to sign."
+                )
+            if set(old_config_jws.keys()) == expected_keys_for_jws:
+                # the old config is signed and we need to check if the private key is the same
+                payload = old_config_jws["payload"]
+
+                # now proof that the new private key would create the same signature for the old
+                # config to validate that we still have the same private key
+                test_signature = sign_payload(payload, private_jwk)
+                if not test_signature.signature == old_config_jws["signature"]:
+                    raise ValueError(
+                        "The new private key does not create the same signature as the old one."
+                    )
+
+            # now that we know that the private key is the same, we can sign the new config
+            signed_config = sign_payload(config_dict.model_dump(), private_jwk)
+            upload_dict = signed_config.model_dump()
+        else:
+            # the old and the new are not signed
+            upload_dict = config_dict.model_dump()
+        return upload_dict
+
+    def _adapt_get_config(self, config_dict: dict) -> BackendConfigSchemaIn:
+        """
+        Adapt the config dict to the BackendConfigSchemaIn.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+
+        Returns:
+            The adapted config dict
+        """
+        # we should verify the result before we send it out
+        expected_keys_for_jws = {"header", "payload", "signature"}
+        if set(config_dict.keys()) == expected_keys_for_jws:
+            payload = config_dict["payload"]
+            typed_config = BackendConfigSchemaIn(**payload)
+        else:
+            typed_config = BackendConfigSchemaIn(**config_dict)
+        return typed_config
 
     def _adapt_result_dict(
         self, result_dict: dict, backend_config_info: BackendConfigSchemaOut
@@ -376,13 +503,16 @@ class StorageProvider(ABC):
             typed_result = ResultDict(**result_dict)
         return typed_result
 
-    def timestamp_queue(self, display_name: DisplayNameStr) -> None:
+    def timestamp_queue(
+        self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
+    ) -> None:
         """
         Updates the time stamp for when the system last looked into the file queue.
         This allows us to track if the system is actually online or not.
 
         Args:
             display_name : The name of the backend
+            private_jwk: The private JWK to sign the result with
 
         Returns:
             None
@@ -398,7 +528,7 @@ class StorageProvider(ABC):
         config_dict.last_queue_check = current_time
 
         # upload the new configuration
-        self.upload_config(config_dict, display_name)
+        self.update_config(config_dict, display_name, private_jwk)
 
     def backend_dict_to_qiskit(
         self, backend_config_info: BackendConfigSchemaIn
@@ -502,3 +632,18 @@ class StorageProvider(ABC):
         else:
             backend_status_dict["status_msg"] = ""
         return BackendStatusSchemaOut(**backend_status_dict)
+
+
+def datetime_handler(in_var: Any) -> str:
+    """
+    Convert a datetime object to a string.
+
+    Args:
+        in_var : The object to convert
+
+    Returns:
+        str : The string representation of the object
+    """
+    if isinstance(in_var, datetime):
+        return in_var.isoformat()
+    raise TypeError("Unknown type")

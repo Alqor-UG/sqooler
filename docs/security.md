@@ -56,3 +56,7 @@ Right now we have not yet implemented the verification of the results. This will
 
 - Alice has the full result JWS including header, payload and signature.
 - Alice has the appropiate public key the corresponds to the `kid` from the JWS header. She can now verify the signature. 
+
+## Signing the configuration
+
+It is now also possible to sign the backend configuration. This happens automatically if the `Spooler` object is configured to be signed. The `upload_config` and `update_config` will then sign the document before uploading it to the storage. This enables us now to have several backend providers in parallel without a central authority. Importantly, we can now hinder the collusion of two backends with the same name because you can only update the files if you are the owner of the private key.
