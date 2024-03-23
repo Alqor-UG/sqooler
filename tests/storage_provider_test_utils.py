@@ -170,7 +170,9 @@ class StorageProviderTestUtils:
 
         # now test that we can cannot upload the config again
         with pytest.raises(FileExistsError):
-            storage_provider.upload_config(config_info, display_name=backend_name)
+            storage_provider.upload_config(
+                config_info, display_name=backend_name, private_jwk=private_jwk
+            )
 
         # now test that we can also get the config
         obtained_config = storage_provider.get_config(backend_name)

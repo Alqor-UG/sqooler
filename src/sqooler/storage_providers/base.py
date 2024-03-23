@@ -253,7 +253,10 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK],
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
@@ -261,6 +264,7 @@ class StorageProvider(ABC):
         Args:
             config_dict: The model containing the configuration
             display_name : The name of the backend
+            private_jwk: The private JWK to sign the result with
 
         Raises:
             ValueError: If the configuration already exists

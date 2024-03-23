@@ -157,13 +157,19 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
+    def test_upload_and_update_config(self) -> None:
+        """
+        Test that we can upload and update a config.
+        """
+        self.config_tests(DB_NAME)
+
     def test_configs(self) -> None:
         """
         Test that we are able to obtain a list of backends.
         """
         # create a mongodb object
         storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-        backend_name, backend_config_info = self.get_dummy_config()
+        backend_name, backend_config_info = self.get_dummy_config(sign=False)
         config_path = "backends/configs"
 
         storage_provider.upload_config(backend_config_info, backend_name)
