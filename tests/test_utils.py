@@ -5,13 +5,17 @@ This is the test tool for the utils module.
 import os
 import uuid
 import shutil
-from typing import Iterator, Callable, Literal, Optional
+from typing import Iterator, Callable, Literal, Optional, Generator
+
+import logging
+
 from pydantic import BaseModel, Field, ValidationError
 
 from typing_extensions import Annotated
 
 
 import pytest
+from pytest import LogCaptureFixture
 
 from sqooler.utils import (
     update_backends,
@@ -66,12 +70,15 @@ def utils_storage_setup_teardown() -> Iterator[None]:
     shutil.rmtree("utils_storage", ignore_errors=True)
 
 
-def test_update_backends(utils_storage_setup_teardown: Callable) -> None:
+def test_update_backends(
+    caplog: Generator[LogCaptureFixture, None, None],
+    utils_storage_setup_teardown: Callable,
+) -> None:
     """
     Test that it is possible to update the backends.
     """
     # test that it fails with poor names
-
+    caplog.set_level(logging.INFO)
     backends_poor = {"test_test_test": test_spooler}
     with pytest.raises(ValidationError):
         update_backends(storage_provider, backends_poor)
@@ -88,13 +95,16 @@ def test_update_backends(utils_storage_setup_teardown: Callable) -> None:
     public_jwk = storage_provider.get_public_key("test")
     assert public_jwk.kid == "test_key"
 
+    # assert that the log is there
+    assert "Uploaded configuration for " in caplog.text
 
-def test_main(utils_storage_setup_teardown: Callable) -> None:
+
+def test_main(caplog: Generator, utils_storage_setup_teardown: Callable) -> None:
     """
     Test that it is possible to run the main function.
     """
     backend_name = "test"
-
+    caplog.set_level(logging.INFO)
     # upload the backend
     update_backends(storage_provider, backends)
 
@@ -120,6 +130,8 @@ def test_main(utils_storage_setup_teardown: Callable) -> None:
     # test if we can get the result
     result_dict = storage_provider.get_result(backend_name, "test", job_id)
     assert result_dict.job_id == job_id
+
+    assert "Running main loop." in caplog.text
 
 
 def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:

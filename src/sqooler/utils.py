@@ -6,6 +6,7 @@ sqooler package.
 import time
 import traceback
 import regex as re
+import logging
 
 from .schemes import get_init_results, get_init_status
 from .spoolers import Spooler
@@ -31,7 +32,7 @@ def update_backends(
 
         # upload the content through the storage provider
         storage_provider.upload_config(backend_config_dict, requested_backend)
-
+        logging.info(f"Uploaded configuration for {requested_backend}.")
         # upload the public key if the backend has one and is designed to sign
         if spooler.sign:
             private_jwk = spooler.get_private_jwk()
@@ -64,7 +65,7 @@ def main(
     # loop which is looking for the jobs
     while num_iter == 0 or counter < num_iter:
         time.sleep(0.2)
-
+        logging.info("Running main loop.")
         # the following a fancy for loop of going through all the back-ends in the list
         requested_backend = backends_list[0]
         backends_list.append(backends_list.pop(0))
@@ -100,6 +101,7 @@ def main(
             status_msg_dict.status = "ERROR"
             status_msg_dict.detail += "; " + slimmed_tb
             status_msg_dict.error_message += "; " + slimmed_tb
+            logging.exception(f"Error in add_job for {requested_backend}")
 
         storage_provider.update_in_database(
             result_dict, status_msg_dict, job_dict.job_id, requested_backend
