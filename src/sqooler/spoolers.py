@@ -452,6 +452,23 @@ class LabscriptSpooler(BaseSpooler):
         self.labscript_params = labscript_params
         self.run = run
 
+    def _prep_job(
+        self, json_dict: dict[str, dict], status_msg_dict: StatusMsgDict
+    ) -> tuple[str, ResultDict]:
+        job_id = status_msg_dict.job_id
+
+        result_dict = ResultDict(
+            display_name=self.display_name,
+            backend_version=self.version,
+            job_id=job_id,
+            qobj_id=None,
+            success=True,
+            status="INITIALIZING",
+            header={},
+            results=[],
+        )
+        return job_id, result_dict
+
     def add_job(
         self, json_dict: dict[str, dict], status_msg_dict: StatusMsgDict
     ) -> tuple[ResultDict, StatusMsgDict]:
@@ -469,21 +486,12 @@ class LabscriptSpooler(BaseSpooler):
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-        job_id = status_msg_dict.job_id
-
-        result_dict = ResultDict(
-            display_name=self.display_name,
-            backend_version=self.version,
-            job_id=job_id,
-            qobj_id=None,
-            success=True,
-            status="INITIALIZING",
-            header={},
-            results=[],
-        )
-
+        print("Adding job")
+        print(status_msg_dict.status)
+        job_id, result_dict = self._prep_job(json_dict, status_msg_dict)
         err_msg, json_is_fine, clean_dict = self.check_json_dict(json_dict)
-
+        print(json_is_fine)
+        print(status_msg_dict.status)
         if not json_is_fine:
             status_msg_dict.detail += (
                 "; Failed json sanity check. File will be deleted. Error message : "
@@ -494,6 +502,7 @@ class LabscriptSpooler(BaseSpooler):
                 + err_msg
             )
             status_msg_dict.status = "ERROR"
+            print(status_msg_dict.status)
             return result_dict, status_msg_dict
 
         for exp_name, exp_info in clean_dict.items():
