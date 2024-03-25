@@ -235,6 +235,55 @@ class BaseSpooler(ABC):
             clean_dict[expr] = self.get_exp_input_dict(json_dict[expr])
         return err_code.replace("\n", ".."), exp_ok, clean_dict
 
+    def _prep_job(
+        self, json_dict: dict, status_msg_dict: StatusMsgDict
+    ) -> tuple[ResultDict, StatusMsgDict, str, dict]:
+        """
+        Prepare the job for execution. This function is meant to be used by the `add_job` function.
+
+        Args:
+            json_dict: The job dictonary of all the instructions.
+            status_msg_dict: the status dictionary of the job we are treating.
+
+        Returns:
+            result_dict: The dictionary with the results of the job.
+            status_msg_dict: The status dictionary of the job.
+            job_id: The id of the job.
+            clean_dict: The cleaned dictionary with proper typing.
+        """
+
+        job_id = status_msg_dict.job_id
+
+        result_dict = ResultDict(
+            display_name=self.display_name,
+            backend_version=self.version,
+            job_id=job_id,
+            qobj_id=None,
+            success=True,
+            status="INITIALIZING",
+            header={},
+            results=[],
+        )
+
+        err_msg, json_is_fine, clean_dict = self.check_json_dict(json_dict)
+
+        if not json_is_fine:
+            status_msg_dict.detail += (
+                "; Failed json sanity check. File will be deleted. Error message : "
+                + err_msg
+            )
+            status_msg_dict.error_message += (
+                "; Failed json sanity check. File will be deleted. Error message : "
+                + err_msg
+            )
+            status_msg_dict.status = "ERROR"
+            logging.error(
+                "Error in json sanity check.",
+                extra={"error_message": status_msg_dict.error_message},
+            )
+            return result_dict, status_msg_dict, job_id, clean_dict
+        return result_dict, status_msg_dict, job_id, clean_dict
+
     @property
     def display_name(self) -> str:
         """
@@ -333,52 +382,10 @@ class Spooler(BaseSpooler):
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-        job_id = status_msg_dict.job_id
 
-        result_dict = ResultDict(
-            display_name=self.display_name,
-            backend_version=self.version,
-            job_id=job_id,
-            status="INITIALIZING",
+        result_dict, status_msg_dict, job_id, clean_dict = self._prep_job(
+            json_dict, status_msg_dict
         )
-        result_dict.results = []  # this simply helps pylint to understand the code
-
-        # check that the json_dict is indeed well behaved
-        err_msg, json_is_fine, clean_dict = self.check_json_dict(json_dict)
-
-        if not json_is_fine:
-            status_msg_dict.detail += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.error_message += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.status = "ERROR"
-            logging.error(
-                f"Error in json compatibility test.",
-                extra={"error_message": status_msg_dict.error_message},
-            )
-            return result_dict, status_msg_dict
-
-        # now we need to check the dimensionality of the experiment
-        dim_err_msg, dim_ok = self.check_dimension(json_dict)
-        if not dim_ok:
-            status_msg_dict.detail += (
-                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
-                + dim_err_msg
-            )
-            status_msg_dict.error_message += (
-                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
-                + dim_err_msg
-            )
-            status_msg_dict.status = "ERROR"
-            logging.error(
-                f"Error in dimensionality test.",
-                extra={"error_message": status_msg_dict.error_message},
-            )
-            return result_dict, status_msg_dict
 
         # now we can generate the circuit for each experiment
         for exp_name, exp_info in clean_dict.items():
@@ -390,7 +397,7 @@ class Spooler(BaseSpooler):
                 status_msg_dict.error_message += "; " + str(err)
                 status_msg_dict.status = "ERROR"
                 logging.exception(
-                    f"Error in gen_circuit. {dim_err_msg}",
+                    "Error in gen_circuit.",
                     extra={"error_message": status_msg_dict.error_message},
                 )
                 return result_dict, status_msg_dict
@@ -469,33 +476,9 @@ class LabscriptSpooler(BaseSpooler):
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-        job_id = status_msg_dict.job_id
-
-        result_dict = ResultDict(
-            display_name=self.display_name,
-            backend_version=self.version,
-            job_id=job_id,
-            qobj_id=None,
-            success=True,
-            status="INITIALIZING",
-            header={},
-            results=[],
+        result_dict, status_msg_dict, job_id, clean_dict = self._prep_job(
+            json_dict, status_msg_dict
         )
-
-        err_msg, json_is_fine, clean_dict = self.check_json_dict(json_dict)
-
-        if not json_is_fine:
-            status_msg_dict.detail += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.error_message += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.status = "ERROR"
-            return result_dict, status_msg_dict
-
         for exp_name, exp_info in clean_dict.items():
             # prepare the shots folder
             self.remote_client.reset_shot_output_folder()
@@ -503,12 +486,17 @@ class LabscriptSpooler(BaseSpooler):
 
             try:
                 result_dict.results.append(self.gen_circuit(exp_name, exp_info, job_id))
+                logging.info(f"Experiment {exp_name} done.")
             except FileNotFoundError as err:
                 error_message = str(err)
                 status_msg_dict.detail += "; Failed to generate labscript file."
                 status_msg_dict.error_message += f"; Failed to generate labscript \
                             file. Error: {error_message}"
                 status_msg_dict.status = "ERROR"
+                logging.exception(
+                    "Error in gen_circuit.",
+                    extra={"error_message": status_msg_dict.error_message},
+                )
                 return result_dict, status_msg_dict
         status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
                     Shots sent to solver."
