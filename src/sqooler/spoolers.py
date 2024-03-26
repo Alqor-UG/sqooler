@@ -235,6 +235,65 @@ class BaseSpooler(ABC):
             clean_dict[expr] = self.get_exp_input_dict(json_dict[expr])
         return err_code.replace("\n", ".."), exp_ok, clean_dict
 
+    def _prep_job(
+        self, json_dict: dict, job_id: str
+    ) -> tuple[ResultDict, StatusMsgDict, dict]:
+        """
+        Prepare the job for execution. It checks the json file and prepares the
+        result and status dictionaries.
+
+        Args:
+            json_dict: The dictionary with the instructions.
+            job_id: The id of the job.
+
+        Returns:
+            result_dict: The dictionary with the results of the job.
+            status_msg_dict: The status dictionary of the job.
+            clean_dict: The cleaned dictionary with the instructions.
+        """
+        status_msg_dict = get_init_status()
+        status_msg_dict.job_id = job_id
+
+        result_dict = ResultDict(
+            display_name=self.display_name,
+            backend_version=self.version,
+            job_id=job_id,
+            status="INITIALIZING",
+        )
+
+        result_dict.results = []  # this simply helps pylint to understand the code
+
+        # check that the json_dict is indeed well behaved
+        err_msg, json_is_fine, clean_dict = self.check_json_dict(json_dict)
+
+        if not json_is_fine:
+            status_msg_dict.detail += (
+                "; Failed json sanity check. File will be deleted. Error message : "
+                + err_msg
+            )
+            status_msg_dict.error_message += (
+                "; Failed json sanity check. File will be deleted. Error message : "
+                + err_msg
+            )
+            status_msg_dict.status = "ERROR"
+            return result_dict, status_msg_dict, clean_dict
+
+        # now we need to check the dimensionality of the experiment
+        dim_err_msg, dim_ok = self.check_dimension(json_dict)
+        if not dim_ok:
+            status_msg_dict.detail += (
+                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
+                + dim_err_msg
+            )
+            status_msg_dict.error_message += (
+                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
+                + dim_err_msg
+            )
+            status_msg_dict.status = "ERROR"
+            return result_dict, status_msg_dict, clean_dict
+
+        return result_dict, status_msg_dict, clean_dict
+
     @property
     def display_name(self) -> str:
         """
@@ -316,65 +375,6 @@ class Spooler(BaseSpooler):
             self._gen_circuit = value
         else:
             raise ValueError("gen_circuit must be a callable function")
-
-    def _prep_job(
-        self, json_dict: dict, job_id: str
-    ) -> tuple[ResultDict, StatusMsgDict, dict]:
-        """
-        Prepare the job for execution. It checks the json file and prepares the
-        result and status dictionaries.
-
-        Args:
-            json_dict: The dictionary with the instructions.
-            job_id: The id of the job.
-
-        Returns:
-            result_dict: The dictionary with the results of the job.
-            status_msg_dict: The status dictionary of the job.
-            clean_dict: The cleaned dictionary with the instructions.
-        """
-        status_msg_dict = get_init_status()
-        status_msg_dict.job_id = job_id
-
-        result_dict = ResultDict(
-            display_name=self.display_name,
-            backend_version=self.version,
-            job_id=job_id,
-            status="INITIALIZING",
-        )
-
-        result_dict.results = []  # this simply helps pylint to understand the code
-
-        # check that the json_dict is indeed well behaved
-        err_msg, json_is_fine, clean_dict = self.check_json_dict(json_dict)
-
-        if not json_is_fine:
-            status_msg_dict.detail += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.error_message += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.status = "ERROR"
-            return result_dict, status_msg_dict, clean_dict
-
-        # now we need to check the dimensionality of the experiment
-        dim_err_msg, dim_ok = self.check_dimension(json_dict)
-        if not dim_ok:
-            status_msg_dict.detail += (
-                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
-                + dim_err_msg
-            )
-            status_msg_dict.error_message += (
-                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
-                + dim_err_msg
-            )
-            status_msg_dict.status = "ERROR"
-            return result_dict, status_msg_dict, clean_dict
-
-        return result_dict, status_msg_dict, clean_dict
 
     def add_job(
         self, json_dict: dict[str, dict], job_id: str
@@ -481,31 +481,9 @@ class LabscriptSpooler(BaseSpooler):
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-        status_msg_dict = get_init_status()
-        status_msg_dict.job_id = job_id
-        result_dict = ResultDict(
-            display_name=self.display_name,
-            backend_version=self.version,
-            job_id=job_id,
-            qobj_id=None,
-            success=True,
-            status="INITIALIZING",
-            header={},
-            results=[],
-        )
+        result_dict, status_msg_dict, clean_dict = self._prep_job(json_dict, job_id)
 
-        err_msg, json_is_fine, clean_dict = self.check_json_dict(json_dict)
-
-        if not json_is_fine:
-            status_msg_dict.detail += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.error_message += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.status = "ERROR"
+        if status_msg_dict.status == "ERROR":
             return result_dict, status_msg_dict
 
         for exp_name, exp_info in clean_dict.items():
