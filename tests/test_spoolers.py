@@ -16,7 +16,6 @@ from sqooler.schemes import (
     ExperimentalInputDict,
     LabscriptParams,
     GateInstruction,
-    get_init_status,
 )
 
 from sqooler.spoolers import (

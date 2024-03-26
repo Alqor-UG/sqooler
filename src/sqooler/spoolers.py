@@ -386,7 +386,7 @@ class Spooler(BaseSpooler):
 
         Args:
             json_dict: The job dictonary of all the instructions.
-            status_msg_dict: the status dictionary of the job we are treating.
+            job_id: the id of the the job we are treating.
 
         Returns:
             result_dict: The dictionary with the results of the job.
