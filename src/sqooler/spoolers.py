@@ -31,6 +31,7 @@ from .schemes import (
     GateDict,
     LabscriptParams,
     ColdAtomStr,
+    get_init_status,
 )
 
 
@@ -316,23 +317,24 @@ class Spooler(BaseSpooler):
         else:
             raise ValueError("gen_circuit must be a callable function")
 
-    def add_job(
-        self, json_dict: dict[str, dict], status_msg_dict: StatusMsgDict
-    ) -> tuple[ResultDict, StatusMsgDict]:
+    def _prep_job(
+        self, json_dict: dict, job_id: str
+    ) -> tuple[ResultDict, StatusMsgDict, dict]:
         """
-        The function that translates the json with the instructions into some circuit and executes it.
-        It performs several checks for the job to see if it is properly working.
-        If things are fine the job gets added the list of things that should be executed.
+        Prepare the job for execution. It checks the json file and prepares the
+        result and status dictionaries.
 
         Args:
-            json_dict: The job dictonary of all the instructions.
-            status_msg_dict: the status dictionary of the job we are treating.
+            json_dict: The dictionary with the instructions.
+            job_id: The id of the job.
 
         Returns:
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
+            clean_dict: The cleaned dictionary with the instructions.
         """
-        job_id = status_msg_dict.job_id
+        status_msg_dict = get_init_status()
+        status_msg_dict.job_id = job_id
 
         result_dict = ResultDict(
             display_name=self.display_name,
@@ -340,6 +342,7 @@ class Spooler(BaseSpooler):
             job_id=job_id,
             status="INITIALIZING",
         )
+
         result_dict.results = []  # this simply helps pylint to understand the code
 
         # check that the json_dict is indeed well behaved
@@ -355,7 +358,7 @@ class Spooler(BaseSpooler):
                 + err_msg
             )
             status_msg_dict.status = "ERROR"
-            return result_dict, status_msg_dict
+            return result_dict, status_msg_dict, clean_dict
 
         # now we need to check the dimensionality of the experiment
         dim_err_msg, dim_ok = self.check_dimension(json_dict)
@@ -369,8 +372,31 @@ class Spooler(BaseSpooler):
                 + dim_err_msg
             )
             status_msg_dict.status = "ERROR"
-            return result_dict, status_msg_dict
+            return result_dict, status_msg_dict, clean_dict
 
+        return result_dict, status_msg_dict, clean_dict
+
+    def add_job(
+        self, json_dict: dict[str, dict], job_id: str
+    ) -> tuple[ResultDict, StatusMsgDict]:
+        """
+        The function that translates the json with the instructions into some circuit and executes it.
+        It performs several checks for the job to see if it is properly working.
+        If things are fine the job gets added the list of things that should be executed.
+
+        Args:
+            json_dict: The job dictonary of all the instructions.
+            status_msg_dict: the status dictionary of the job we are treating.
+
+        Returns:
+            result_dict: The dictionary with the results of the job.
+            status_msg_dict: The status dictionary of the job.
+        """
+
+        result_dict, status_msg_dict, clean_dict = self._prep_job(json_dict, job_id)
+
+        if status_msg_dict.status == "ERROR":
+            return result_dict, status_msg_dict
         # now we can generate the circuit for each experiment
         for exp_name, exp_info in clean_dict.items():
             try:
@@ -439,7 +465,7 @@ class LabscriptSpooler(BaseSpooler):
         self.run = run
 
     def add_job(
-        self, json_dict: dict[str, dict], status_msg_dict: StatusMsgDict
+        self, json_dict: dict[str, dict], job_id: str
     ) -> tuple[ResultDict, StatusMsgDict]:
         """
         The function that translates the json with the instructions into some circuit
@@ -449,14 +475,14 @@ class LabscriptSpooler(BaseSpooler):
 
         Args:
             json_dict: The job dictonary of all the instructions.
-            status_msg_dict: the status dictionary of the job we are treating.
+            job_id: the id of the the job we are treating.
 
         Returns:
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-        job_id = status_msg_dict.job_id
-
+        status_msg_dict = get_init_status()
+        status_msg_dict.job_id = job_id
         result_dict = ResultDict(
             display_name=self.display_name,
             backend_version=self.version,

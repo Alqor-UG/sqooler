@@ -238,8 +238,7 @@ def test_spooler_add_job_fail() -> None:
     test_spooler = Spooler(
         ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
     )
-    status_msg_dict = get_init_status()
-    status_msg_dict.job_id = "Test_ID"
+    job_id = "Test_ID"
 
     job_payload = {
         "experiment_0": {
@@ -249,7 +248,7 @@ def test_spooler_add_job_fail() -> None:
             "wire_order": "interleaved",
         },
     }
-    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert result_dict is not None
 
@@ -266,8 +265,7 @@ def test_spooler_add_job() -> None:
         operational=False,
     )
 
-    status_msg_dict = get_init_status()
-    status_msg_dict.job_id = "Test_ID"
+    job_id = "Test_ID"
 
     job_payload = {
         "experiment_0": {
@@ -278,12 +276,12 @@ def test_spooler_add_job() -> None:
         },
     }
     # should fail gracefully as no  gen_circuit function is defined
-    _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert status_msg_dict.error_message == "None; gen_circuit must be set"
 
     test_spooler.gen_circuit = dummy_gen_circuit
-    _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "DONE", "Job failed"
 
 
@@ -492,9 +490,7 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         labscript_params=labsript_params,
     )
 
-    status_msg_dict = get_init_status()
-    status_msg_dict.job_id = "Test_ID"
-
+    job_id = "Test_ID"
     n_shots = 4
     job_payload = {
         "experiment_0": {
@@ -505,7 +501,7 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         },
     }
 
-    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job should have failed"
     assert result_dict is not None
     # now add the header at the right position by copying
@@ -535,7 +531,7 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         file_path = f"{file_queue_path}/test_{ii}.py"
         with open(file_path, "w", encoding="UTF-8") as file:
             file.write("test")
-    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "DONE", "Job should not have failed"
 
 
