@@ -482,6 +482,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#signing-the-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Signing the configuration
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -708,6 +717,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#signing-the-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Signing the configuration
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -764,6 +782,8 @@ Even if you are a good person and you want to share it with your friends, don't 
 <li>Alice has the full result JWS including header, payload and signature.</li>
 <li>Alice has the appropiate public key the corresponds to the <code>kid</code> from the JWS header. She can now verify the signature. </li>
 </ul>
+<h2 id="signing-the-configuration">Signing the configuration</h2>
+<p>It is now also possible to sign the backend configuration. This happens automatically if the <code>Spooler</code> object is configured to be signed. The <code>upload_config</code> and <code>update_config</code> will then sign the document before uploading it to the storage. This enables us now to have several backend providers in parallel without a central authority. Importantly, we can now hinder the collusion of two backends with the same name because you can only update the files if you are the owner of the private key.</p>
 
 
 
