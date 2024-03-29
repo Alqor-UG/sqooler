@@ -5,7 +5,7 @@ This is the test tool for the utils module.
 import os
 import uuid
 import shutil
-from typing import Iterator, Callable, Literal, Optional, Generator
+from typing import Iterator, Callable, Literal, Optional
 
 import logging
 
@@ -71,7 +71,7 @@ def utils_storage_setup_teardown() -> Iterator[None]:
 
 
 def test_update_backends(
-    caplog: Generator[LogCaptureFixture, None, None],
+    caplog: LogCaptureFixture,
     utils_storage_setup_teardown: Callable,
 ) -> None:
     """
@@ -80,7 +80,7 @@ def test_update_backends(
     # test that it fails with poor names
 
     # somehow the caplog has some typing issues.
-    caplog.set_level(logging.INFO)  # type: ignore
+    caplog.set_level(logging.INFO)
     backends_poor = {"test_test_test": test_spooler}
     with pytest.raises(ValidationError):
         update_backends(storage_provider, backends_poor)
@@ -99,15 +99,17 @@ def test_update_backends(
 
     # assert that the log is there
     # somehow the caplog has some typing issues.
-    assert "Uploaded configuration for " in caplog.text  # type: ignore
+    assert "Uploaded configuration for " in caplog.text
 
 
-def test_main(caplog: Generator, utils_storage_setup_teardown: Callable) -> None:
+def test_main(
+    caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
+) -> None:
     """
     Test that it is possible to run the main function.
     """
     backend_name = "test"
-    caplog.set_level(logging.INFO)  # type: ignore
+    caplog.set_level(logging.INFO)
     # upload the backend
     update_backends(storage_provider, backends)
 
@@ -134,7 +136,7 @@ def test_main(caplog: Generator, utils_storage_setup_teardown: Callable) -> None
     result_dict = storage_provider.get_result(backend_name, "test", job_id)
     assert result_dict.job_id == job_id
 
-    assert "Running main loop." in caplog.text  # type: ignore
+    assert "Running main loop." in caplog.text
 
 
 def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
