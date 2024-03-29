@@ -99,7 +99,8 @@ def test_update_backends(
 
     # assert that the log is there
     # somehow the caplog has some typing issues.
-    assert "Uploaded configuration for " in caplog.text
+    print(caplog.text)
+    assert "Uploading it as a new one." in caplog.text
 
 
 def test_main(

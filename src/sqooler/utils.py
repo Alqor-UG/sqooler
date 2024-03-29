@@ -49,7 +49,7 @@ def update_backends(
             )
         except FileNotFoundError:
             # this should become a log
-            logging.info(
+            logging.warning(
                 "Failed to update the configuration for %s . Uploading it as a new one.",
                 requested_backend,
             )
