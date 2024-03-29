@@ -256,15 +256,17 @@ def test_spooler_add_job_fail(
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert result_dict is not None
+    assert "Error in json compatibility test." in caplog.text
 
-    assert "Running main loop." in caplog.text
 
-
-def test_spooler_add_job() -> None:
+def test_spooler_add_job(
+    caplog: Generator[LogCaptureFixture, None, None],
+) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
 
+    caplog.set_level(logging.INFO)
     test_spooler = Spooler(
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
@@ -287,9 +289,11 @@ def test_spooler_add_job() -> None:
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert status_msg_dict.error_message == "None; gen_circuit must be set"
 
+    assert "gen_circuit must be set" in caplog.text
     test_spooler.gen_circuit = dummy_gen_circuit
     _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "DONE", "Job failed"
+    assert "Experiment experiment_0 done." in caplog.text
 
 
 def test_gate_dict() -> None:
