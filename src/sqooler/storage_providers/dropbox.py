@@ -25,7 +25,7 @@ from ..schemes import (
     DisplayNameStr,
 )
 from ..security import JWK, sign_payload
-from .base import StorageProvider, validate_active
+from .base import StorageProvider, validate_active, datetime_handler
 
 
 class DropboxProviderExtended(StorageProvider):
@@ -89,7 +89,7 @@ class DropboxProviderExtended(StorageProvider):
         """
 
         # create the appropriate string for the dropbox API
-        dump_str = json.dumps(content_dict)
+        dump_str = json.dumps(content_dict, default=datetime_handler)
 
         self.upload_string(dump_str, storage_path, job_id)
 
@@ -243,8 +243,42 @@ class DropboxProviderExtended(StorageProvider):
                     f"Could not delete file under {full_path}"
                 ) from err
 
+    def update_config(
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
+    ) -> None:
+        """
+        The function that updates the spooler configuration to the storage.
+
+        All the configurations are stored in the Backend_files/Config folder.
+        For each backend there is a separate folder in which the configuration is stored as a json file.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            display_name : The name of the backend
+            private_jwk: The private JWK to sign the configuration with
+
+        Returns:
+            None
+        """
+
+        # check that the file exists
+        config_path = "Backend_files/Config/" + display_name
+        old_config_jws = self.get_file_content(config_path, "config")
+
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
+        # maybe this should rather become the update_file function
+        self.upload(upload_dict, config_path, "config")
+
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
@@ -255,13 +289,24 @@ class DropboxProviderExtended(StorageProvider):
         Args:
             config_dict: The dictionary containing the configuration
             display_name : The name of the backend
+            private_jwk: The private JWK to sign the configuration with
 
         Returns:
             None
         """
 
         config_path = "Backend_files/Config/" + display_name
-        self.upload_string(config_dict.model_dump_json(), config_path, "config")
+        # check if the file already exists
+        try:
+            self.get_file_content(storage_path=config_path, job_id="config")
+            raise FileExistsError(
+                f"The configuration for {display_name} already exists and should not be overwritten."
+            )
+        except FileNotFoundError:
+            pass
+
+        upload_dict = self._format_config_dict(config_dict, private_jwk)
+        self.upload(upload_dict, config_path, "config")
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """
@@ -457,7 +502,8 @@ class DropboxProviderExtended(StorageProvider):
         backend_config_dict = self.get_file_content(
             storage_path=backend_json_path, job_id="config"
         )
-        return BackendConfigSchemaIn(**backend_config_dict)
+        typed_config = self._adapt_get_config(backend_config_dict)
+        return typed_config
 
     def get_backend_status(
         self, display_name: DisplayNameStr
@@ -608,12 +654,16 @@ class DropboxProviderExtended(StorageProvider):
         backend_config_info = self.get_backend_dict(display_name)
         return self._adapt_result_dict(result_dict, backend_config_info)
 
-    def get_next_job_in_queue(self, display_name: DisplayNameStr) -> NextJobSchema:
+    def get_next_job_in_queue(
+        self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
+    ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue.
 
         Args:
             display_name: The name of the backend
+            private_jwk: The private JWK to sign the job with
+
 
         Returns:
             the path towards the job
@@ -623,7 +673,7 @@ class DropboxProviderExtended(StorageProvider):
         job_list = self.get_file_queue(job_json_dir)
 
         # time stamp when we last looked for a job
-        self.timestamp_queue(display_name)
+        self.timestamp_queue(display_name, private_jwk)
 
         # if there is a job, we should move it
         if job_list:

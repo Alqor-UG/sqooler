@@ -5,7 +5,9 @@ Any suggestions for improvements will be very welcome."""
 
 import json
 import base64
-from typing import Literal, Optional
+from typing import Literal, Optional, Any
+
+import datetime
 
 from pydantic import BaseModel, Field
 from cryptography.exceptions import InvalidSignature
@@ -46,6 +48,21 @@ class JWSHeader(BaseModel):
         return base64_encoded
 
 
+def datetime_handler(in_var: Any) -> str:
+    """
+    Convert a datetime object to a string.
+
+    Args:
+        in_var : The object to convert
+
+    Returns:
+        str : The string representation of the object
+    """
+    if isinstance(in_var, datetime.datetime):
+        return in_var.isoformat()
+    raise TypeError("Unknown type")
+
+
 def payload_to_base64url(payload: dict) -> bytes:
     """
     Convert an arbitrary payload to a base64url encoded string.
@@ -58,7 +75,7 @@ def payload_to_base64url(payload: dict) -> bytes:
     """
 
     # transform into a json string
-    payload_string = json.dumps(payload)
+    payload_string = json.dumps(payload, default=datetime_handler)
 
     # binary encode the json string
     binary_string = payload_string.encode()

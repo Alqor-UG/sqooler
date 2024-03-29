@@ -3,7 +3,6 @@ The tests for the storage provider using mongodb
 """
 
 import uuid
-import json
 import shutil
 from typing import Any
 
@@ -86,36 +85,12 @@ class TestLocalProvider(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
-    def test_upload_configs(self) -> None:
+    def test_upload_and_update_config(self) -> None:
         """
-        We would like to make sure that we can properly upload the configuration files
-        that come from the spoolers.
+        Test that we can upload and update a config.
         """
-
-        storage_provider = LocalProvider(self.get_login())
-
-        backend_name, backend_info = self.get_dummy_config()
-        storage_provider.upload_config(backend_info, backend_name)
-
-        # can we get the backend in the list ?
-        # get the database on which we work
-        uploaded_path = storage_provider.base_path + "/backends/configs"
-        full_json_path = uploaded_path + "/" + backend_name + ".json"
-        with open(full_json_path, "r", encoding="UTF-8") as json_file:
-            result_found = json.load(json_file)
-
-        if result_found is None:
-            raise ValueError("The backend was not uploaded properly.")
-        assert result_found["display_name"] == backend_info.display_name
-
-        # make sure that the upload of the same backend does only update it.
-        backend_info.num_wires = 4
-        storage_provider.upload_config(backend_info, backend_name)
-        with open(full_json_path, "r", encoding="UTF-8") as json_file:
-            result_found = json.load(json_file)
-
-        # clean up our mess and remove the file
-        storage_provider.delete_file("backends/configs", backend_name)
+        self.config_tests(DB_NAME)
+        self.config_tests(DB_NAME, sign=False)
 
     def test_get_next_job_in_queue(self) -> None:
         """
@@ -125,7 +100,7 @@ class TestLocalProvider(StorageProviderTestUtils):
         private_jwk, _ = create_jwk_pair("test")
         # create a dummy config
         backend_name, backend_info = self.get_dummy_config()
-        storage_provider.upload_config(backend_info, backend_name)
+        storage_provider.upload_config(backend_info, backend_name, private_jwk)
 
         queue_path = "jobs/queued/" + backend_name
 
@@ -146,7 +121,7 @@ class TestLocalProvider(StorageProviderTestUtils):
         assert job_list
 
         # the last step is to get the next job and see if this nicely worked out
-        next_job = storage_provider.get_next_job_in_queue(backend_name)
+        next_job = storage_provider.get_next_job_in_queue(backend_name, private_jwk)
 
         assert next_job.job_id == job_id
 

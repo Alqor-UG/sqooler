@@ -4,7 +4,12 @@ This module contains the test utils for the storage providers. So it is called b
 
 from typing import Any, Tuple, Type
 
+import sys
 import uuid
+
+import dropbox
+from dropbox.exceptions import AuthError
+
 from decouple import config
 import pytest
 from pydantic import ValidationError
@@ -12,6 +17,38 @@ from sqooler.schemes import BackendConfigSchemaIn, ResultDict
 from sqooler.storage_providers.base import StorageProvider
 
 from sqooler.security import create_jwk_pair
+
+
+def clean_dummies_from_folder(folder_path: str) -> None:
+    """
+    Clean the folder after the tests. Mostly for the dropbox.
+    """
+    folder_path = folder_path.strip("/")
+
+    app_key = config("APP_KEY")
+    app_secret = config("APP_SECRET")
+    refresh_token = config("REFRESH_TOKEN")
+    folder_path = "/" + folder_path + "/"
+    with dropbox.Dropbox(
+        app_key=app_key,
+        app_secret=app_secret,
+        oauth2_refresh_token=refresh_token,
+    ) as dbx:
+        # Check that the access token is valid
+        try:
+            dbx.users_get_current_account()
+        except AuthError:
+            sys.exit("ERROR: Invalid access token.")
+
+        folders_results = dbx.files_list_folder(path=folder_path)
+        entries = folders_results.entries
+        for entry in entries:
+            if "dummy" in entry.name:
+                print("Deleting folder: " + entry.name)
+                full_path = folder_path + entry.name
+
+                print("Deleting folder: " + full_path)
+                _ = dbx.files_delete_v2(path=full_path)
 
 
 class StorageProviderTestUtils:
@@ -142,6 +179,65 @@ class StorageProviderTestUtils:
                 self.get_login(), "Whatever%/iswrong"
             )
 
+    def config_tests(self, db_name: str, sign: bool = True) -> None:
+        """
+        Test that we can create a config and update it.
+
+        Args:
+            db_name: The name of the database.
+            sign: should I run the tests with signing?
+        """
+
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        backend_name, config_info = self.get_dummy_config(sign)
+        private_jwk, _ = create_jwk_pair(backend_name)
+
+        # does it fail if we try to upload the config without a private key?
+        if sign:
+            with pytest.raises(ValueError):
+                storage_provider.upload_config(config_info, display_name=backend_name)
+
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
+        # now test that we can cannot upload the config again
+        with pytest.raises(FileExistsError):
+            storage_provider.upload_config(
+                config_info, display_name=backend_name, private_jwk=private_jwk
+            )
+
+        # now test that we can also get the config
+        obtained_config = storage_provider.get_config(backend_name)
+        assert obtained_config.display_name == backend_name
+
+        with pytest.raises(FileNotFoundError):
+            obtained_config = storage_provider.get_config("random")
+
+        config_info.cold_atom_type = "boson"
+
+        storage_provider.update_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
+        if sign:
+            # test that we cannot update the config with a wrong private key
+            wrong_private_jwk, _ = create_jwk_pair(backend_name)
+            with pytest.raises(ValueError):
+                storage_provider.update_config(
+                    config_info,
+                    display_name=backend_name,
+                    private_jwk=wrong_private_jwk,
+                )
+        with pytest.raises(FileNotFoundError):
+            storage_provider.update_config(config_info, display_name="randonname")
+
     def signature_tests(self, db_name: str) -> None:
         """
         Test that we can create a signature.
@@ -169,12 +265,16 @@ class StorageProviderTestUtils:
         with pytest.raises(FileNotFoundError):
             obtained_public_jwk = storage_provider.get_public_key("random")
 
-    def job_tests(self, db_name: str) -> Tuple[str, str, str, Any]:
+    def job_tests(self, db_name: str, sign: bool = True) -> Tuple[str, str, str, Any]:
         """
         Test the job upload and download.
 
         Args:
             db_name: The name of the database.
+            sign: Should I run the tests with signing?
+
+        Returns:
+            The backend name, the job id, the username and the storage provider.
         """
         # create a storageprovider object
         storage_provider_class = self.get_storage_provider()
@@ -183,11 +283,15 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config()
-        storage_provider.upload_config(config_info, display_name=backend_name)
+        backend_name, config_info = self.get_dummy_config(sign=sign)
 
         # create a dummy key
         private_jwk, public_jwk = create_jwk_pair(backend_name)
+
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
         storage_provider.upload_public_key(public_jwk, display_name=backend_name)
 
         # let us first test the we can upload a dummy job
@@ -240,7 +344,7 @@ class StorageProviderTestUtils:
         assert backend_config.last_queue_check is None
 
         # now test that we can move through the queue
-        next_job = storage_provider.get_next_job_in_queue(backend_name)
+        next_job = storage_provider.get_next_job_in_queue(backend_name, private_jwk)
         assert next_job.job_id == job_id
         # now also make sure that we updated the time stamp for the queue
         backend_config = storage_provider.get_config(backend_name)

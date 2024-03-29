@@ -21,7 +21,7 @@ from ..schemes import (
     DisplayNameStr,
 )
 
-from .base import StorageProvider, validate_active
+from .base import StorageProvider, validate_active, datetime_handler
 from ..security import JWK, sign_payload
 
 
@@ -52,6 +52,11 @@ class LocalProviderExtended(StorageProvider):
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
+
+        Args:
+            content_dict: The dictionary containing the content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
         """
         # strip trailing and leading slashes from the storage_path
         storage_path = storage_path.strip("/")
@@ -67,7 +72,7 @@ class LocalProviderExtended(StorageProvider):
         secure_path = os.path.normpath(full_json_path)
 
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json.dump(content_dict, json_file)
+            json.dump(content_dict, json_file, default=datetime_handler)
 
     @validate_active
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
@@ -189,13 +194,8 @@ class LocalProviderExtended(StorageProvider):
         # Filter out only the JSON files
         json_files = [item for item in all_items if item.endswith(".json")]
 
-        for file_name in json_files:
-            full_json_path = os.path.join(config_path, file_name)
-            secure_path = os.path.normpath(full_json_path)
-
-            with open(secure_path, "r", encoding="utf-8") as json_file:
-                config_dict = json.load(json_file)
-                backend_names.append(config_dict["display_name"])
+        # Get the backend names
+        backend_names = [os.path.splitext(file_name)[0] for file_name in json_files]
         return backend_names
 
     def get_backend_status(
@@ -363,8 +363,59 @@ class LocalProviderExtended(StorageProvider):
             )
         return self._adapt_result_dict(result_dict, backend_config_info)
 
+    def update_config(
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
+    ) -> None:
+        """
+        The function that updates the spooler configuration on the storage.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            display_name : The name of the backend
+            private_jwk: The private key of the backend
+
+        Returns:
+            None
+        """
+        # path of the configs
+        config_path = os.path.join(self.base_path, "backends/configs")
+        config_path = os.path.normpath(config_path)
+
+        file_name = display_name + ".json"
+        full_json_path = os.path.join(config_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+
+        # check if the file already exists
+        if not os.path.exists(secure_path):
+            raise FileNotFoundError(
+                (
+                    f"The file {secure_path} does not exist and should not be updated."
+                    "Use the upload_config method instead."
+                )
+            )
+
+        # now read the old config
+        with open(secure_path, "r", encoding="utf-8") as json_file:
+            old_config_jws = json.load(json_file)
+
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
+        # maybe this should rather become the update method
+        self.upload(
+            content_dict=upload_dict,
+            storage_path="backends/configs",
+            job_id=display_name,
+        )
+
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
@@ -372,6 +423,7 @@ class LocalProviderExtended(StorageProvider):
         Args:
             config_dict: The dictionary containing the configuration
             display_name : The name of the backend
+            private_jwk: The private key of the backend
 
         Returns:
             None
@@ -386,8 +438,19 @@ class LocalProviderExtended(StorageProvider):
         file_name = display_name + ".json"
         full_json_path = os.path.join(config_path, file_name)
         secure_path = os.path.normpath(full_json_path)
-        with open(secure_path, "w", encoding="utf-8") as json_file:
-            json_file.write(config_dict.model_dump_json())
+
+        # check if the file already exists
+        if os.path.exists(secure_path):
+            raise FileExistsError(
+                f"The file {secure_path} already exists and should not be overwritten."
+            )
+
+        upload_dict = self._format_config_dict(config_dict, private_jwk)
+        self.upload(
+            content_dict=upload_dict,
+            storage_path="backends/configs",
+            job_id=display_name,
+        )
 
     def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
         """
@@ -403,17 +466,10 @@ class LocalProviderExtended(StorageProvider):
             The configuration of the backend in complete form.
         """
         # path of the configs
-        config_path = self.base_path + "/backends/configs"
-        file_name = display_name + ".json"
-        full_json_path = os.path.join(config_path, file_name)
-        secure_path = os.path.normpath(full_json_path)
-        with open(secure_path, "r", encoding="utf-8") as json_file:
-            backend_config_dict = json.load(json_file)
-
-        if not backend_config_dict:
-            raise FileNotFoundError("The backend does not exist for the given storage.")
-
-        return BackendConfigSchemaIn(**backend_config_dict)
+        config_path = "/backends/configs"
+        backend_config_dict = self.get_file_content(config_path, job_id=display_name)
+        typed_config = self._adapt_get_config(backend_config_dict)
+        return typed_config
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """
@@ -549,12 +605,15 @@ class LocalProviderExtended(StorageProvider):
             return []
         return os.listdir(full_path)
 
-    def get_next_job_in_queue(self, display_name: str) -> NextJobSchema:
+    def get_next_job_in_queue(
+        self, display_name: str, private_jwk: Optional[JWK] = None
+    ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue.
 
         Args:
             display_name: The name of the backend
+            private_jwk: The private key of the backend
 
         Returns:
             the dict of the next job
@@ -564,7 +623,7 @@ class LocalProviderExtended(StorageProvider):
         job_list = self.get_file_queue(queue_dir)
 
         # update the time stamp of the last job
-        self.timestamp_queue(display_name)
+        self.timestamp_queue(display_name, private_jwk)
 
         # if there is a job, we should move it
         if job_list:
