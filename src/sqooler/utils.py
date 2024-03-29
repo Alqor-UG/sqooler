@@ -78,16 +78,18 @@ def main(
         )
 
         result_dict = get_init_results()
-        status_msg_dict = get_init_status()
-        status_msg_dict.job_id = job_dict.job_id
         # Fix this pylint issue whenever you have time, but be careful !
         # pylint: disable=W0703
         try:
             result_dict, status_msg_dict = backends[requested_backend].add_job(
-                job_json_dict, status_msg_dict
+                job_json_dict, job_dict.job_id
             )
 
         except Exception:
+            # test if the status_msg_dict is already initialized
+            if not status_msg_dict:
+                status_msg_dict = get_init_status()
+                status_msg_dict.job_id = job_dict.job_id
             # Remove sensitive info like filepaths
             tb_list = traceback.format_exc().splitlines()
             for i, dummy in enumerate(tb_list):
@@ -122,9 +124,7 @@ def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
     Returns:
         the results dict
     """
-    status_msg_dict = get_init_status()
-    status_msg_dict.job_id = job_id
 
-    result_dict, status_msg_dict = spooler.add_job(json_dict, status_msg_dict)
+    result_dict, status_msg_dict = spooler.add_job(json_dict, job_id)
     assert status_msg_dict.status == "DONE", "Job failed"
     return result_dict.model_dump()
