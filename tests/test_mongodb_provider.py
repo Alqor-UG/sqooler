@@ -8,11 +8,12 @@ from typing import Any
 # get the environment variables
 from decouple import config
 
+from bson.objectid import ObjectId
+
 from sqooler.storage_providers.mongodb import MongodbProvider
 from sqooler.schemes import ResultDict, MongodbLoginInformation
 
 from .storage_provider_test_utils import StorageProviderTestUtils
-from bson.objectid import ObjectId
 
 DB_NAME = "mongodbtest"
 

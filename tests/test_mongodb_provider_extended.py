@@ -7,12 +7,13 @@ from typing import Any
 from decouple import config
 
 import pytest
+from bson.objectid import ObjectId
+
 from sqooler.storage_providers.mongodb import MongodbProviderExtended
 from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
 
 from .storage_provider_test_utils import StorageProviderTestUtils
 
-from bson.objectid import ObjectId
 
 DB_NAME = "mongodbtest"
 
