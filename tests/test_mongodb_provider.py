@@ -12,6 +12,7 @@ from sqooler.storage_providers.mongodb import MongodbProvider
 from sqooler.schemes import ResultDict, MongodbLoginInformation
 
 from .storage_provider_test_utils import StorageProviderTestUtils
+from bson.objectid import ObjectId
 
 DB_NAME = "mongodbtest"
 
@@ -88,6 +89,31 @@ class TestMongodbProvider(StorageProviderTestUtils):
             if collection_name.startswith("dummy"):
                 collection = database[collection_name]
                 collection.drop()
+
+        # Remove all the dummy configs
+        database = storage_provider.client["backends"]
+        collection = database["configs"]
+
+        database = storage_provider.client["status"]
+        for config_dict in collection.find():
+            if "display_name" in config_dict:
+                if "dummy" in config_dict["display_name"]:
+                    print("Deleting config: " + config_dict["display_name"])
+                    collection.delete_one({"_id": ObjectId(config_dict["_id"])})
+            if "payload" in config_dict:
+                if "display_name" in config_dict["payload"]:
+                    print(config_dict["payload"])
+                    if "dummy" in config_dict["payload"]["display_name"]:
+                        print(
+                            "Deleting config: " + config_dict["payload"]["display_name"]
+                        )
+                        collection.delete_one({"_id": ObjectId(config_dict["_id"])})
+                else:
+                    print("Deleting config: " + config_dict["display_name"])
+                    collection.delete_one({"_id": ObjectId(config_dict["_id"])})
+            else:
+                print("Deleting random config")
+                collection.delete_one({"_id": ObjectId(config_dict["_id"])})
 
     def test_config_upload(self) -> None:
         """
