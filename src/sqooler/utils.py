@@ -149,5 +149,8 @@ def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
     """
 
     result_dict, status_msg_dict = spooler.add_job(json_dict, job_id)
-    assert status_msg_dict.status == "DONE", "Job failed"
+    if not status_msg_dict.status == "DONE":
+        logging.error(status_msg_dict.error_message)
+        print(status_msg_dict.error_message)
+        raise AssertionError("Job failed")
     return result_dict.model_dump()

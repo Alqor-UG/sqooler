@@ -140,7 +140,9 @@ def test_main(
     assert "Running main loop." in caplog.text
 
 
-def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
+def test_run_json_circuit(
+    caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
+) -> None:
     """
     Test that it is possible to create the memory data.
     """
@@ -156,3 +158,4 @@ def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
     job_id = "1"
     with pytest.raises(AssertionError):
         run_json_circuit(job_payload, job_id, test_spooler)
+    assert "Failed json sanity check." in caplog.text
