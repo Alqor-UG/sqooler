@@ -4,7 +4,12 @@ This module contains the test utils for the storage providers. So it is called b
 
 from typing import Any, Tuple, Type
 
+import sys
 import uuid
+
+import dropbox
+from dropbox.exceptions import AuthError
+
 from decouple import config
 import pytest
 from pydantic import ValidationError
@@ -12,6 +17,38 @@ from sqooler.schemes import BackendConfigSchemaIn, ResultDict
 from sqooler.storage_providers.base import StorageProvider
 
 from sqooler.security import create_jwk_pair
+
+
+def clean_dummies_from_folder(folder_path: str) -> None:
+    """
+    Clean the folder after the tests. Mostly for the dropbox.
+    """
+    folder_path = folder_path.strip("/")
+
+    app_key = config("APP_KEY")
+    app_secret = config("APP_SECRET")
+    refresh_token = config("REFRESH_TOKEN")
+    folder_path = "/" + folder_path + "/"
+    with dropbox.Dropbox(
+        app_key=app_key,
+        app_secret=app_secret,
+        oauth2_refresh_token=refresh_token,
+    ) as dbx:
+        # Check that the access token is valid
+        try:
+            dbx.users_get_current_account()
+        except AuthError:
+            sys.exit("ERROR: Invalid access token.")
+
+        folders_results = dbx.files_list_folder(path=folder_path)
+        entries = folders_results.entries
+        for entry in entries:
+            if "dummy" in entry.name:
+                print("Deleting folder: " + entry.name)
+                full_path = folder_path + entry.name
+
+                print("Deleting folder: " + full_path)
+                _ = dbx.files_delete_v2(path=full_path)
 
 
 class StorageProviderTestUtils:

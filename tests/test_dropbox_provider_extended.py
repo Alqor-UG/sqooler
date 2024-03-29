@@ -11,7 +11,10 @@ import pytest
 from sqooler.storage_providers.dropbox import DropboxProviderExtended
 from sqooler.schemes import DropboxLoginInformation
 
-from .storage_provider_test_utils import StorageProviderTestUtils
+from .storage_provider_test_utils import (
+    StorageProviderTestUtils,
+    clean_dummies_from_folder,
+)
 
 DB_NAME = "dropboxtest"
 
@@ -49,6 +52,15 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
             "refresh_token": refresh_token,
         }
         return DropboxLoginInformation(**login_dict)
+
+    @classmethod
+    def teardown_class(cls) -> None:
+        """
+        Clean out the old dummy files
+        """
+        # clean stupid dummy files for the config
+        backend_config_path = "/Backend_files/Config/"
+        clean_dummies_from_folder(backend_config_path)
 
     def test_dropbox_object(self) -> None:
         """
