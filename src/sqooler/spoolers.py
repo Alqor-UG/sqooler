@@ -278,7 +278,7 @@ class BaseSpooler(ABC):
             )
             status_msg_dict.status = "ERROR"
             logging.error(
-                f"Error in json compatibility test.",
+                "Error in json compatibility test.",
                 extra={"error_message": status_msg_dict.error_message},
             )
             return result_dict, status_msg_dict, clean_dict
@@ -296,7 +296,7 @@ class BaseSpooler(ABC):
             )
             status_msg_dict.status = "ERROR"
             logging.error(
-                f"Error in dimensionality test.",
+                "Error in dimensionality test.",
                 extra={"error_message": status_msg_dict.error_message},
             )
             return result_dict, status_msg_dict, clean_dict
@@ -410,7 +410,7 @@ class Spooler(BaseSpooler):
         for exp_name, exp_info in clean_dict.items():
             try:
                 result_dict.results.append(self.gen_circuit(exp_name, exp_info))
-                logging.info(f"Experiment {exp_name} done.")
+                logging.info("Experiment %s done.", exp_name)
             except ValueError as err:
                 status_msg_dict.detail += "; " + str(err)
                 status_msg_dict.error_message += "; " + str(err)
