@@ -78,7 +78,9 @@ def test_update_backends(
     Test that it is possible to update the backends.
     """
     # test that it fails with poor names
-    caplog.set_level(logging.INFO)
+
+    # somehow the caplog has some typing issues.
+    caplog.set_level(logging.INFO)  # type: ignore
     backends_poor = {"test_test_test": test_spooler}
     with pytest.raises(ValidationError):
         update_backends(storage_provider, backends_poor)
@@ -96,7 +98,8 @@ def test_update_backends(
     assert public_jwk.kid == "test_key"
 
     # assert that the log is there
-    assert "Uploaded configuration for " in caplog.text
+    # somehow the caplog has some typing issues.
+    assert "Uploaded configuration for " in caplog.text  # type: ignore
 
 
 def test_main(caplog: Generator, utils_storage_setup_teardown: Callable) -> None:
@@ -104,7 +107,7 @@ def test_main(caplog: Generator, utils_storage_setup_teardown: Callable) -> None
     Test that it is possible to run the main function.
     """
     backend_name = "test"
-    caplog.set_level(logging.INFO)
+    caplog.set_level(logging.INFO)  # type: ignore
     # upload the backend
     update_backends(storage_provider, backends)
 
@@ -131,7 +134,7 @@ def test_main(caplog: Generator, utils_storage_setup_teardown: Callable) -> None
     result_dict = storage_provider.get_result(backend_name, "test", job_id)
     assert result_dict.job_id == job_id
 
-    assert "Running main loop." in caplog.text
+    assert "Running main loop." in caplog.text  # type: ignore
 
 
 def test_run_json_circuit(utils_storage_setup_teardown: Callable) -> None:
