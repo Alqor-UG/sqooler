@@ -478,23 +478,6 @@ class LabscriptSpooler(BaseSpooler):
         self.labscript_params = labscript_params
         self.run = run
 
-    def _prep_job(
-        self, json_dict: dict[str, dict], status_msg_dict: StatusMsgDict
-    ) -> tuple[str, ResultDict]:
-        job_id = status_msg_dict.job_id
-
-        result_dict = ResultDict(
-            display_name=self.display_name,
-            backend_version=self.version,
-            job_id=job_id,
-            qobj_id=None,
-            success=True,
-            status="INITIALIZING",
-            header={},
-            results=[],
-        )
-        return job_id, result_dict
-
     def add_job(
         self, json_dict: dict[str, dict], job_id: str
     ) -> tuple[ResultDict, StatusMsgDict]:
