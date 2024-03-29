@@ -238,7 +238,14 @@ class MongodbProviderExtended(StorageProvider):
         # get all the documents in the collection configs and save the disply_name in a list
         backend_names: list[DisplayNameStr] = []
         for config_dict in config_collection.find():
-            backend_names.append(config_dict["display_name"])
+            config_dict.pop("_id")
+            expected_keys_for_jws = {"header", "payload", "signature"}
+            if set(config_dict.keys()) == expected_keys_for_jws:
+                backend_names.append(config_dict["payload"]["display_name"])
+            else:
+                if not "display_name" in config_dict:
+                    print(config_dict)
+                backend_names.append(config_dict["display_name"])
         return backend_names
 
     def get_backend_status(
@@ -275,7 +282,10 @@ class MongodbProviderExtended(StorageProvider):
         return qiskit_backend_dict
 
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
@@ -283,11 +293,13 @@ class MongodbProviderExtended(StorageProvider):
         Args:
             config_dict: The dictionary containing the configuration
             display_name : The name of the backend
+            private_jwk: The private JWK to sign the configuration with
 
         Returns:
             None
         """
         config_path = "backends/configs"
+        config_dict.display_name = display_name
 
         # first we have to check if the device already exists in the database
 
@@ -299,21 +311,82 @@ class MongodbProviderExtended(StorageProvider):
         # get the collection on which we work
         collection = database["configs"]
 
+        document_to_find = {"display_name": display_name}
         result_found = collection.find_one(document_to_find)
-        config_dict.display_name = display_name
         if result_found:
-            # update the file
-            self.update_file(
-                content_dict=config_dict.model_dump(),
-                storage_path=config_path,
-                job_id=result_found["_id"],
+            raise FileExistsError(
+                f"The configuration for {display_name} already exists and should not be overwritten."
             )
-            return
 
-        # if the device does not exist, we have to create it
+        # now also look for signed configurations
+        signed_document_to_find = {"payload.display_name": display_name}
+        result_found = collection.find_one(signed_document_to_find)
+        if result_found:
+            raise FileExistsError(
+                f"The configuration for {display_name} already exists and should not be overwritten."
+            )
 
+        upload_dict = self._format_config_dict(config_dict, private_jwk)
         config_id = uuid.uuid4().hex[:24]
-        self.upload(config_dict.model_dump(), config_path, config_id)
+        self.upload(upload_dict, config_path, config_id)
+
+    def update_config(
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
+    ) -> None:
+        """
+        The function that updates the spooler configuration on the storage.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            display_name : The name of the backend
+            private_jwk: The private key of the backend
+
+        Returns:
+            None
+        """
+        config_path = "backends/configs"
+
+        config_dict.display_name = display_name
+
+        # get the database on which we work
+        database = self.client["backends"]
+
+        # get the collection on which we work
+        collection = database["configs"]
+
+        # first we have to check if the device already exists in the database
+        document_to_find = {"display_name": display_name}
+        result_found = collection.find_one(document_to_find)
+
+        signed_document_to_find = {"payload.display_name": display_name}
+        signed_backend_config_dict = collection.find_one(signed_document_to_find)
+
+        if result_found:
+            old_config_jws = result_found
+            job_id = result_found["_id"]
+        elif signed_backend_config_dict:
+            old_config_jws = signed_backend_config_dict
+            job_id = signed_backend_config_dict["_id"]
+            old_config_jws.pop("_id")
+        else:
+            raise FileNotFoundError(
+                (
+                    f"The config for {display_name} does not exist and should not be updated."
+                    "Use the upload_config method instead."
+                )
+            )
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
+
+        self.update_file(
+            content_dict=upload_dict,
+            storage_path=config_path,
+            job_id=job_id,
+        )
 
     @validate_active
     def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
@@ -337,11 +410,21 @@ class MongodbProviderExtended(StorageProvider):
         document_to_find = {"display_name": display_name}
         backend_config_dict = config_collection.find_one(document_to_find)
 
-        if not backend_config_dict:
-            raise FileNotFoundError("The backend does not exist for the given storage.")
+        signed_document_to_find = {"payload.display_name": display_name}
+        signed_backend_config_dict = config_collection.find_one(signed_document_to_find)
 
-        backend_config_dict.pop("_id")
-        return BackendConfigSchemaIn(**backend_config_dict)
+        # work with the unsigned backend
+        if backend_config_dict:
+            backend_config_dict.pop("_id")
+            return BackendConfigSchemaIn(**backend_config_dict)
+
+        # work with the signed backend this is working normally due to the mongodb API, but to make
+        # mypy happy, we have to check if the signed_backend_config_dict is not None
+        elif signed_backend_config_dict:
+            payload = signed_backend_config_dict["payload"]
+            return BackendConfigSchemaIn(**payload)
+
+        raise FileNotFoundError("The backend does not exist for the given storage.")
 
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str
@@ -627,7 +710,9 @@ class MongodbProviderExtended(StorageProvider):
             file_list.append(str(result["_id"]))
         return file_list
 
-    def get_next_job_in_queue(self, display_name: str) -> NextJobSchema:
+    def get_next_job_in_queue(
+        self, display_name: str, private_jwk: Optional[JWK] = None
+    ) -> NextJobSchema:
         """
         A function that obtains the next job in the queue. If there is no job, it returns an empty
         dict. If there is a job, it moves the job from the queue to the running folder.
@@ -635,6 +720,7 @@ class MongodbProviderExtended(StorageProvider):
 
         Args:
             display_name: The name of the backend
+            private_jwk: The private JWK to sign the result with
 
         Returns:
             the job dict
@@ -645,7 +731,7 @@ class MongodbProviderExtended(StorageProvider):
         job_list = self.get_file_queue(queue_dir)
 
         # update the time stamp of the last job
-        self.timestamp_queue(display_name)
+        self.timestamp_queue(display_name, private_jwk)
 
         # if there is a job, we should move it
         if job_list:

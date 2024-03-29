@@ -7,10 +7,13 @@ from typing import Any
 from decouple import config
 
 import pytest
+from bson.objectid import ObjectId
+
 from sqooler.storage_providers.mongodb import MongodbProviderExtended
 from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
 
 from .storage_provider_test_utils import StorageProviderTestUtils
+
 
 DB_NAME = "mongodbtest"
 
@@ -88,6 +91,31 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
                 collection = database[collection_name]
                 collection.drop()
 
+        # Remove all the dummy configs
+        database = storage_provider.client["backends"]
+        collection = database["configs"]
+
+        database = storage_provider.client["status"]
+        for config_dict in collection.find():
+            if "display_name" in config_dict:
+                if "dummy" in config_dict["display_name"]:
+                    print("Deleting config: " + config_dict["display_name"])
+                    collection.delete_one({"_id": ObjectId(config_dict["_id"])})
+            if "payload" in config_dict:
+                if "display_name" in config_dict["payload"]:
+                    print(config_dict["payload"])
+                    if "dummy" in config_dict["payload"]["display_name"]:
+                        print(
+                            "Deleting config: " + config_dict["payload"]["display_name"]
+                        )
+                        collection.delete_one({"_id": ObjectId(config_dict["_id"])})
+                else:
+                    print("Deleting config: " + config_dict["display_name"])
+                    collection.delete_one({"_id": ObjectId(config_dict["_id"])})
+            else:
+                print("Deleting random config")
+                collection.delete_one({"_id": ObjectId(config_dict["_id"])})
+
     def test_mongodb_object(self) -> None:
         """
         Test that we can create a MongoDB object.
@@ -157,13 +185,20 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
+    def test_upload_and_update_config(self) -> None:
+        """
+        Test that we can upload and update a config.
+        """
+        self.config_tests(DB_NAME)
+        self.config_tests(DB_NAME, sign=False)
+
     def test_configs(self) -> None:
         """
         Test that we are able to obtain a list of backends.
         """
         # create a mongodb object
         storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-        backend_name, backend_config_info = self.get_dummy_config()
+        backend_name, backend_config_info = self.get_dummy_config(sign=False)
         config_path = "backends/configs"
 
         storage_provider.upload_config(backend_config_info, backend_name)
@@ -324,10 +359,9 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
 
         # remove the obsolete config from the storage
         config_path = "backends/configs"
-        document_to_find = {"display_name": backend_name}
 
         database = storage_provider.client["backends"]
         collection = database["configs"]
-
+        document_to_find = {"payload.display_name": backend_name}
         result_found = collection.find_one(document_to_find)
         storage_provider.delete_file(config_path, str(result_found["_id"]))

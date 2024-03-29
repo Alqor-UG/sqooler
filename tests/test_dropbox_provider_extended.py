@@ -11,7 +11,10 @@ import pytest
 from sqooler.storage_providers.dropbox import DropboxProviderExtended
 from sqooler.schemes import DropboxLoginInformation
 
-from .storage_provider_test_utils import StorageProviderTestUtils
+from .storage_provider_test_utils import (
+    StorageProviderTestUtils,
+    clean_dummies_from_folder,
+)
 
 DB_NAME = "dropboxtest"
 
@@ -49,6 +52,15 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
             "refresh_token": refresh_token,
         }
         return DropboxLoginInformation(**login_dict)
+
+    @classmethod
+    def teardown_class(cls) -> None:
+        """
+        Clean out the old dummy files
+        """
+        # clean stupid dummy files for the config
+        backend_config_path = "/Backend_files/Config/"
+        clean_dummies_from_folder(backend_config_path)
 
     def test_dropbox_object(self) -> None:
         """
@@ -131,6 +143,13 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(storage_path, job_id)
 
+    def test_upload_and_update_config(self) -> None:
+        """
+        Test that we can upload and update a config.
+        """
+        self.config_tests(DB_NAME)
+        self.config_tests(DB_NAME, sign=False)
+
     def test_configs(self) -> None:
         """
         Test that we are able to obtain a list of backends.
@@ -139,7 +158,7 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         # create a dropbox object
         storage_provider = DropboxProviderExtended(self.get_login(), DB_NAME)
 
-        backend_name, config_info = self.get_dummy_config()
+        backend_name, config_info = self.get_dummy_config(sign=False)
         storage_provider.upload_config(config_info, backend_name)
         dummy_path = f"Backend_files/Config/{backend_name}"
 

@@ -193,6 +193,17 @@ def test_spooler_config() -> None:
     assert spooler_config.operational
 
 
+def test_spooler_jwk() -> None:
+    """
+    Test that we can easily get the private jwk.
+    """
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=True
+    )
+
+    test_spooler.get_private_jwk()
+
+
 def test_spooler_cold_atom() -> None:
     """
     Test that we cannot set the spooler with the wrong cold atom type.
