@@ -4,8 +4,24 @@ comments: true
 
 # Release information
 
-
 In this guide we will cover the key information about the different releases.
+
+## v0.6
+
+In this release, we continued the work on clean typing and we introduced first concepts for better security and logging, so extending the list of features.
+
+What's Changed:
+
+* Improved documentation 
+* Fix the cold atom type by 
+* Clean distinction between backend name and display name 
+* timestamp the loops of the queue
+* Much cleaner add job 
+* Cleaner tests 
+* Make it possible to sign the results for the backend supplier 
+* Delete file should fail if file does not exist
+* Do not allow to add a config with a name that already exists
+* Make it possible to log basic activities
 
 ## v0.5
 
