@@ -12,6 +12,7 @@ from collections.abc import Callable
 from typing import Type, Any, Optional
 from time import sleep
 from abc import ABC
+import logging
 
 from decouple import config
 
@@ -276,6 +277,10 @@ class BaseSpooler(ABC):
                 + err_msg
             )
             status_msg_dict.status = "ERROR"
+            logging.error(
+                "Error in json compatibility test.",
+                extra={"error_message": status_msg_dict.error_message},
+            )
             return result_dict, status_msg_dict, clean_dict
 
         # now we need to check the dimensionality of the experiment
@@ -290,6 +295,10 @@ class BaseSpooler(ABC):
                 + dim_err_msg
             )
             status_msg_dict.status = "ERROR"
+            logging.error(
+                "Error in dimensionality test.",
+                extra={"error_message": status_msg_dict.error_message},
+            )
             return result_dict, status_msg_dict, clean_dict
 
         return result_dict, status_msg_dict, clean_dict
@@ -401,10 +410,15 @@ class Spooler(BaseSpooler):
         for exp_name, exp_info in clean_dict.items():
             try:
                 result_dict.results.append(self.gen_circuit(exp_name, exp_info))
+                logging.info("Experiment %s done.", exp_name)
             except ValueError as err:
                 status_msg_dict.detail += "; " + str(err)
                 status_msg_dict.error_message += "; " + str(err)
                 status_msg_dict.status = "ERROR"
+                logging.exception(
+                    "Error in gen_circuit.",
+                    extra={"error_message": status_msg_dict.error_message},
+                )
                 return result_dict, status_msg_dict
         status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
                     Shots sent to solver."

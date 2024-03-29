@@ -5,12 +5,15 @@ Here we test the spooler class and its functions.
 import os
 import shutil
 
+import logging
+
 from typing import Literal, Optional, Iterator, Callable
 from pydantic import ValidationError, BaseModel, Field
 
-
 from typing_extensions import Annotated
 import pytest
+from pytest import LogCaptureFixture
+
 from sqooler.schemes import (
     ExperimentDict,
     ExperimentalInputDict,
@@ -240,11 +243,14 @@ def test_spooler_operational() -> None:
     assert not spooler_config.operational
 
 
-def test_spooler_add_job_fail() -> None:
+def test_spooler_add_job_fail(
+    caplog: LogCaptureFixture,
+) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
 
+    caplog.set_level(logging.INFO)
     test_spooler = Spooler(
         ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
     )
@@ -261,13 +267,17 @@ def test_spooler_add_job_fail() -> None:
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert result_dict is not None
+    assert "Error in json compatibility test." in caplog.text
 
 
-def test_spooler_add_job() -> None:
+def test_spooler_add_job(
+    caplog: LogCaptureFixture,
+) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
 
+    caplog.set_level(logging.INFO)
     test_spooler = Spooler(
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
@@ -290,9 +300,11 @@ def test_spooler_add_job() -> None:
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert status_msg_dict.error_message == "None; gen_circuit must be set"
 
+    assert "gen_circuit must be set" in caplog.text
     test_spooler.gen_circuit = dummy_gen_circuit
     _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "DONE", "Job failed"
+    assert "Experiment experiment_0 done." in caplog.text
 
 
 def test_gate_dict() -> None:
