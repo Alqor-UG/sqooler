@@ -5,12 +5,15 @@ Here we test the spooler class and its functions.
 import os
 import shutil
 
-from typing import Literal, Optional, Iterator, Callable
-from pydantic import ValidationError, BaseModel, Field
+import logging
 
+from typing import Literal, Optional, Iterator, Callable, Generator
+from pydantic import ValidationError, BaseModel, Field
 
 from typing_extensions import Annotated
 import pytest
+from pytest import LogCaptureFixture
+
 from sqooler.schemes import (
     ExperimentDict,
     ExperimentalInputDict,
@@ -229,11 +232,14 @@ def test_spooler_operational() -> None:
     assert not spooler_config.operational
 
 
-def test_spooler_add_job_fail() -> None:
+def test_spooler_add_job_fail(
+    caplog: Generator[LogCaptureFixture, None, None],
+) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
 
+    caplog.set_level(logging.INFO)
     test_spooler = Spooler(
         ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
     )
@@ -250,6 +256,8 @@ def test_spooler_add_job_fail() -> None:
     result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert result_dict is not None
+
+    assert "Running main loop." in caplog.text
 
 
 def test_spooler_add_job() -> None:
