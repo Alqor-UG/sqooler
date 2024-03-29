@@ -277,6 +277,10 @@ class BaseSpooler(ABC):
                 + err_msg
             )
             status_msg_dict.status = "ERROR"
+            logging.error(
+                f"Error in json compatibility test.",
+                extra={"error_message": status_msg_dict.error_message},
+            )
             return result_dict, status_msg_dict, clean_dict
 
         # now we need to check the dimensionality of the experiment
@@ -291,6 +295,10 @@ class BaseSpooler(ABC):
                 + dim_err_msg
             )
             status_msg_dict.status = "ERROR"
+            logging.error(
+                f"Error in dimensionality test.",
+                extra={"error_message": status_msg_dict.error_message},
+            )
             return result_dict, status_msg_dict, clean_dict
 
         return result_dict, status_msg_dict, clean_dict
