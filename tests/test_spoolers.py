@@ -177,7 +177,7 @@ def dummy_gen_circuit(
     """
     n_shots = json_dict.shots
     ins_list = json_dict.instructions
-    seed = json_dict.seed
+    _ = json_dict.seed
     shots_array = [1, 2, 3]
     exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots, ins_list)
     return exp_sub_dict
