@@ -335,6 +335,13 @@ class BaseSpooler(ABC):
             wire_order=json_dict["wire_order"],
             num_wires=json_dict["num_wires"],
         )
+        exp_info = ExperimentalInputDict(
+            instructions=ins_list,
+            shots=json_dict["shots"],
+            wire_order=json_dict["wire_order"],
+            num_wires=json_dict["num_wires"],
+            seed=json_dict.get("seed", None),
+        )
         return exp_info
 
     def get_private_jwk(self) -> JWK:
