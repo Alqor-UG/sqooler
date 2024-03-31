@@ -230,6 +230,10 @@ class ExperimentalInputDict(BaseModel):
     num_wires: int = Field(description="The number of wires for the job")
     shots: int = Field(description="The number of shots for the job")
     wire_order: WireOrderStr
+    seed: Optional[int] = Field(
+        default=None,
+        description="The seed for the random number generator if one might be used",
+    )
 
 
 class DataDict(BaseModel):

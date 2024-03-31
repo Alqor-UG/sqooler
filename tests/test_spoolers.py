@@ -177,6 +177,7 @@ def dummy_gen_circuit(
     """
     n_shots = json_dict.shots
     ins_list = json_dict.instructions
+    seed = json_dict.seed
     shots_array = [1, 2, 3]
     exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots, ins_list)
     return exp_sub_dict
@@ -305,6 +306,34 @@ def test_spooler_add_job(
     _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "DONE", "Job failed"
     assert "Experiment experiment_0 done." in caplog.text
+
+    # now also with a seed
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+            "seed": 12345,
+        },
+    }
+    _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
+    assert status_msg_dict.status == "DONE", "Job failed"
+
+    # and with a poor seed
+
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+            "seed": "asbcd",
+        },
+    }
+    _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
+    assert status_msg_dict.status == "ERROR", "Job should have failed"
+    assert "Error in json compatibility test" in caplog.text
 
 
 def test_gate_dict() -> None:
