@@ -50,7 +50,7 @@ def clean_dummies_from_folder(folder_path: str) -> None:
                 print("Deleting folder: " + full_path)
                 try:
                     dbx.files_delete_v2(path=full_path)
-                except ApiError as e:
+                except ApiError:
                     print(f"Failed to delete {full_path}. Most likely already deleted.")
 
 
