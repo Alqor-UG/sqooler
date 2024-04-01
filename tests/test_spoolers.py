@@ -450,6 +450,82 @@ def test_spooler_instructions() -> None:
     assert exp_ok is True
 
 
+def test_wire_orders() -> None:
+    """
+    Make sure that the wire order is properly tested for.
+    """
+    """
+    Test that it is possible to verify the validity of the json.
+    """
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        operational=False,
+        wire_order="interleaved",
+    )
+
+    # test that it works if the instructions are valid
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is True
+
+    # test that it works if the instructions are not valid
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "linear",
+        },
+    }
+    # test that it works if the instructions are not valid as the key is not known
+
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is False
+
+    # and set up a spooler with a different wire order
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        operational=False,
+        wire_order="sequential",
+    )
+
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "sequential",
+        },
+    }
+
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is True
+
+    # and with the wrong payload
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "linear",
+        },
+    }
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is False
+
+
 ## Test the labscript spooler
 # pylint: disable=W0613, W0621
 @pytest.fixture
