@@ -10,7 +10,7 @@ In this guide we will cover the key information about the different releases.
 
 In this release, we continued the work on clean typing and we introduced first concepts for better security and logging, so extending the list of features.
 
-What's Changed:
+### What's Changed
 
 * Improved documentation 
 * Fix the cold atom type by 
@@ -23,11 +23,19 @@ What's Changed:
 * Do not allow to add a config with a name that already exists
 * Make it possible to log basic activities
 
+### Migration Guide
+
+- We have changed the syntax for the `gen_circuit` function to make it simpler to understand the code. It now takes the `exp_name` as the first argument and the `exp_dict` of the new type `ExperimentalInputDict` as the second argument. 
+- We are now distinguishing pretty strictly between the `backend_name` and the `display_name`. The `display_name` is the short alphanumeric string that acts as identifier. The `backend_name` also contains the name of the `StorageProvider` and if the system is a simulator or not.
+- To sign the results and the config you need to store a private `jwk` as described in the documentation for [security](security.md).
+- The `add_job` function now takes the `job_id` as the second parameter instead of the the `StatusMsgDict`. This removed some error sources.
+
+
 ## v0.5
 
 This release further increased the typing and testing of the package. It also fixed some long standing usability bugs for the user. 
 
-What Changed:
+### What's Changed
 
 * Cleaner error handling of missing status
 * Unify the error handling for the `get_file_content` function amongst `StorageProvider`s.
@@ -42,7 +50,7 @@ What Changed:
 
 This release focused on better typing with `pydantic` and a simpler deployment on the back-end side.
 
-What Changed:
+### What's Changed
 
 * Introduce the `StatusMsgDict` for proper typing of status messages 
 * Enforce cleaner typing of `ExperimentDict` 
