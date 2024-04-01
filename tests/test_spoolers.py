@@ -454,9 +454,6 @@ def test_wire_orders() -> None:
     """
     Make sure that the wire order is properly tested for.
     """
-    """
-    Test that it is possible to verify the validity of the json.
-    """
     test_spooler = Spooler(
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
