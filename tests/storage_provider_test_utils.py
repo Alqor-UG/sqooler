@@ -8,7 +8,7 @@ import sys
 import uuid
 
 import dropbox
-from dropbox.exceptions import AuthError
+from dropbox.exceptions import AuthError, ApiError
 
 from decouple import config
 import pytest
@@ -48,7 +48,10 @@ def clean_dummies_from_folder(folder_path: str) -> None:
                 full_path = folder_path + entry.name
 
                 print("Deleting folder: " + full_path)
-                _ = dbx.files_delete_v2(path=full_path)
+                try:
+                    dbx.files_delete_v2(path=full_path)
+                except ApiError:
+                    print(f"Failed to delete {full_path}. Most likely already deleted.")
 
 
 class StorageProviderTestUtils:
