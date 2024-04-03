@@ -43,9 +43,9 @@ BackendNameStr = Annotated[
 
 # the strings that are allowed for the wire_order
 WireOrderStr = Annotated[
-    Literal["linear", "interleaved"],
+    Literal["sequential", "interleaved"],
     Field(
-        description="The wire order of the backend. Either linear or interleaved."
+        description="The wire order of the backend. Either sequential or interleaved."
         " Non standard qiskit field."
     ),
 ]

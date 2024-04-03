@@ -31,6 +31,7 @@ from .schemes import (
     StatusMsgDict,
     GateDict,
     LabscriptParams,
+    WireOrderStr,
     ColdAtomStr,
     get_init_status,
 )
@@ -64,7 +65,7 @@ class BaseSpooler(ABC):
         version: str = "0.0.1",
         cold_atom_type: ColdAtomStr = "spin",
         n_max_experiments: int = 15,
-        wire_order: str = "interleaved",
+        wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
         operational: bool = True,
         sign: bool = False,
@@ -458,7 +459,7 @@ class LabscriptSpooler(BaseSpooler):
         version: str = "0.0.1",
         cold_atom_type: ColdAtomStr = "spin",
         n_max_experiments: int = 15,
-        wire_order: str = "interleaved",
+        wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
         operational: bool = True,
     ):
