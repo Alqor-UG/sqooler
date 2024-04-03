@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.15">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.7e359304.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.bcfcd587.min.css">
       
       
 
@@ -333,6 +333,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="v0.6">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      What's Changed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration Guide
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -342,6 +366,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="v0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      What's Changed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -350,6 +389,21 @@
       v0.4
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="v0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      What's Changed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -670,6 +724,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="v0.6">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      What's Changed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migration Guide
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -679,6 +757,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="v0.5">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-changed_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      What's Changed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -687,6 +780,21 @@
       v0.4
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="v0.4">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-changed_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      What's Changed
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -712,7 +820,7 @@
 <p>In this guide we will cover the key information about the different releases.</p>
 <h2 id="v06">v0.6</h2>
 <p>In this release, we continued the work on clean typing and we introduced first concepts for better security and logging, so extending the list of features.</p>
-<p>What's Changed:</p>
+<h3 id="whats-changed">What's Changed</h3>
 <ul>
 <li>Improved documentation </li>
 <li>Fix the cold atom type by </li>
@@ -725,9 +833,16 @@
 <li>Do not allow to add a config with a name that already exists</li>
 <li>Make it possible to log basic activities</li>
 </ul>
+<h3 id="migration-guide">Migration Guide</h3>
+<ul>
+<li>We have changed the syntax for the <code>gen_circuit</code> function to make it simpler to understand the code. It now takes the <code>exp_name</code> as the first argument and the <code>exp_dict</code> of the new type <code>ExperimentalInputDict</code> as the second argument. </li>
+<li>We are now distinguishing pretty strictly between the <code>backend_name</code> and the <code>display_name</code>. The <code>display_name</code> is the short alphanumeric string that acts as identifier. The <code>backend_name</code> also contains the name of the <code>StorageProvider</code> and if the system is a simulator or not.</li>
+<li>To sign the results and the config you need to store a private <code>jwk</code> as described in the documentation for <a href="../security/">security</a>.</li>
+<li>The <code>add_job</code> function now takes the <code>job_id</code> as the second parameter instead of the the <code>StatusMsgDict</code>. This removed some error sources.</li>
+</ul>
 <h2 id="v05">v0.5</h2>
 <p>This release further increased the typing and testing of the package. It also fixed some long standing usability bugs for the user. </p>
-<p>What Changed:</p>
+<h3 id="whats-changed_1">What's Changed</h3>
 <ul>
 <li>Cleaner error handling of missing status</li>
 <li>Unify the error handling for the <code>get_file_content</code> function amongst <code>StorageProvider</code>s.</li>
@@ -740,7 +855,7 @@
 </ul>
 <h2 id="v04">v0.4</h2>
 <p>This release focused on better typing with <code>pydantic</code> and a simpler deployment on the back-end side.</p>
-<p>What Changed:</p>
+<h3 id="whats-changed_2">What's Changed</h3>
 <ul>
 <li>Introduce the <code>StatusMsgDict</code> for proper typing of status messages </li>
 <li>Enforce cleaner typing of <code>ExperimentDict</code> </li>
@@ -892,7 +1007,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.footer", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.bd41221c.min.js"></script>
+      <script src="../assets/javascripts/bundle.1e8ae164.min.js"></script>
       
     
   </body>
