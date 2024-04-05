@@ -669,7 +669,7 @@ class DropboxProviderExtended(StorageProvider):
             the path towards the job
         """
         job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
-        job_dict = {"job_id": 0, "job_json_path": "None"}
+        job_dict = self._get_default_next_schema_dict()
         job_list = self.get_file_queue(job_json_dir)
 
         # time stamp when we last looked for a job

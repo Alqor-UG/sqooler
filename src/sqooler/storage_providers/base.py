@@ -460,6 +460,9 @@ class StorageProvider(ABC):
             upload_dict = config_dict.model_dump()
         return upload_dict
 
+    def _get_default_next_schema_dict(self) -> dict:
+        return {"job_id": "None", "job_json_path": "None"}
+
     def _adapt_get_config(self, config_dict: dict) -> BackendConfigSchemaIn:
         """
         Adapt the config dict to the BackendConfigSchemaIn.

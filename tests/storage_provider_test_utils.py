@@ -314,6 +314,14 @@ class StorageProviderTestUtils:
         }
         username = config("TEST_USERNAME")
 
+        # make sure that last checked is not set
+        backend_config = storage_provider.get_config(backend_name)
+        assert backend_config.last_queue_check is None
+
+        # test that we can also run with an empty job queue
+        next_job = storage_provider.get_next_job_in_queue(backend_name, private_jwk)
+        assert next_job.job_id == "None"
+
         job_id = storage_provider.upload_job(
             job_dict=job_payload, display_name=backend_name, username=username
         )
@@ -341,10 +349,6 @@ class StorageProviderTestUtils:
             job_id=job_id,
         )
         assert job_status.job_id == job_id
-
-        # make sure that last checked is not set
-        backend_config = storage_provider.get_config(backend_name)
-        assert backend_config.last_queue_check is None
 
         # now test that we can move through the queue
         next_job = storage_provider.get_next_job_in_queue(backend_name, private_jwk)
