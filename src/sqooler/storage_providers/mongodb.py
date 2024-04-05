@@ -727,6 +727,7 @@ class MongodbProviderExtended(StorageProvider):
         """
 
         queue_dir = "jobs/queued/" + display_name
+
         job_dict = self._get_default_next_schema_dict()
         job_list = self.get_file_queue(queue_dir)
 
