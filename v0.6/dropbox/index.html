@@ -2669,7 +2669,7 @@
 <span class="sd">            the path towards the job</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">job_json_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Queued_Jobs/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
-        <span class="n">job_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;job_json_path&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">}</span>
+        <span class="n">job_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_default_next_schema_dict</span><span class="p">()</span>
         <span class="n">job_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_queue</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">)</span>
 
         <span class="c1"># time stamp when we last looked for a job</span>
@@ -3905,7 +3905,7 @@ job_id: the id of the file we are about to look up</p>
 <span class="sd">        the path towards the job</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">job_json_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Queued_Jobs/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
-    <span class="n">job_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;job_json_path&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">}</span>
+    <span class="n">job_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_default_next_schema_dict</span><span class="p">()</span>
     <span class="n">job_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_queue</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">)</span>
 
     <span class="c1"># time stamp when we last looked for a job</span>
