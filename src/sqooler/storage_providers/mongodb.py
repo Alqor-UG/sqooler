@@ -4,11 +4,13 @@ The module that contains all the necessary logic for communication with the Mong
 
 import uuid
 from typing import Optional
+from datetime import timezone
 
 # necessary for the mongodb provider
 from pymongo.mongo_client import MongoClient
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
+from bson.codec_options import CodecOptions
 
 from ..schemes import (
     ResultDict,
@@ -243,8 +245,6 @@ class MongodbProviderExtended(StorageProvider):
             if set(config_dict.keys()) == expected_keys_for_jws:
                 backend_names.append(config_dict["payload"]["display_name"])
             else:
-                if not "display_name" in config_dict:
-                    print(config_dict)
                 backend_names.append(config_dict["display_name"])
         return backend_names
 
@@ -357,12 +357,18 @@ class MongodbProviderExtended(StorageProvider):
         # get the collection on which we work
         collection = database["configs"]
 
+        # now make sure that we add the timezone as we open the file
+        collection_with_tz = collection.with_options(
+            codec_options=CodecOptions(tz_aware=True, tzinfo=timezone.utc)
+        )
         # first we have to check if the device already exists in the database
         document_to_find = {"display_name": display_name}
-        result_found = collection.find_one(document_to_find)
+        result_found = collection_with_tz.find_one(document_to_find)
 
         signed_document_to_find = {"payload.display_name": display_name}
-        signed_backend_config_dict = collection.find_one(signed_document_to_find)
+        signed_backend_config_dict = collection_with_tz.find_one(
+            signed_document_to_find
+        )
 
         if result_found:
             old_config_jws = result_found

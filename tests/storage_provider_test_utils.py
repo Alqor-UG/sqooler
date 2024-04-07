@@ -7,6 +7,9 @@ from typing import Any, Tuple, Type
 import sys
 import uuid
 
+from datetime import datetime, timezone
+
+
 import dropbox
 from dropbox.exceptions import AuthError, ApiError
 
@@ -224,11 +227,19 @@ class StorageProviderTestUtils:
             obtained_config = storage_provider.get_config("random")
 
         config_info.cold_atom_type = "boson"
+        # now also the datetime
+        config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
 
         storage_provider.update_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
 
+        # and again
+        config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
+
+        storage_provider.update_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
         if sign:
             # test that we cannot update the config with a wrong private key
             wrong_private_jwk, _ = create_jwk_pair(backend_name)
