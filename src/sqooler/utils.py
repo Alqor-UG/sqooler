@@ -8,8 +8,9 @@ import traceback
 import logging
 
 import regex as re
+from pydantic import ValidationError
 
-from .schemes import get_init_results, get_init_status
+from .schemes import get_init_results, get_init_status, NextJobSchema
 from .spoolers import Spooler
 from .storage_providers.base import StorageProvider
 from .security import public_from_private_jwk
@@ -93,8 +94,18 @@ def main(
         requested_backend = backends_list[0]
         backends_list.append(backends_list.pop(0))
         # let us first see if jobs are waiting
-        job_dict = storage_provider.get_next_job_in_queue(requested_backend)
+        print("Looking for jobs in ", requested_backend)
+        try:
+            job_dict = storage_provider.get_next_job_in_queue(requested_backend)
+        except ValidationError as val_err:
+            logging.error(
+                "Validation error in job queue.",
+                extra={"error_message": val_err.errors()},
+            )
+            job_dict = NextJobSchema(job_id="None", job_json_path="None")
+
         if job_dict.job_json_path == "None":
+            counter += 1
             continue
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict.job_json_path, job_id=job_dict.job_id

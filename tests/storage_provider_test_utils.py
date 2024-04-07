@@ -7,6 +7,9 @@ from typing import Any, Tuple, Type
 import sys
 import uuid
 
+from datetime import datetime, timezone
+
+
 import dropbox
 from dropbox.exceptions import AuthError, ApiError
 
@@ -224,11 +227,19 @@ class StorageProviderTestUtils:
             obtained_config = storage_provider.get_config("random")
 
         config_info.cold_atom_type = "boson"
+        # now also the datetime
+        config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
 
         storage_provider.update_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
 
+        # and again
+        config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
+
+        storage_provider.update_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
         if sign:
             # test that we cannot update the config with a wrong private key
             wrong_private_jwk, _ = create_jwk_pair(backend_name)
@@ -314,6 +325,14 @@ class StorageProviderTestUtils:
         }
         username = config("TEST_USERNAME")
 
+        # make sure that last checked is not set
+        backend_config = storage_provider.get_config(backend_name)
+        assert backend_config.last_queue_check is None
+
+        # test that we can also run with an empty job queue
+        next_job = storage_provider.get_next_job_in_queue(backend_name, private_jwk)
+        assert next_job.job_id == "None"
+
         job_id = storage_provider.upload_job(
             job_dict=job_payload, display_name=backend_name, username=username
         )
@@ -341,10 +360,6 @@ class StorageProviderTestUtils:
             job_id=job_id,
         )
         assert job_status.job_id == job_id
-
-        # make sure that last checked is not set
-        backend_config = storage_provider.get_config(backend_name)
-        assert backend_config.last_queue_check is None
 
         # now test that we can move through the queue
         next_job = storage_provider.get_next_job_in_queue(backend_name, private_jwk)

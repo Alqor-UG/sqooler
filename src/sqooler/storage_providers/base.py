@@ -406,7 +406,7 @@ class StorageProvider(ABC):
                 raise ValueError(
                     "The private key is not given, but the backend needs to be signed."
                 )
-            # we should sign the result
+            # we sign the result now
             signed_config = sign_payload(config_dict.model_dump(), private_jwk)
             upload_dict = signed_config.model_dump()
         else:
@@ -446,7 +446,11 @@ class StorageProvider(ABC):
 
                 # now proof that the new private key would create the same signature for the old
                 # config to validate that we still have the same private key
-                test_signature = sign_payload(payload, private_jwk)
+
+                # the following transformation is necessary to make avoid slight differences
+                # in the serialization and then the signing
+                old_config_dict = BackendConfigSchemaIn(**payload)
+                test_signature = sign_payload(old_config_dict.model_dump(), private_jwk)
                 if not test_signature.signature == old_config_jws["signature"]:
                     raise ValueError(
                         "The new private key does not create the same signature as the old one."
@@ -459,6 +463,9 @@ class StorageProvider(ABC):
             # the old and the new are not signed
             upload_dict = config_dict.model_dump()
         return upload_dict
+
+    def _get_default_next_schema_dict(self) -> dict:
+        return {"job_id": "None", "job_json_path": "None"}
 
     def _adapt_get_config(self, config_dict: dict) -> BackendConfigSchemaIn:
         """
@@ -522,7 +529,7 @@ class StorageProvider(ABC):
         config_dict = self.get_config(display_name)
 
         # get the current time
-        current_time = datetime.now(timezone.utc)
+        current_time = datetime.now(timezone.utc).replace(microsecond=0)
 
         # update the time stamp
         config_dict.last_queue_check = current_time

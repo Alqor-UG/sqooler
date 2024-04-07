@@ -619,7 +619,7 @@ class LocalProviderExtended(StorageProvider):
             the dict of the next job
         """
         queue_dir = "jobs/queued/" + display_name
-        job_dict = {"job_id": 0, "job_json_path": "None"}
+        job_dict = self._get_default_next_schema_dict()
         job_list = self.get_file_queue(queue_dir)
 
         # update the time stamp of the last job

@@ -114,6 +114,10 @@ def test_main(
     # upload the backend
     update_backends(storage_provider, backends)
 
+    # what happens with no jobs?
+
+    main(storage_provider, backends, num_iter=1)
+
     # first we have to upload a dummy job
     queue_path = "jobs/queued/" + backend_name
     job_id = (uuid.uuid4().hex)[:24]
