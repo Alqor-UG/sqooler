@@ -94,9 +94,15 @@ def main(
         requested_backend = backends_list[0]
         backends_list.append(backends_list.pop(0))
         # let us first see if jobs are waiting
-        print("Looking for jobs in ", requested_backend)
+        logging.info("Looking for jobs in %s", requested_backend)
+        if spooler.sign:
+            private_jwk = spooler.get_private_jwk()
+        else:
+            private_jwk = None
         try:
-            job_dict = storage_provider.get_next_job_in_queue(requested_backend)
+            job_dict = storage_provider.get_next_job_in_queue(
+                requested_backend, private_jwk
+            )
         except ValidationError as val_err:
             logging.error(
                 "Validation error in job queue.",

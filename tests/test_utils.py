@@ -103,13 +103,21 @@ def test_update_backends(
     assert "Uploading it as a new one." in caplog.text
 
 
+@pytest.mark.parametrize("sign_it", [True, False])
 def test_main(
-    caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
+    sign_it: bool, caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
 ) -> None:
     """
     Test that it is possible to run the main function.
     """
     backend_name = "test"
+
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=sign_it
+    )
+
+    backends = {backend_name: test_spooler}
+
     caplog.set_level(logging.INFO)
     # upload the backend
     update_backends(storage_provider, backends)
