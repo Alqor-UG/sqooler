@@ -149,7 +149,7 @@ def test_main(
     result_dict = storage_provider.get_result(backend_name, "test", job_id)
     assert result_dict.job_id == job_id
 
-    assert "Running main loop." in caplog.text
+    assert "Looking for jobs" in caplog.text
 
 
 def test_run_json_circuit(
