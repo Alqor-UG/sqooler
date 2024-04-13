@@ -906,7 +906,14 @@ will run forever.</p>
 <span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
-<span class="normal">146</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
     <span class="n">storage_provider</span><span class="p">:</span> <span class="n">StorageProvider</span><span class="p">,</span>
     <span class="n">backends</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Spooler</span><span class="p">],</span>
     <span class="n">num_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -931,14 +938,21 @@ will run forever.</p>
     <span class="c1"># loop which is looking for the jobs</span>
     <span class="k">while</span> <span class="n">num_iter</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="n">num_iter</span><span class="p">:</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running main loop.&quot;</span><span class="p">)</span>
         <span class="c1"># the following a fancy for loop of going through all the back-ends in the list</span>
         <span class="n">requested_backend</span> <span class="o">=</span> <span class="n">backends_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">backends_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">backends_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">spooler</span> <span class="o">=</span> <span class="n">backends</span><span class="p">[</span><span class="n">requested_backend</span><span class="p">]</span>
         <span class="c1"># let us first see if jobs are waiting</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Looking for jobs in &quot;</span><span class="p">,</span> <span class="n">requested_backend</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Looking for jobs in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">requested_backend</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">spooler</span><span class="o">.</span><span class="n">sign</span><span class="p">:</span>
+            <span class="n">private_jwk</span> <span class="o">=</span> <span class="n">spooler</span><span class="o">.</span><span class="n">get_private_jwk</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">private_jwk</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">job_dict</span> <span class="o">=</span> <span class="n">storage_provider</span><span class="o">.</span><span class="n">get_next_job_in_queue</span><span class="p">(</span><span class="n">requested_backend</span><span class="p">)</span>
+            <span class="n">job_dict</span> <span class="o">=</span> <span class="n">storage_provider</span><span class="o">.</span><span class="n">get_next_job_in_queue</span><span class="p">(</span>
+                <span class="n">requested_backend</span><span class="p">,</span> <span class="n">private_jwk</span>
+            <span class="p">)</span>
         <span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">val_err</span><span class="p">:</span>
             <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                 <span class="s2">&quot;Validation error in job queue.&quot;</span><span class="p">,</span>
@@ -1091,14 +1105,7 @@ will run forever.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
@@ -1109,7 +1116,14 @@ will run forever.</p>
 <span class="normal">164</span>
 <span class="normal">165</span>
 <span class="normal">166</span>
-<span class="normal">167</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">run_json_circuit</span><span class="p">(</span><span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spooler</span><span class="p">:</span> <span class="n">Spooler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">run_json_circuit</span><span class="p">(</span><span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">spooler</span><span class="p">:</span> <span class="n">Spooler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A support function that executes the job. Should be only used for testing.</span>
 
