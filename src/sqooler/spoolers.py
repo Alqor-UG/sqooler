@@ -131,6 +131,7 @@ class BaseSpooler(ABC):
             "num_species": self.num_species,
             "operational": self.operational,
             "display_name": self.display_name,
+            "sign": self.sign,
         }
         return BackendConfigSchemaIn(**backend_config_dict)
 

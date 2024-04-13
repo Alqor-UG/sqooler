@@ -183,15 +183,21 @@ def dummy_gen_circuit(
     return exp_sub_dict
 
 
-def test_spooler_config() -> None:
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_spooler_config(sign_it: bool) -> None:
     """
     Test that it is possible to get the config of the spooler.
     """
-    test_spooler = Spooler(ins_schema_dict={}, device_config=DummyExperiment, n_wires=2)
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=sign_it
+    )
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
     assert spooler_config.operational
+
+    # and that the signing is properly done
+    assert spooler_config.sign == sign_it
 
 
 def test_spooler_jwk() -> None:
