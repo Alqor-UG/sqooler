@@ -410,9 +410,7 @@ class Spooler(BaseSpooler):
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-
         result_dict, status_msg_dict, clean_dict = self._prep_job(json_dict, job_id)
-
         if status_msg_dict.status == "ERROR":
             return result_dict, status_msg_dict
         # now we can generate the circuit for each experiment
@@ -615,7 +613,7 @@ class LabscriptSpooler(BaseSpooler):
                 with open(exp_script, "a", encoding="UTF-8") as script_file:
                     script_file.write(code)
             except:
-                print("Something wrong. Does file path exists?")
+                logging.error("Something wrong. Does file path exists?")
 
         code = "Experiment.final_action()" + "\n" + "stop(Experiment.t+0.1)"
         # pylint: disable=bare-except
@@ -623,7 +621,7 @@ class LabscriptSpooler(BaseSpooler):
             with open(exp_script, "a", encoding="UTF-8") as script_file:
                 script_file.write(code)
         except:
-            print("Something wrong. Does file path exists?")
+            logging.error("Something wrong. Does file path exists?")
         self.remote_client.set_labscript_file(
             exp_script
         )  # CAUTION !! This command only selects the file. It does not generate it!
@@ -661,7 +659,7 @@ class LabscriptSpooler(BaseSpooler):
                     shots_array.append(this_run.get_results("/measure", "nat"))
                     got_nat = True
                 except Exception as exc:
-                    print(exc)
+                    logging.exception(exc)
                     sleep(self.labscript_params.t_wait)
                     n_tries += 1
         exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots, ins_list)

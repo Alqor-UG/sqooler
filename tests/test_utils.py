@@ -9,6 +9,7 @@ from typing import Iterator, Callable, Literal, Optional
 
 import logging
 
+from decouple import config
 from pydantic import BaseModel, Field, ValidationError
 
 from typing_extensions import Annotated
@@ -27,6 +28,10 @@ from sqooler.schemes import LocalLoginInformation
 from sqooler.spoolers import Spooler
 from sqooler.storage_providers.local import LocalProvider
 
+from .sqooler_test_utils import (
+    dummy_gen_circuit,
+    DummyFullInstruction,
+)
 
 local_login = LocalLoginInformation(base_path="utils_storage")
 storage_provider = LocalProvider(local_login)
@@ -77,8 +82,12 @@ def test_update_backends(
     """
     Test that it is possible to update the backends.
     """
-    # test that it fails with poor names
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=True
+    )
+    backends = {"test": test_spooler}
 
+    # test that it fails with poor names
     # somehow the caplog has some typing issues.
     caplog.set_level(logging.INFO)
     backends_poor = {"test_test_test": test_spooler}
@@ -99,8 +108,25 @@ def test_update_backends(
 
     # assert that the log is there
     # somehow the caplog has some typing issues.
-    print(caplog.text)
     assert "Uploading it as a new one." in caplog.text
+
+    # test with another backend
+    sign_it = True
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyFullInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        operational=False,
+        sign=sign_it,
+    )
+
+    test_spooler.gen_circuit = dummy_gen_circuit
+
+    # add it to the backends
+    dummy_id = uuid.uuid4().hex[:5]
+    backend_name = f"dummy{dummy_id}"
+    backends = {backend_name: test_spooler}
+    update_backends(storage_provider, backends)
 
 
 @pytest.mark.parametrize("sign_it", [True, False])
@@ -150,6 +176,59 @@ def test_main(
     assert result_dict.job_id == job_id
 
     assert "Looking for jobs" in caplog.text
+
+
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_main_with_instructions(
+    sign_it: bool, caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
+) -> None:
+    """
+    Test that it is possible to run the main function also with appropiate spooler.
+    """
+    caplog.set_level(logging.INFO)
+    # first prepare the spooler
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyFullInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        operational=False,
+        sign=sign_it,
+    )
+    test_spooler.gen_circuit = dummy_gen_circuit
+
+    # add it to the backends
+    dummy_id = uuid.uuid4().hex[:5]
+    backend_name = f"dummy{dummy_id}"
+
+    backends = {backend_name: test_spooler}
+    update_backends(storage_provider, backends)
+
+    # now upload a job
+    username = config("TEST_USERNAME")
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0, 1, 2, 3, 4], [1, 2, 3]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+
+    job_id = storage_provider.upload_job(
+        job_dict=job_payload, display_name=backend_name, username=username
+    )
+    # now also test that we can upload the status
+    storage_provider.upload_status(
+        display_name=backend_name,
+        username=username,
+        job_id=job_id,
+    )
+
+    main(storage_provider, backends, num_iter=3)
+
+    # test if we can get the result
+    result_dict = storage_provider.get_result(backend_name, "test", job_id)
+    assert result_dict.status == "INITIALIZING"
 
 
 def test_run_json_circuit(
