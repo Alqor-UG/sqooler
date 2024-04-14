@@ -44,7 +44,7 @@ jobs:
           poetry install
       - name: Run Tests
         run: |
-          poetry run pytest tests
+          poetry run pytest --cov=src tests
   lint:
 
     runs-on: ubuntu-latest

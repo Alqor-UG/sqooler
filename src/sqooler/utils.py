@@ -79,7 +79,6 @@ def main(
             will run forever.
     """
     backends_list = list(backends.keys())
-
     # set the appropiate display names for all the back-ends
     for requested_backend, spooler in backends.items():
         # the content
@@ -114,6 +113,7 @@ def main(
         if job_dict.job_json_path == "None":
             counter += 1
             continue
+        logging.debug("Got a job in %s", requested_backend)
         job_json_dict = storage_provider.get_job_content(
             storage_path=job_dict.job_json_path, job_id=job_dict.job_id
         )
@@ -146,8 +146,14 @@ def main(
             status_msg_dict.error_message += "; " + slimmed_tb
             logging.exception("Error in add_job for %s .", requested_backend)
 
+        logging.debug("Updating in database.")
+        spooler.get_private_jwk()
         storage_provider.update_in_database(
-            result_dict, status_msg_dict, job_dict.job_id, requested_backend
+            result_dict,
+            status_msg_dict,
+            job_dict.job_id,
+            requested_backend,
+            private_jwk,
         )
 
         counter += 1
@@ -169,6 +175,5 @@ def run_json_circuit(json_dict: dict, job_id: str, spooler: Spooler) -> dict:
     result_dict, status_msg_dict = spooler.add_job(json_dict, job_id)
     if not status_msg_dict.status == "DONE":
         logging.error(status_msg_dict.error_message)
-        print(status_msg_dict.error_message)
         raise AssertionError("Job failed")
     return result_dict.model_dump()
