@@ -2961,7 +2961,9 @@ The main changes are that we need to add the job in a different way and connect 
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">438</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
 <span class="normal">439</span>
 <span class="normal">440</span>
 <span class="normal">441</span>
@@ -3189,9 +3191,7 @@ The main changes are that we need to add the job in a different way and connect 
 <span class="normal">663</span>
 <span class="normal">664</span>
 <span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LabscriptSpooler</span><span class="p">(</span><span class="n">BaseSpooler</span><span class="p">):</span>
+<span class="normal">666</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LabscriptSpooler</span><span class="p">(</span><span class="n">BaseSpooler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A specialized spooler class that allows us to execute jobs in labscript directly.</span>
 <span class="sd">    The main changes are that we need to add the job in a different way and connect it to a</span>
@@ -3371,7 +3371,7 @@ The main changes are that we need to add the job in a different way and connect 
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">exp_script</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">script_file</span><span class="p">:</span>
                     <span class="n">script_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
             <span class="k">except</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Something wrong. Does file path exists?&quot;</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something wrong. Does file path exists?&quot;</span><span class="p">)</span>
 
         <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;Experiment.final_action()&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;stop(Experiment.t+0.1)&quot;</span>
         <span class="c1"># pylint: disable=bare-except</span>
@@ -3379,7 +3379,7 @@ The main changes are that we need to add the job in a different way and connect 
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">exp_script</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">script_file</span><span class="p">:</span>
                 <span class="n">script_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Something wrong. Does file path exists?&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something wrong. Does file path exists?&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remote_client</span><span class="o">.</span><span class="n">set_labscript_file</span><span class="p">(</span>
             <span class="n">exp_script</span>
         <span class="p">)</span>  <span class="c1"># CAUTION !! This command only selects the file. It does not generate it!</span>
@@ -3417,7 +3417,7 @@ The main changes are that we need to add the job in a different way and connect 
                     <span class="n">shots_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_run</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="s2">&quot;/measure&quot;</span><span class="p">,</span> <span class="s2">&quot;nat&quot;</span><span class="p">))</span>
                     <span class="n">got_nat</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
                     <span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labscript_params</span><span class="o">.</span><span class="n">t_wait</span><span class="p">)</span>
                     <span class="n">n_tries</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">exp_sub_dict</span> <span class="o">=</span> <span class="n">create_memory_data</span><span class="p">(</span><span class="n">shots_array</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">,</span> <span class="n">n_shots</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">)</span>
@@ -3455,7 +3455,9 @@ class with two additions.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">450</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
 <span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
@@ -3491,9 +3493,7 @@ class with two additions.</p>
 <span class="normal">483</span>
 <span class="normal">484</span>
 <span class="normal">485</span>
-<span class="normal">486</span>
-<span class="normal">487</span>
-<span class="normal">488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">486</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">ins_schema_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">device_config</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
@@ -3636,7 +3636,9 @@ executed.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">490</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
 <span class="normal">491</span>
 <span class="normal">492</span>
 <span class="normal">493</span>
@@ -3673,9 +3675,7 @@ executed.</p>
 <span class="normal">524</span>
 <span class="normal">525</span>
 <span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span>
-<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
+<span class="normal">527</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ResultDict</span><span class="p">,</span> <span class="n">StatusMsgDict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -3820,7 +3820,9 @@ executed.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">553</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
 <span class="normal">554</span>
 <span class="normal">555</span>
 <span class="normal">556</span>
@@ -3933,9 +3935,7 @@ executed.</p>
 <span class="normal">663</span>
 <span class="normal">664</span>
 <span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gen_circuit</span><span class="p">(</span>
+<span class="normal">666</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gen_circuit</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="n">ExperimentalInputDict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperimentDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4000,7 +4000,7 @@ executed.</p>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">exp_script</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">script_file</span><span class="p">:</span>
                 <span class="n">script_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Something wrong. Does file path exists?&quot;</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something wrong. Does file path exists?&quot;</span><span class="p">)</span>
 
     <span class="n">code</span> <span class="o">=</span> <span class="s2">&quot;Experiment.final_action()&quot;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;stop(Experiment.t+0.1)&quot;</span>
     <span class="c1"># pylint: disable=bare-except</span>
@@ -4008,7 +4008,7 @@ executed.</p>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">exp_script</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">script_file</span><span class="p">:</span>
             <span class="n">script_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Something wrong. Does file path exists?&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Something wrong. Does file path exists?&quot;</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">remote_client</span><span class="o">.</span><span class="n">set_labscript_file</span><span class="p">(</span>
         <span class="n">exp_script</span>
     <span class="p">)</span>  <span class="c1"># CAUTION !! This command only selects the file. It does not generate it!</span>
@@ -4046,7 +4046,7 @@ executed.</p>
                 <span class="n">shots_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">this_run</span><span class="o">.</span><span class="n">get_results</span><span class="p">(</span><span class="s2">&quot;/measure&quot;</span><span class="p">,</span> <span class="s2">&quot;nat&quot;</span><span class="p">))</span>
                 <span class="n">got_nat</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
                 <span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labscript_params</span><span class="o">.</span><span class="n">t_wait</span><span class="p">)</span>
                 <span class="n">n_tries</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="n">exp_sub_dict</span> <span class="o">=</span> <span class="n">create_memory_data</span><span class="p">(</span><span class="n">shots_array</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">,</span> <span class="n">n_shots</span><span class="p">,</span> <span class="n">ins_list</span><span class="p">)</span>
@@ -4159,9 +4159,7 @@ executed.</p>
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">(</span><span class="n">BaseSpooler</span><span class="p">):</span>
+<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Spooler</span><span class="p">(</span><span class="n">BaseSpooler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class for the spooler as it can be used for simulators.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -4214,9 +4212,7 @@ executed.</p>
 <span class="sd">            result_dict: The dictionary with the results of the job.</span>
 <span class="sd">            status_msg_dict: The status dictionary of the job.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">,</span> <span class="n">clean_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prep_job</span><span class="p">(</span><span class="n">json_dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="n">status_msg_dict</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span>
         <span class="c1"># now we can generate the circuit for each experiment</span>
@@ -4456,9 +4452,7 @@ If things are fine the job gets added the list of things that should be executed
 <span class="normal">430</span>
 <span class="normal">431</span>
 <span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
+<span class="normal">433</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ResultDict</span><span class="p">,</span> <span class="n">StatusMsgDict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4474,9 +4468,7 @@ If things are fine the job gets added the list of things that should be executed
 <span class="sd">        result_dict: The dictionary with the results of the job.</span>
 <span class="sd">        status_msg_dict: The status dictionary of the job.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span><span class="p">,</span> <span class="n">clean_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prep_job</span><span class="p">(</span><span class="n">json_dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="n">status_msg_dict</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">result_dict</span><span class="p">,</span> <span class="n">status_msg_dict</span>
     <span class="c1"># now we can generate the circuit for each experiment</span>
@@ -4627,7 +4619,9 @@ with proprer formatting.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">711</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
 <span class="normal">712</span>
 <span class="normal">713</span>
 <span class="normal">714</span>
@@ -4660,9 +4654,7 @@ with proprer formatting.</p>
 <span class="normal">741</span>
 <span class="normal">742</span>
 <span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
+<span class="normal">744</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
     <span class="n">shots_array</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">exp_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">n_shots</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -4776,7 +4768,9 @@ is assumed to be in the format [name, wires, params].</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">671</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
 <span class="normal">672</span>
 <span class="normal">673</span>
 <span class="normal">674</span>
@@ -4786,9 +4780,7 @@ is assumed to be in the format [name, wires, params].</p>
 <span class="normal">678</span>
 <span class="normal">679</span>
 <span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GateDict</span><span class="p">:</span>
+<span class="normal">681</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GateDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a list into an appropiate dictionnary for instructions. The list</span>
 <span class="sd">    is assumed to be in the format [name, wires, params].</span>
@@ -4902,7 +4894,9 @@ is assumed to be in the format [name, wires, params].</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">686</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
 <span class="normal">687</span>
 <span class="normal">688</span>
 <span class="normal">689</span>
@@ -4922,9 +4916,7 @@ is assumed to be in the format [name, wires, params].</p>
 <span class="normal">703</span>
 <span class="normal">704</span>
 <span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="n">dir_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">706</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="n">dir_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A function that returns the list of files in the directory.</span>
 
