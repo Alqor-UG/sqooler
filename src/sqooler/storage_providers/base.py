@@ -120,7 +120,6 @@ class StorageProvider(ABC):
         qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
         return qiskit_backend_dict
 
-    @abstractmethod
     def get_backend_status(
         self, display_name: DisplayNameStr
     ) -> BackendStatusSchemaOut:
@@ -132,7 +131,13 @@ class StorageProvider(ABC):
 
         Returns:
             The status dict of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
         """
+        backend_config_info = self.get_config(display_name)
+        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
+        return qiskit_backend_dict
 
     @abstractmethod
     def upload_job(

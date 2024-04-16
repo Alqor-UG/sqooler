@@ -15,7 +15,6 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
     LocalLoginInformation,
-    BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     NextJobSchema,
     DisplayNameStr,
@@ -197,38 +196,6 @@ class LocalProviderExtended(StorageProvider):
         # Get the backend names
         backend_names = [os.path.splitext(file_name)[0] for file_name in json_files]
         return backend_names
-
-    def get_backend_status(
-        self, display_name: DisplayNameStr
-    ) -> BackendStatusSchemaOut:
-        """
-        Get the status of the backend. This follows the qiskit logic.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The status dict of the backend
-
-        Raises:
-            FileNotFoundError: If the backend does not exist
-        """
-        # path of the configs
-        file_name = display_name + ".json"
-        config_path = self.base_path + "/backends/configs"
-        full_json_path = os.path.join(config_path, file_name)
-        secure_path = os.path.normpath(full_json_path)
-        with open(secure_path, "r", encoding="utf-8") as json_file:
-            backend_config_dict = json.load(json_file)
-
-        if not backend_config_dict:
-            raise FileNotFoundError(
-                f"The backend {display_name} does not exist for the given storageprovider."
-            )
-
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
-        return qiskit_backend_dict
 
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str

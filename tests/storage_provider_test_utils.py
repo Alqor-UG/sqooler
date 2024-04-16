@@ -279,6 +279,46 @@ class StorageProviderTestUtils:
         with pytest.raises(FileNotFoundError):
             obtained_public_jwk = storage_provider.get_public_key("random")
 
+    def backend_status_tests(self, db_name: str, sign: bool) -> Tuple[str, Any]:
+        """
+        Test the backend status.
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        backend_name, config_info = self.get_dummy_config(sign)
+        private_jwk, _ = create_jwk_pair(backend_name)
+
+        # and make sure that we raise an error if the backend is not there
+        with pytest.raises(FileNotFoundError):
+            status_schema = storage_provider.get_backend_status(backend_name)
+
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
+        # can we get the backend in the list ?
+        backends = storage_provider.get_backends()
+        assert backend_name in backends
+
+        # can we get the status of the backend ?
+        status_schema = storage_provider.get_backend_status(backend_name)
+        status_dict = status_schema.model_dump()
+        assert (
+            status_dict["backend_name"]
+            == f"{storage_provider.name}_{backend_name}_simulator"
+        )
+        assert status_dict["operational"] == config_info.operational
+        assert status_dict["backend_version"] == config_info.version
+        assert not status_dict["pending_jobs"]
+        assert not status_dict["status_msg"]
+
+        return backend_name, storage_provider
+
     def job_tests(self, db_name: str, sign: bool = True) -> Tuple[str, str, str, Any]:
         """
         Test the job upload and download.

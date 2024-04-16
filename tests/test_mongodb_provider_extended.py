@@ -10,7 +10,7 @@ import pytest
 from bson.objectid import ObjectId
 
 from sqooler.storage_providers.mongodb import MongodbProviderExtended
-from sqooler.schemes import MongodbLoginInformation, BackendConfigSchemaIn
+from sqooler.schemes import MongodbLoginInformation
 
 from .storage_provider_test_utils import StorageProviderTestUtils
 
@@ -260,59 +260,17 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(storage_path, mongo_id)
 
-    def test_status(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_backend_status(self, sign_it: bool) -> None:
         """
-        Test that we are able to obtain the status of the backend.
+        Test that we can get the status of a backend.
         """
-        # create a mongodb object
-        storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-
-        # create a dummy config
-        dummy_id = uuid.uuid4().hex[:5]
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["name"] = "Dummy"
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["simulator"] = True
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["num_species"] = 1
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["max_shots"] = 5
-        dummy_dict["max_experiments"] = 5
-        dummy_dict["description"] = "Dummy simulator for testing"
-        dummy_dict["supported_instructions"] = []
-
-        backend_name = f"dummy{dummy_id}"
-        dummy_dict["display_name"] = backend_name
-
-        # create the necessary status entries
-        dummy_dict["operational"] = True
-        dummy_dict["pending_jobs"] = 7
-        dummy_dict["status_msg"] = "All good"
-
-        config_path = "backends/configs"
-        config_info = BackendConfigSchemaIn(**dummy_dict)
-        storage_provider.upload_config(config_info, backend_name)
-
-        # can we get the backend in the list ?
-        backends = storage_provider.get_backends()
-        assert f"dummy{dummy_id}" in backends
-
-        # can we get the status of the backend ?
-        status_schema = storage_provider.get_backend_status(backend_name)
-        status_dict = status_schema.model_dump()
-        assert (
-            status_dict["backend_name"]
-            == f"mongodbtest_{dummy_dict['display_name']}_simulator"
+        backend_name, storage_provider = self.backend_status_tests(
+            DB_NAME, sign=sign_it
         )
 
-        assert status_dict["operational"] == dummy_dict["operational"]
-        assert status_dict["backend_version"] == dummy_dict["version"]
-        assert status_dict["pending_jobs"] == dummy_dict["pending_jobs"]
-        assert status_dict["status_msg"] == dummy_dict["status_msg"]
-
         # test how we can delete a backend. main challenge is to get the id of the config
+        config_path = "backends/configs"
         document_to_find = {"display_name": backend_name}
 
         database = storage_provider.client["backends"]
