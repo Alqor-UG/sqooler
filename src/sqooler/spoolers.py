@@ -353,7 +353,7 @@ class BaseSpooler(ABC):
         Returns:
             The private JWK for the spooler.
         """
-        private_jwk_str = config("PRIVATE_JWK_STR")
+        private_jwk_str = config("PRIVATE_JWK_STR", default=None)
         return jwk_from_config_str(private_jwk_str)
 
 
