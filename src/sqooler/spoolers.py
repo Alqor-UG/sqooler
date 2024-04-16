@@ -461,6 +461,7 @@ class LabscriptSpooler(BaseSpooler):
         wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
         operational: bool = True,
+        sign: bool = False,
     ):
         """
         The constructor of the class. The  arguments are the same as for the Spooler
@@ -480,6 +481,7 @@ class LabscriptSpooler(BaseSpooler):
             wire_order,
             num_species,
             operational,
+            sign,
         )
         self.remote_client = remote_client
         self.labscript_params = labscript_params

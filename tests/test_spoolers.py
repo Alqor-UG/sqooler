@@ -477,7 +477,8 @@ def ls_storage_setup_td() -> Iterator[None]:
     shutil.rmtree("test", ignore_errors=True)
 
 
-def test_labscript_spooler_config(ls_storage_setup_td: Callable) -> None:
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_labscript_spooler_config(sign_it: bool, ls_storage_setup_td: Callable) -> None:
     """
     Test that it is possible to get the config of the spooler.
     """
@@ -489,6 +490,7 @@ def test_labscript_spooler_config(ls_storage_setup_td: Callable) -> None:
         run=DummyRun,
         n_wires=2,
         labscript_params=labscript_params,
+        sign=sign_it,
     )
 
     spooler_config = test_spooler.get_configuration()
@@ -536,7 +538,10 @@ def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
     assert modified_path == "test/test_dir"
 
 
-def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_labscript_spooler_add_job(
+    sign_it: bool, ls_storage_setup_td: Callable
+) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
@@ -549,6 +554,7 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         n_wires=2,
         operational=False,
         labscript_params=labsript_params,
+        sign=sign_it,
     )
 
     job_id = "Test_ID"
