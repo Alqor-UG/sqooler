@@ -352,8 +352,14 @@ class BaseSpooler(ABC):
 
         Returns:
             The private JWK for the spooler.
+
+        Raises:
+            ValueError: If the private JWK is not set.
         """
         private_jwk_str = config("PRIVATE_JWK_STR", default=None)
+
+        if private_jwk_str is None:
+            raise ValueError("PRIVATE_JWK_STR is not set and available.")
         return jwk_from_config_str(private_jwk_str)
 
 
