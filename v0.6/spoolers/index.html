@@ -3191,7 +3191,9 @@ The main changes are that we need to add the job in a different way and connect 
 <span class="normal">663</span>
 <span class="normal">664</span>
 <span class="normal">665</span>
-<span class="normal">666</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LabscriptSpooler</span><span class="p">(</span><span class="n">BaseSpooler</span><span class="p">):</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">LabscriptSpooler</span><span class="p">(</span><span class="n">BaseSpooler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A specialized spooler class that allows us to execute jobs in labscript directly.</span>
 <span class="sd">    The main changes are that we need to add the job in a different way and connect it to a</span>
@@ -3219,6 +3221,7 @@ The main changes are that we need to add the job in a different way and connect 
         <span class="n">wire_order</span><span class="p">:</span> <span class="n">WireOrderStr</span> <span class="o">=</span> <span class="s2">&quot;interleaved&quot;</span><span class="p">,</span>
         <span class="n">num_species</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">operational</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">sign</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The constructor of the class. The  arguments are the same as for the Spooler</span>
@@ -3238,6 +3241,7 @@ The main changes are that we need to add the job in a different way and connect 
             <span class="n">wire_order</span><span class="p">,</span>
             <span class="n">num_species</span><span class="p">,</span>
             <span class="n">operational</span><span class="p">,</span>
+            <span class="n">sign</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remote_client</span> <span class="o">=</span> <span class="n">remote_client</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">labscript_params</span> <span class="o">=</span> <span class="n">labscript_params</span>
@@ -3443,7 +3447,7 @@ The main changes are that we need to add the job in a different way and connect 
 
 
 <h3 id="src.sqooler.spoolers.LabscriptSpooler.__init__" class="doc doc-heading">
-          <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">ins_schema_dict</span><span class="p">,</span> <span class="n">device_config</span><span class="p">,</span> <span class="n">n_wires</span><span class="p">,</span> <span class="n">remote_client</span><span class="p">,</span> <span class="n">labscript_params</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">n_max_shots</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s1">&#39;0.0.1&#39;</span><span class="p">,</span> <span class="n">cold_atom_type</span><span class="o">=</span><span class="s1">&#39;spin&#39;</span><span class="p">,</span> <span class="n">n_max_experiments</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">wire_order</span><span class="o">=</span><span class="s1">&#39;interleaved&#39;</span><span class="p">,</span> <span class="n">num_species</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">operational</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+          <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">ins_schema_dict</span><span class="p">,</span> <span class="n">device_config</span><span class="p">,</span> <span class="n">n_wires</span><span class="p">,</span> <span class="n">remote_client</span><span class="p">,</span> <span class="n">labscript_params</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">n_max_shots</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s1">&#39;0.0.1&#39;</span><span class="p">,</span> <span class="n">cold_atom_type</span><span class="o">=</span><span class="s1">&#39;spin&#39;</span><span class="p">,</span> <span class="n">n_max_experiments</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">wire_order</span><span class="o">=</span><span class="s1">&#39;interleaved&#39;</span><span class="p">,</span> <span class="n">num_species</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">operational</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sign</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h3>
 
@@ -3493,7 +3497,9 @@ class with two additions.</p>
 <span class="normal">483</span>
 <span class="normal">484</span>
 <span class="normal">485</span>
-<span class="normal">486</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">ins_schema_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
     <span class="n">device_config</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">],</span>
@@ -3509,6 +3515,7 @@ class with two additions.</p>
     <span class="n">wire_order</span><span class="p">:</span> <span class="n">WireOrderStr</span> <span class="o">=</span> <span class="s2">&quot;interleaved&quot;</span><span class="p">,</span>
     <span class="n">num_species</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">operational</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">sign</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The constructor of the class. The  arguments are the same as for the Spooler</span>
@@ -3528,6 +3535,7 @@ class with two additions.</p>
         <span class="n">wire_order</span><span class="p">,</span>
         <span class="n">num_species</span><span class="p">,</span>
         <span class="n">operational</span><span class="p">,</span>
+        <span class="n">sign</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">remote_client</span> <span class="o">=</span> <span class="n">remote_client</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">labscript_params</span> <span class="o">=</span> <span class="n">labscript_params</span>
@@ -3636,9 +3644,7 @@ executed.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">488</span>
-<span class="normal">489</span>
-<span class="normal">490</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">490</span>
 <span class="normal">491</span>
 <span class="normal">492</span>
 <span class="normal">493</span>
@@ -3675,7 +3681,9 @@ executed.</p>
 <span class="normal">524</span>
 <span class="normal">525</span>
 <span class="normal">526</span>
-<span class="normal">527</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_job</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ResultDict</span><span class="p">,</span> <span class="n">StatusMsgDict</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -3820,9 +3828,7 @@ executed.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">553</span>
 <span class="normal">554</span>
 <span class="normal">555</span>
 <span class="normal">556</span>
@@ -3935,7 +3941,9 @@ executed.</p>
 <span class="normal">663</span>
 <span class="normal">664</span>
 <span class="normal">665</span>
-<span class="normal">666</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gen_circuit</span><span class="p">(</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gen_circuit</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">exp_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_dict</span><span class="p">:</span> <span class="n">ExperimentalInputDict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperimentDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4619,9 +4627,7 @@ with proprer formatting.</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">711</span>
 <span class="normal">712</span>
 <span class="normal">713</span>
 <span class="normal">714</span>
@@ -4654,7 +4660,9 @@ with proprer formatting.</p>
 <span class="normal">741</span>
 <span class="normal">742</span>
 <span class="normal">743</span>
-<span class="normal">744</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_memory_data</span><span class="p">(</span>
     <span class="n">shots_array</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">exp_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">n_shots</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -4768,9 +4776,7 @@ is assumed to be in the format [name, wires, params].</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">671</span>
 <span class="normal">672</span>
 <span class="normal">673</span>
 <span class="normal">674</span>
@@ -4780,7 +4786,9 @@ is assumed to be in the format [name, wires, params].</p>
 <span class="normal">678</span>
 <span class="normal">679</span>
 <span class="normal">680</span>
-<span class="normal">681</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GateDict</span><span class="p">:</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">gate_dict_from_list</span><span class="p">(</span><span class="n">inst_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GateDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a list into an appropiate dictionnary for instructions. The list</span>
 <span class="sd">    is assumed to be in the format [name, wires, params].</span>
@@ -4894,9 +4902,7 @@ is assumed to be in the format [name, wires, params].</p>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/spoolers.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">686</span>
 <span class="normal">687</span>
 <span class="normal">688</span>
 <span class="normal">689</span>
@@ -4916,7 +4922,9 @@ is assumed to be in the format [name, wires, params].</p>
 <span class="normal">703</span>
 <span class="normal">704</span>
 <span class="normal">705</span>
-<span class="normal">706</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="n">dir_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="n">dir_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A function that returns the list of files in the directory.</span>
 
