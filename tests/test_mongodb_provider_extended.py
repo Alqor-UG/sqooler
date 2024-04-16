@@ -14,7 +14,6 @@ from sqooler.schemes import MongodbLoginInformation
 
 from .storage_provider_test_utils import StorageProviderTestUtils
 
-
 DB_NAME = "mongodbtest"
 
 
@@ -43,7 +42,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         mongodb_username = config("MONGODB_USERNAME")
         mongodb_password = config("MONGODB_PASSWORD")
         mongodb_database_url = config("MONGODB_DATABASE_URL")
-
         login_dict = {
             "mongodb_username": mongodb_username,
             "mongodb_password": mongodb_password,
@@ -271,10 +269,13 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
 
         # test how we can delete a backend. main challenge is to get the id of the config
         config_path = "backends/configs"
-        document_to_find = {"display_name": backend_name}
-
         database = storage_provider.client["backends"]
         collection = database["configs"]
+
+        if not sign_it:
+            document_to_find = {"display_name": backend_name}
+        elif sign_it:
+            document_to_find = {"payload.display_name": backend_name}
 
         result_found = collection.find_one(document_to_find)
         storage_provider.delete_file(config_path, str(result_found["_id"]))
