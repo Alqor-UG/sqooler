@@ -19,7 +19,6 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
     DropboxLoginInformation,
-    BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     NextJobSchema,
     DisplayNameStr,
@@ -504,26 +503,6 @@ class DropboxProviderExtended(StorageProvider):
         )
         typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
-
-    def get_backend_status(
-        self, display_name: DisplayNameStr
-    ) -> BackendStatusSchemaOut:
-        """
-        Get the status of the backend. This follows the qiskit logic.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The status dict of the backend
-        """
-        backend_json_path = f"Backend_files/Config/{display_name}"
-        backend_config_dict = self.get_file_content(
-            storage_path=backend_json_path, job_id="config"
-        )
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
-        return qiskit_backend_dict
 
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str

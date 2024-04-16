@@ -16,7 +16,6 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
     MongodbLoginInformation,
-    BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     NextJobSchema,
     DisplayNameStr,
@@ -247,39 +246,6 @@ class MongodbProviderExtended(StorageProvider):
             else:
                 backend_names.append(config_dict["display_name"])
         return backend_names
-
-    def get_backend_status(
-        self, display_name: DisplayNameStr
-    ) -> BackendStatusSchemaOut:
-        """
-        Get the status of the backend. This follows the qiskit logic.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The status dict of the backend
-
-        Raises:
-            FileNotFoundError: If the backend does not exist
-        """
-        # get the database on which we work
-        database = self.client["backends"]
-        config_collection = database["configs"]
-
-        # create the filter for the document with display_name that is equal to display_name
-        document_to_find = {"display_name": display_name}
-        backend_config_dict = config_collection.find_one(document_to_find)
-
-        if not backend_config_dict:
-            raise FileNotFoundError(
-                f"The backend {display_name} does not exist for the given storageprovider."
-            )
-
-        backend_config_dict.pop("_id")
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
-        return qiskit_backend_dict
 
     def upload_config(
         self,
