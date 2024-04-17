@@ -10,9 +10,8 @@ jobs in labscript directly.
 import logging
 import os
 from abc import ABC
-from collections.abc import Callable
 from time import sleep
-from typing import Any, Optional, Type
+from typing import Any, Callable, Optional, Type
 
 from decouple import config
 from pydantic import BaseModel, ValidationError
