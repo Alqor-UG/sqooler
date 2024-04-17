@@ -2,33 +2,25 @@
 Here we test the spooler class and its functions.
 """
 
+import logging
 import os
 import shutil
+from typing import Callable, Iterator, Literal, Optional
 
-import logging
-
-from typing import Literal, Optional, Iterator, Callable
-from pydantic import ValidationError, BaseModel, Field
-
-from typing_extensions import Annotated
 import pytest
+from pydantic import BaseModel, Field, ValidationError
 from pytest import LogCaptureFixture
+from typing_extensions import Annotated
 
-from sqooler.schemes import (
-    LabscriptParams,
-)
-
+from sqooler.schemes import LabscriptParams
 from sqooler.spoolers import (
-    Spooler,
-    gate_dict_from_list,
-    create_memory_data,
     LabscriptSpooler,
+    Spooler,
+    create_memory_data,
+    gate_dict_from_list,
 )
 
-from .sqooler_test_utils import (
-    dummy_gen_circuit,
-    DummyInstruction,
-)
+from .sqooler_test_utils import DummyInstruction, dummy_gen_circuit
 
 
 class DummyExperiment(BaseModel):
@@ -125,7 +117,7 @@ def test_spooler_config(sign_it: bool) -> None:
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
-    assert spooler_config.operational
+    assert not spooler_config.operational
 
     # and that the signing is properly done
     assert spooler_config.sign == sign_it
@@ -156,7 +148,7 @@ def test_spooler_cold_atom() -> None:
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
-    assert spooler_config.operational
+    assert not spooler_config.operational
 
     with pytest.raises(ValidationError):
         test_spooler = Spooler(
@@ -173,12 +165,17 @@ def test_spooler_operational() -> None:
     Test that it is possible to set the operational status of the spooler.
     """
     test_spooler = Spooler(
-        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2
     )
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
     assert not spooler_config.operational
+
+    # TODO: test that we can update the status
+    test_spooler.operational = True
+    spooler_config = test_spooler.get_configuration()
+    assert spooler_config.operational
 
 
 def test_spooler_add_job_fail(
@@ -190,7 +187,7 @@ def test_spooler_add_job_fail(
 
     caplog.set_level(logging.INFO)
     test_spooler = Spooler(
-        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2
     )
     job_id = "Test_ID"
 
@@ -220,7 +217,6 @@ def test_spooler_add_job(
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
     )
 
     job_id = "Test_ID"
@@ -300,7 +296,6 @@ def test_spooler_check_json() -> None:
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
     )
 
     job_payload = {
@@ -352,7 +347,6 @@ def test_spooler_instructions() -> None:
         ins_schema_dict={},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
     )
 
     # test that it works if the instructions are not valid as the key is not known
@@ -373,7 +367,6 @@ def test_spooler_instructions() -> None:
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
     )
 
     inst_list = [["test", [0], [1]]]
@@ -395,7 +388,6 @@ def test_wire_orders() -> None:
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
         wire_order="interleaved",
     )
 
@@ -431,7 +423,6 @@ def test_wire_orders() -> None:
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
         wire_order="sequential",
     )
 
@@ -495,7 +486,7 @@ def test_labscript_spooler_config(sign_it: bool, ls_storage_setup_td: Callable) 
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
-    assert spooler_config.operational
+    assert not spooler_config.operational
 
 
 def test_labscript_spooler_op(ls_storage_setup_td: Callable) -> None:
@@ -509,13 +500,17 @@ def test_labscript_spooler_op(ls_storage_setup_td: Callable) -> None:
         remote_client=DummyRemoteClient(),
         run=DummyRun,
         n_wires=2,
-        operational=False,
         labscript_params=labscript_params,
     )
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
     assert not spooler_config.operational
+    
+    # now also the operational status
+    test_spooler.operational = True
+    spooler_config = test_spooler.get_configuration()
+    assert spooler_config.operational
 
 
 def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
@@ -529,7 +524,6 @@ def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
         remote_client=DummyRemoteClient(),
         run=DummyRun,
         n_wires=2,
-        operational=False,
         labscript_params=labsript_params,
     )
     new_dir = "test_dir"
@@ -552,7 +546,6 @@ def test_labscript_spooler_add_job(
         remote_client=DummyRemoteClient(),
         run=DummyRun,
         n_wires=2,
-        operational=False,
         labscript_params=labsript_params,
         sign=sign_it,
     )

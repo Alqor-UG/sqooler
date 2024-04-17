@@ -145,11 +145,11 @@ class StorageProvider(ABC):
         t_timeout = config("T_TIMEOUT", cast=int, default=300)
         if not last_queue_check:
             backend_config_info.operational = False
-            self.update_config(backend_config_info, display_name)
         elif (current_time - last_queue_check).total_seconds() > t_timeout:
             backend_config_info.operational = False
-            self.update_config(backend_config_info, display_name)
-
+        else:
+            backend_config_info.operational = True
+    
         qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 
@@ -553,7 +553,7 @@ class StorageProvider(ABC):
         # update the time stamp
         config_dict.last_queue_check = current_time
         config_dict.operational = True
-        
+
         # upload the new configuration
         self.update_config(config_dict, display_name, private_jwk)
 
