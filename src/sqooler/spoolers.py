@@ -7,34 +7,29 @@ The `LabscriptSpooler` class is a specialized version of the `Spooler` class tha
 jobs in labscript directly.
 """
 
-import os
-from collections.abc import Callable
-from typing import Type, Any, Optional
-from time import sleep
-from abc import ABC
 import logging
+import os
+from abc import ABC
+from collections.abc import Callable
+from time import sleep
+from typing import Any, Optional, Type
 
 from decouple import config
-
-from pydantic import ValidationError, BaseModel
-
-from .security import (
-    JWK,
-    jwk_from_config_str,
-)
+from pydantic import BaseModel, ValidationError
 
 from .schemes import (
     BackendConfigSchemaIn,
-    ExperimentDict,
+    ColdAtomStr,
     ExperimentalInputDict,
-    ResultDict,
-    StatusMsgDict,
+    ExperimentDict,
     GateDict,
     LabscriptParams,
+    ResultDict,
+    StatusMsgDict,
     WireOrderStr,
-    ColdAtomStr,
     get_init_status,
 )
+from .security import JWK, jwk_from_config_str
 
 
 class BaseSpooler(ABC):
@@ -67,7 +62,6 @@ class BaseSpooler(ABC):
         n_max_experiments: int = 15,
         wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
-        operational: bool = True,
         sign: bool = False,
     ):
         """
@@ -84,8 +78,8 @@ class BaseSpooler(ABC):
         self.wire_order = wire_order
         self.num_species = num_species
         self._display_name: str = ""
-        self.operational = operational
         self.sign = sign
+        self.operational = False
 
     def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
@@ -460,7 +454,6 @@ class LabscriptSpooler(BaseSpooler):
         n_max_experiments: int = 15,
         wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
-        operational: bool = True,
         sign: bool = False,
     ):
         """
@@ -480,7 +473,6 @@ class LabscriptSpooler(BaseSpooler):
             n_max_experiments,
             wire_order,
             num_species,
-            operational,
             sign,
         )
         self.remote_client = remote_client

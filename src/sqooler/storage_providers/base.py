@@ -552,7 +552,8 @@ class StorageProvider(ABC):
 
         # update the time stamp
         config_dict.last_queue_check = current_time
-
+        config_dict.operational = True
+        
         # upload the new configuration
         self.update_config(config_dict, display_name, private_jwk)
 
