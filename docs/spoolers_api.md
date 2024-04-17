@@ -2,6 +2,7 @@
 comments: true
 ---
 
+
 # API documentation of spoolers
 
 ::: src.sqooler.spoolers
