@@ -2,24 +2,21 @@
 This module contains the test utils for the storage providers. So it is called by the ..._provider tests.
 """
 
-from typing import Any, Tuple, Type
-
 import sys
 import uuid
-
 from datetime import datetime, timezone
-
+from typing import Any, Tuple, Type
 
 import dropbox
-from dropbox.exceptions import AuthError, ApiError
-
-from decouple import config
 import pytest
+from decouple import config
+from dropbox.exceptions import ApiError, AuthError
+from icecream import ic
 from pydantic import ValidationError
-from sqooler.schemes import BackendConfigSchemaIn, ResultDict
-from sqooler.storage_providers.base import StorageProvider
 
+from sqooler.schemes import BackendConfigSchemaIn, ResultDict
 from sqooler.security import create_jwk_pair
+from sqooler.storage_providers.base import StorageProvider
 
 
 def clean_dummies_from_folder(folder_path: str) -> None:
@@ -312,10 +309,21 @@ class StorageProviderTestUtils:
             status_dict["backend_name"]
             == f"{storage_provider.name}_{backend_name}_simulator"
         )
-        assert status_dict["operational"] == config_info.operational
+        ic(config_info.operational)
+        ic(config_info.last_queue_check)
         assert status_dict["backend_version"] == config_info.version
         assert not status_dict["pending_jobs"]
         assert not status_dict["status_msg"]
+
+        # given that the time stamp is not set, we should have an unoperational device
+        assert status_dict["operational"] is False
+
+        # let us now update the time stamp
+        storage_provider.timestamp_queue(backend_name, private_jwk)
+
+        # this should have changed the status
+        status_schema = storage_provider.get_backend_status(backend_name)
+        assert status_schema.operational is True
 
         return backend_name, storage_provider
 

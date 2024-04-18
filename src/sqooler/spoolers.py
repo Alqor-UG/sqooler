@@ -16,7 +16,6 @@ from time import sleep
 from typing import Any, Optional, Type
 
 from decouple import config
-from icecream import ic
 from pydantic import BaseModel, ValidationError
 
 from .schemes import (
@@ -64,7 +63,6 @@ class BaseSpooler(ABC):
         n_max_experiments: int = 15,
         wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
-        operational: bool = True,
         sign: bool = False,
     ):
         """
@@ -81,8 +79,8 @@ class BaseSpooler(ABC):
         self.wire_order = wire_order
         self.num_species = num_species
         self._display_name: str = ""
-        self.operational = operational
         self.sign = sign
+        self.operational = False
 
     def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
@@ -354,7 +352,6 @@ class BaseSpooler(ABC):
             ValueError: If the private JWK is not set.
         """
         private_jwk_str = config("PRIVATE_JWK_STR", default=None)
-        ic(private_jwk_str)
         if private_jwk_str == "":
             raise ValueError("PRIVATE_JWK_STR must not be empty.")
         if private_jwk_str is None:
@@ -469,7 +466,6 @@ class LabscriptSpooler(BaseSpooler):
         n_max_experiments: int = 15,
         wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
-        operational: bool = True,
         sign: bool = False,
     ):
         """
@@ -489,7 +485,6 @@ class LabscriptSpooler(BaseSpooler):
             n_max_experiments,
             wire_order,
             num_species,
-            operational,
             sign,
         )
         self.remote_client = remote_client

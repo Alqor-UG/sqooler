@@ -3,25 +3,24 @@ The module that contains all the necessary logic for communication with the exte
 storage for the jobs. It creates an abstract API layer for the storage providers.
 """
 
-from abc import ABC, abstractmethod
-import re
-
-from typing import Mapping, Callable, Any, Optional
 import functools
-
+import re
+from abc import ABC, abstractmethod
 from datetime import datetime, timezone
+from typing import Any, Callable, Mapping, Optional
+
+from decouple import config
 
 from ..schemes import (
-    ResultDict,
-    StatusMsgDict,
-    BackendStatusSchemaOut,
     BackendConfigSchemaIn,
     BackendConfigSchemaOut,
-    NextJobSchema,
-    DisplayNameStr,
     BackendNameStr,
+    BackendStatusSchemaOut,
+    DisplayNameStr,
+    NextJobSchema,
+    ResultDict,
+    StatusMsgDict,
 )
-
 from ..security import JWK, sign_payload
 
 
@@ -136,6 +135,26 @@ class StorageProvider(ABC):
             FileNotFoundError: If the backend does not exist
         """
         backend_config_info = self.get_config(display_name)
+
+        # now see how long it has been since the last queue check in minutes
+        # if it is more than 5 minutes, we should set the backend to not operational
+        current_time = datetime.now(timezone.utc).replace(microsecond=0)
+        last_queue_check = backend_config_info.last_queue_check
+
+        # get the timeout from the configuration
+        t_timeout = config("T_TIMEOUT", cast=int, default=300)
+        if not last_queue_check:
+            backend_config_info.operational = False
+            qiskit_backend_dict = self.backend_dict_to_qiskit_status(
+                backend_config_info
+            )
+            return qiskit_backend_dict
+
+        last_queue_check = last_queue_check.replace(tzinfo=timezone.utc)
+        if (current_time - last_queue_check).total_seconds() > t_timeout:
+            backend_config_info.operational = False
+        else:
+            backend_config_info.operational = True
         qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 
@@ -538,6 +557,7 @@ class StorageProvider(ABC):
 
         # update the time stamp
         config_dict.last_queue_check = current_time
+        config_dict.operational = True
 
         # upload the new configuration
         self.update_config(config_dict, display_name, private_jwk)
