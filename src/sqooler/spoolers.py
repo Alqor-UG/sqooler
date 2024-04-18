@@ -10,6 +10,7 @@ jobs in labscript directly.
 import logging
 import os
 from abc import ABC
+from binascii import Error as BinasciiError
 from time import sleep
 from typing import Any, Callable, Optional, Type
 
@@ -345,9 +346,24 @@ class BaseSpooler(ABC):
 
         Returns:
             The private JWK for the spooler.
+
+        Raises:
+            ValueError: If the private JWK is not set.
         """
-        private_jwk_str = config("PRIVATE_JWK_STR")
-        return jwk_from_config_str(private_jwk_str)
+        private_jwk_str = config("PRIVATE_JWK_STR", default=None)
+        if private_jwk_str == "":
+            logging.error("PRIVATE_JWK_STR must not be empty.")
+
+            raise ValueError("PRIVATE_JWK_STR must not be empty.")
+
+        if private_jwk_str is None:
+            logging.error("PRIVATE_JWK_STR is not set and available.")
+            raise ValueError("PRIVATE_JWK_STR is not set and available.")
+        try:
+            return jwk_from_config_str(private_jwk_str)
+        except BinasciiError as bin_err:
+            logging.error("PRIVATE_JWK_STR is invalid.")
+            raise ValueError("PRIVATE_JWK_STR is invalid.") from bin_err
 
 
 class Spooler(BaseSpooler):

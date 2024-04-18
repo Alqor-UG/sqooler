@@ -217,6 +217,73 @@ def test_main_with_instructions(
     assert result_dict.status == "INITIALIZING"
 
 
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_main_without_jwk(
+    sign_it: bool, caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
+) -> None:
+    """
+    Test what happens if the private_jwk is not set.
+    """
+
+    old_private_jwk = os.environ.get("PRIVATE_JWK_STR")
+
+    if old_private_jwk is None:
+        raise ValueError("No private key set.")
+
+    os.environ["PRIVATE_JWK_STR"] = ""
+
+    # first prepare the spooler
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyFullInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        sign=sign_it,
+    )
+    test_spooler.gen_circuit = dummy_gen_circuit
+
+    # add it to the backends
+    dummy_id = uuid.uuid4().hex[:5]
+    backend_name = f"dummy{dummy_id}"
+
+    backends = {backend_name: test_spooler}
+
+    if sign_it:
+        with pytest.raises(ValueError):
+            update_backends(storage_provider, backends)
+    else:
+        update_backends(storage_provider, backends)
+
+    # now upload a job
+    username = config("TEST_USERNAME")
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0, 1, 2, 3, 4], [1, 2, 3]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+
+    job_id = storage_provider.upload_job(
+        job_dict=job_payload, display_name=backend_name, username=username
+    )
+    # now also test that we can upload the status
+    storage_provider.upload_status(
+        display_name=backend_name,
+        username=username,
+        job_id=job_id,
+    )
+
+    if sign_it:
+        with pytest.raises(ValueError):
+            main(storage_provider, backends, num_iter=3)
+    else:
+        main(storage_provider, backends, num_iter=3)
+
+    # change back to the old value
+    os.environ["PRIVATE_JWK_STR"] = old_private_jwk
+
+
 def test_run_json_circuit(
     caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
 ) -> None:
