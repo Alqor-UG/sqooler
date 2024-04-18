@@ -11,9 +11,8 @@ import logging
 import os
 from abc import ABC
 from binascii import Error as BinasciiError
-from collections.abc import Callable
 from time import sleep
-from typing import Any, Optional, Type
+from typing import Any, Callable, Optional, Type
 
 from decouple import config
 from pydantic import BaseModel, ValidationError
@@ -352,9 +351,12 @@ class BaseSpooler(ABC):
             ValueError: If the private JWK is not set.
         """
         private_jwk_str = config("PRIVATE_JWK_STR", default=None)
-        if private_jwk_str == "":
+        if private_jwk_str == "":            
+            logging.error("PRIVATE_JWK_STR must not be empty.")
+
             raise ValueError("PRIVATE_JWK_STR must not be empty.")
         if private_jwk_str is None:
+            logging.error("PRIVATE_JWK_STR is not set and available.")
             raise ValueError("PRIVATE_JWK_STR is not set and available.")
         try:
             return jwk_from_config_str(private_jwk_str)
