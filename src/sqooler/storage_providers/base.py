@@ -145,7 +145,9 @@ class StorageProvider(ABC):
         t_timeout = config("T_TIMEOUT", cast=int, default=300)
         if not last_queue_check:
             backend_config_info.operational = False
-            qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
+            qiskit_backend_dict = self.backend_dict_to_qiskit_status(
+                backend_config_info
+            )
             return qiskit_backend_dict
 
         last_queue_check = last_queue_check.replace(tzinfo=timezone.utc)
@@ -155,7 +157,6 @@ class StorageProvider(ABC):
             backend_config_info.operational = True
         qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
-
 
     @abstractmethod
     def upload_job(
