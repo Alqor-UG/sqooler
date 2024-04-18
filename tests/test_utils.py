@@ -231,7 +231,6 @@ def test_main_without_jwk(
         ins_schema_dict={"test": DummyFullInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
         sign=sign_it,
     )
     test_spooler.gen_circuit = dummy_gen_circuit
