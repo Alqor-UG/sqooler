@@ -224,6 +224,12 @@ def test_main_without_jwk(
     """
     Test what happens if the private_jwk is not set.
     """
+
+    old_private_jwk = os.environ.get("PRIVATE_JWK_STR")
+
+    if old_private_jwk is None:
+        raise ValueError("No private key set.")
+
     os.environ["PRIVATE_JWK_STR"] = ""
 
     # first prepare the spooler
@@ -273,6 +279,9 @@ def test_main_without_jwk(
             main(storage_provider, backends, num_iter=3)
     else:
         main(storage_provider, backends, num_iter=3)
+
+    # change back to the old value
+    os.environ["PRIVATE_JWK_STR"] = old_private_jwk
 
 
 def test_run_json_circuit(

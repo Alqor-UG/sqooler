@@ -132,6 +132,11 @@ def test_spooler_jwk() -> None:
     )
 
     test_spooler.get_private_jwk()
+
+    # old value
+    old_private_jwk = os.environ.get("PRIVATE_JWK_STR")
+    if old_private_jwk is None:
+        raise ValueError("No private key set.")
     # now test what happens if we do not have a private key
     with pytest.raises(ValueError):
         os.environ["PRIVATE_JWK_STR"] = ""
@@ -141,6 +146,9 @@ def test_spooler_jwk() -> None:
     with pytest.raises(ValueError):
         os.environ["PRIVATE_JWK_STR"] = "sdlkfgjsof"
         test_spooler.get_private_jwk()
+
+    # change back to the old value
+    os.environ["PRIVATE_JWK_STR"] = old_private_jwk
 
 
 def test_spooler_cold_atom() -> None:
@@ -173,9 +181,7 @@ def test_spooler_operational() -> None:
     """
     Test that it is possible to set the operational status of the spooler.
     """
-    test_spooler = Spooler(
-        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2
-    )
+    test_spooler = Spooler(ins_schema_dict={}, device_config=DummyExperiment, n_wires=2)
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
@@ -195,9 +201,7 @@ def test_spooler_add_job_fail(
     """
 
     caplog.set_level(logging.INFO)
-    test_spooler = Spooler(
-        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2
-    )
+    test_spooler = Spooler(ins_schema_dict={}, device_config=DummyExperiment, n_wires=2)
     job_id = "Test_ID"
 
     job_payload = {
