@@ -2,36 +2,24 @@
 This is the test tool for the utils module.
 """
 
-import os
-import uuid
-import shutil
-from typing import Iterator, Callable, Literal, Optional
-
 import logging
-
-from decouple import config
-from pydantic import BaseModel, Field, ValidationError
-
-from typing_extensions import Annotated
-
+import os
+import shutil
+import uuid
+from typing import Callable, Iterator, Literal, Optional
 
 import pytest
+from decouple import config
+from pydantic import BaseModel, Field, ValidationError
 from pytest import LogCaptureFixture
+from typing_extensions import Annotated
 
-from sqooler.utils import (
-    update_backends,
-    main,
-    run_json_circuit,
-)
 from sqooler.schemes import LocalLoginInformation
-
 from sqooler.spoolers import Spooler
 from sqooler.storage_providers.local import LocalProvider
+from sqooler.utils import main, run_json_circuit, update_backends
 
-from .sqooler_test_utils import (
-    dummy_gen_circuit,
-    DummyFullInstruction,
-)
+from .sqooler_test_utils import DummyFullInstruction, dummy_gen_circuit
 
 local_login = LocalLoginInformation(base_path="utils_storage")
 storage_provider = LocalProvider(local_login)
@@ -116,7 +104,6 @@ def test_update_backends(
         ins_schema_dict={"test": DummyFullInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
         sign=sign_it,
     )
 
@@ -191,7 +178,6 @@ def test_main_with_instructions(
         ins_schema_dict={"test": DummyFullInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
         sign=sign_it,
     )
     test_spooler.gen_circuit = dummy_gen_circuit

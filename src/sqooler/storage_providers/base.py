@@ -149,7 +149,7 @@ class StorageProvider(ABC):
             backend_config_info.operational = False
         else:
             backend_config_info.operational = True
-    
+
         qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 

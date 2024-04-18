@@ -506,7 +506,7 @@ def test_labscript_spooler_op(ls_storage_setup_td: Callable) -> None:
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
     assert not spooler_config.operational
-    
+
     # now also the operational status
     test_spooler.operational = True
     spooler_config = test_spooler.get_configuration()

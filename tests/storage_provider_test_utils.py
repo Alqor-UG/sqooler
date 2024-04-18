@@ -316,14 +316,14 @@ class StorageProviderTestUtils:
         assert not status_dict["status_msg"]
 
         # given that the time stamp is not set, we should have an unoperational device
-        assert status_dict["operational"] == False
+        assert status_dict["operational"] is False
 
         # let us now update the time stamp
         storage_provider.timestamp_queue(backend_name, private_jwk)
 
         # this should have changed the status
         status_schema = storage_provider.get_backend_status(backend_name)
-        assert status_schema.operational == True
+        assert status_schema.operational is True
 
         return backend_name, storage_provider
 
