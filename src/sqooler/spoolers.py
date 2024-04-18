@@ -7,34 +7,31 @@ The `LabscriptSpooler` class is a specialized version of the `Spooler` class tha
 jobs in labscript directly.
 """
 
-import os
-from collections.abc import Callable
-from typing import Type, Any, Optional
-from time import sleep
-from abc import ABC
 import logging
+import os
+from abc import ABC
+from binascii import Error as BinasciiError
+from collections.abc import Callable
+from time import sleep
+from typing import Any, Optional, Type
 
 from decouple import config
-
-from pydantic import ValidationError, BaseModel
-
-from .security import (
-    JWK,
-    jwk_from_config_str,
-)
+from icecream import ic
+from pydantic import BaseModel, ValidationError
 
 from .schemes import (
     BackendConfigSchemaIn,
-    ExperimentDict,
+    ColdAtomStr,
     ExperimentalInputDict,
-    ResultDict,
-    StatusMsgDict,
+    ExperimentDict,
     GateDict,
     LabscriptParams,
+    ResultDict,
+    StatusMsgDict,
     WireOrderStr,
-    ColdAtomStr,
     get_init_status,
 )
+from .security import JWK, jwk_from_config_str
 
 
 class BaseSpooler(ABC):
@@ -357,10 +354,16 @@ class BaseSpooler(ABC):
             ValueError: If the private JWK is not set.
         """
         private_jwk_str = config("PRIVATE_JWK_STR", default=None)
-
+        ic(private_jwk_str)
+        if private_jwk_str == "":
+            raise ValueError("PRIVATE_JWK_STR must not be empty.")
         if private_jwk_str is None:
             raise ValueError("PRIVATE_JWK_STR is not set and available.")
-        return jwk_from_config_str(private_jwk_str)
+        try:
+            return jwk_from_config_str(private_jwk_str)
+        except BinasciiError as bin_err:
+            logging.error("PRIVATE_JWK_STR is invalid.")
+            raise ValueError("PRIVATE_JWK_STR is invalid.") from bin_err
 
 
 class Spooler(BaseSpooler):

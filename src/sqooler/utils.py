@@ -3,17 +3,17 @@ This module contains some functions that are especially helpful for deployment o
 sqooler package.
 """
 
+import logging
 import time
 import traceback
-import logging
 
 import regex as re
 from pydantic import ValidationError
 
-from .schemes import get_init_results, get_init_status, NextJobSchema
+from .schemes import NextJobSchema, get_init_results, get_init_status
+from .security import public_from_private_jwk
 from .spoolers import Spooler
 from .storage_providers.base import StorageProvider
-from .security import public_from_private_jwk
 
 
 def update_backends(
@@ -147,7 +147,6 @@ def main(
             logging.exception("Error in add_job for %s .", requested_backend)
 
         logging.debug("Updating in database.")
-        spooler.get_private_jwk()
         storage_provider.update_in_database(
             result_dict,
             status_msg_dict,

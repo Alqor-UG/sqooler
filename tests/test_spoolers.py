@@ -2,33 +2,25 @@
 Here we test the spooler class and its functions.
 """
 
+import logging
 import os
 import shutil
+from typing import Callable, Iterator, Literal, Optional
 
-import logging
-
-from typing import Literal, Optional, Iterator, Callable
-from pydantic import ValidationError, BaseModel, Field
-
-from typing_extensions import Annotated
 import pytest
+from pydantic import BaseModel, Field, ValidationError
 from pytest import LogCaptureFixture
+from typing_extensions import Annotated
 
-from sqooler.schemes import (
-    LabscriptParams,
-)
-
+from sqooler.schemes import LabscriptParams
 from sqooler.spoolers import (
-    Spooler,
-    gate_dict_from_list,
-    create_memory_data,
     LabscriptSpooler,
+    Spooler,
+    create_memory_data,
+    gate_dict_from_list,
 )
 
-from .sqooler_test_utils import (
-    dummy_gen_circuit,
-    DummyInstruction,
-)
+from .sqooler_test_utils import DummyInstruction, dummy_gen_circuit
 
 
 class DummyExperiment(BaseModel):
@@ -140,6 +132,15 @@ def test_spooler_jwk() -> None:
     )
 
     test_spooler.get_private_jwk()
+    # now test what happens if we do not have a private key
+    with pytest.raises(ValueError):
+        os.environ["PRIVATE_JWK_STR"] = ""
+        test_spooler.get_private_jwk()
+
+    # now test what happens if we do not have an appropiate private key
+    with pytest.raises(ValueError):
+        os.environ["PRIVATE_JWK_STR"] = "sdlkfgjsof"
+        test_spooler.get_private_jwk()
 
 
 def test_spooler_cold_atom() -> None:

@@ -2,36 +2,24 @@
 This is the test tool for the utils module.
 """
 
-import os
-import uuid
-import shutil
-from typing import Iterator, Callable, Literal, Optional
-
 import logging
-
-from decouple import config
-from pydantic import BaseModel, Field, ValidationError
-
-from typing_extensions import Annotated
-
+import os
+import shutil
+import uuid
+from typing import Callable, Iterator, Literal, Optional
 
 import pytest
+from decouple import config
+from pydantic import BaseModel, Field, ValidationError
 from pytest import LogCaptureFixture
+from typing_extensions import Annotated
 
-from sqooler.utils import (
-    update_backends,
-    main,
-    run_json_circuit,
-)
 from sqooler.schemes import LocalLoginInformation
-
 from sqooler.spoolers import Spooler
 from sqooler.storage_providers.local import LocalProvider
+from sqooler.utils import main, run_json_circuit, update_backends
 
-from .sqooler_test_utils import (
-    dummy_gen_circuit,
-    DummyFullInstruction,
-)
+from .sqooler_test_utils import DummyFullInstruction, dummy_gen_circuit
 
 local_login = LocalLoginInformation(base_path="utils_storage")
 storage_provider = LocalProvider(local_login)
@@ -229,6 +217,65 @@ def test_main_with_instructions(
     # test if we can get the result
     result_dict = storage_provider.get_result(backend_name, "test", job_id)
     assert result_dict.status == "INITIALIZING"
+
+
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_main_without_jwk(
+    sign_it: bool, caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
+) -> None:
+    """
+    Test what happens if the private_jwk is not set.
+    """
+    os.environ["PRIVATE_JWK_STR"] = ""
+
+    # first prepare the spooler
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyFullInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        operational=False,
+        sign=sign_it,
+    )
+    test_spooler.gen_circuit = dummy_gen_circuit
+
+    # add it to the backends
+    dummy_id = uuid.uuid4().hex[:5]
+    backend_name = f"dummy{dummy_id}"
+
+    backends = {backend_name: test_spooler}
+
+    if sign_it:
+        with pytest.raises(ValueError):
+            update_backends(storage_provider, backends)
+    else:
+        update_backends(storage_provider, backends)
+
+    # now upload a job
+    username = config("TEST_USERNAME")
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0, 1, 2, 3, 4], [1, 2, 3]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+
+    job_id = storage_provider.upload_job(
+        job_dict=job_payload, display_name=backend_name, username=username
+    )
+    # now also test that we can upload the status
+    storage_provider.upload_status(
+        display_name=backend_name,
+        username=username,
+        job_id=job_id,
+    )
+
+    if sign_it:
+        with pytest.raises(ValueError):
+            main(storage_provider, backends, num_iter=3)
+    else:
+        main(storage_provider, backends, num_iter=3)
 
 
 def test_run_json_circuit(

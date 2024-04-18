@@ -5,21 +5,19 @@ In this module we test the basic ability to sign payloads and verify the signatu
 import base64
 from datetime import datetime, timezone
 
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from cryptography.exceptions import InvalidSignature
-
-
 import pytest
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from sqooler.security import (
-    JWSHeader,
-    JWSDict,
     JWK,
-    payload_to_base64url,
-    sign_payload,
-    jwk_from_config_str,
+    JWSDict,
+    JWSHeader,
     create_jwk_pair,
+    jwk_from_config_str,
+    payload_to_base64url,
     public_from_private_jwk,
+    sign_payload,
 )
 
 private_key = Ed25519PrivateKey.generate()
