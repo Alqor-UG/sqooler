@@ -309,8 +309,6 @@ class StorageProviderTestUtils:
             status_dict["backend_name"]
             == f"{storage_provider.name}_{backend_name}_simulator"
         )
-        ic(config_info.operational)
-        ic(config_info.last_queue_check)
         assert status_dict["backend_version"] == config_info.version
         assert not status_dict["pending_jobs"]
         assert not status_dict["status_msg"]

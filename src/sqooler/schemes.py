@@ -142,9 +142,7 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
     num_wires: int = Field(description="The number of qubits / wires for the backend")
     wire_order: WireOrderStr
     num_species: int = Field(description="The number of species in the system.")
-    operational: bool = Field(
-        default=False, description="True if the backend is operational"
-    )
+
     pending_jobs: Optional[int] = Field(
         default=None, description="The number of pending jobs on the backend"
     )

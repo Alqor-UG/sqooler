@@ -138,23 +138,7 @@ class StorageProvider(ABC):
 
         # now see how long it has been since the last queue check in minutes
         # if it is more than 5 minutes, we should set the backend to not operational
-        current_time = datetime.now(timezone.utc).replace(microsecond=0)
-        last_queue_check = backend_config_info.last_queue_check
 
-        # get the timeout from the configuration
-        t_timeout = config("T_TIMEOUT", cast=int, default=300)
-        if not last_queue_check:
-            backend_config_info.operational = False
-            qiskit_backend_dict = self.backend_dict_to_qiskit_status(
-                backend_config_info
-            )
-            return qiskit_backend_dict
-
-        last_queue_check = last_queue_check.replace(tzinfo=timezone.utc)
-        if (current_time - last_queue_check).total_seconds() > t_timeout:
-            backend_config_info.operational = False
-        else:
-            backend_config_info.operational = True
         qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
         return qiskit_backend_dict
 
@@ -557,7 +541,6 @@ class StorageProvider(ABC):
 
         # update the time stamp
         config_dict.last_queue_check = current_time
-        config_dict.operational = True
 
         # upload the new configuration
         self.update_config(config_dict, display_name, private_jwk)
@@ -616,6 +599,23 @@ class StorageProvider(ABC):
             return f"{self.name}_{display_name}_simulator"
         return f"{self.name}_{display_name}_hardware"
 
+    def _last_queued_to_operational(self, last_queue_check: datetime | None) -> bool:
+        """
+        Calculate the operational status based on the last time the queue
+        was checked.
+        """
+        # get the timeout from the configuration
+        t_timeout = config("T_TIMEOUT", cast=int, default=300)
+        if not last_queue_check:
+            return False
+
+        last_queue_check = last_queue_check.replace(tzinfo=timezone.utc)
+        current_time = datetime.now(timezone.utc).replace(microsecond=0)
+
+        if (current_time - last_queue_check).total_seconds() > t_timeout:
+            return False
+        return True
+
     def backend_dict_to_qiskit_status(
         self, backend_dict: BackendConfigSchemaIn
     ) -> BackendStatusSchemaOut:
@@ -638,6 +638,7 @@ class StorageProvider(ABC):
         }
 
         display_name = backend_dict.display_name
+        last_queue_check = backend_dict.last_queue_check
 
         # if the name is already in the dict, we should set the backend_name to the name
         # otherwise we calculate it.
@@ -650,8 +651,9 @@ class StorageProvider(ABC):
         backend_status_dict["backend_version"] = backend_dict.version
 
         # now I also need to obtain the operational status from the backend.
-        backend_status_dict["operational"] = backend_dict.operational
-
+        backend_status_dict["operational"] = self._last_queued_to_operational(
+            last_queue_check
+        )
         # would be nice to attempt to get the pending jobs too, if possible easily.
         if backend_dict.pending_jobs:
             backend_status_dict["pending_jobs"] = backend_dict.pending_jobs
