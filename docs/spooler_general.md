@@ -43,8 +43,6 @@ So with `v0.6` of the code we have introduced the `last_queue_check` as a proper
 
 In `v0.7` we started to calculate the `operational` status based on the `last_queue_check`. This made the parameter `operational` of the spooler irrelevant and we could simply calculate it for the config dictionary. So based on these properties, we are currently at the following situation:
 
-- The `Spooler.get_configuration` function that gives back the configuration of the device based on the properties of the `Spooler` class. This is typically only called when we upload the configuration to the `StorageProvider`.
-- Each `StorageProvider` has a function `get_config` that gives back the configuration of the device based on the values stored in the config dictionary. This can be only updated by Bob. The `last_queue_check` and the `operational` status can be changed there by Bob. 
-- Each `StorageProvider` has a function `get_backend_status` that gives back the current status of the device. The values are also based on the config dict. This function is however closer to the Qiskit status.
+- Each `StorageProvider` has a function `get_backend_status` that gives back the current status of the device. The here is just calculated from the last time the queue was checked.
 
-So it might be that the `operational` status does not need to be set by Bob at all. We might just calculate it based on the other information provided by Bob. 
+So the `operational` status does not need to be set by Bob at all. We just calculate it based on the other information provided by Bob.
