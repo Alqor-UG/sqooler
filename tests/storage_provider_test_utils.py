@@ -11,7 +11,6 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
-from icecream import ic
 from pydantic import ValidationError
 
 from sqooler.schemes import BackendConfigSchemaIn, ResultDict
