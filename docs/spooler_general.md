@@ -36,22 +36,15 @@ There are different types of `Spooler` objects that Bob can use.
 One of the hardest things to get right is the operational status of your machine. 
 
 - In the most naive approach you might say that Alice will figure it out if the device is not around and that's it. 
-- In the second step, you would like to be able to set the operational status and make it transparent to Alice. This is actually possible through the `operational` property.
+- In the second step, you would like to be able to set the operational status and make it transparent to Alice. This was actually possible through the `operational` property for some time.
 - But bad things might happen to your system and it might take Bob quite some time to see that the machine is currently not available. And once Bob figures this out he certainly has better things to do than to set the operational status to `False`. 
 
 So with `v0.6` of the code we have introduced the `last_queue_check` as a property of the `Sqooler` configuration. This provides Alice additional information and might allow Alice to decide on her own if she sees the machine as active. 
 
-### Current reflections
-
-We have started in `v0.7` to calculate the `operational` status based on the `last_queue_check`. However, this has proven to open a number of questions on the specific implementation and we will scribble down the current analysis here.
-
-- The `Spooler` has the property `operational`. It might be only set by Bob if he choses to sign his config.
-- For the `Spooler` we store the value `last_queue_check`. It is not a property of the class itself, but it is stored in its config file.
-
-Based on these properties, we have a few functions that give back the configuration of the device:
+In `v0.7` we started to calculate the `operational` status based on the `last_queue_check`. This made the parameter `operational` of the spooler irrelevant and we could simply calculate it for the config dictionary. So based on these properties, we are currently at the following situation:
 
 - The `Spooler.get_configuration` function that gives back the configuration of the device based on the properties of the `Spooler` class. This is typically only called when we upload the configuration to the `StorageProvider`.
-- Each `StorageProvider` has a function `get_config` that gives back the configuration of the device based on the values stored in the config dictionary. This can be only updated by Bob. The `last_queue_check` and the `operational` status can be changed there. 
+- Each `StorageProvider` has a function `get_config` that gives back the configuration of the device based on the values stored in the config dictionary. This can be only updated by Bob. The `last_queue_check` and the `operational` status can be changed there by Bob. 
 - Each `StorageProvider` has a function `get_backend_status` that gives back the current status of the device. The values are also based on the config dict. This function is however closer to the Qiskit status.
 
 So it might be that the `operational` status does not need to be set by Bob at all. We might just calculate it based on the other information provided by Bob. 
