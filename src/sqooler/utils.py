@@ -8,6 +8,7 @@ import time
 import traceback
 
 import regex as re
+from decouple import config
 from pydantic import ValidationError
 
 from .schemes import NextJobSchema, get_init_results, get_init_status
@@ -86,8 +87,10 @@ def main(
 
     counter = 0
     # loop which is looking for the jobs
+
+    t_wait_main = config("T_WAIT_MAIN", cast=float, default=0.2)
     while num_iter == 0 or counter < num_iter:
-        time.sleep(0.2)
+        time.sleep(t_wait_main)
         # the following a fancy for loop of going through all the back-ends in the list
         requested_backend = backends_list[0]
         backends_list.append(backends_list.pop(0))

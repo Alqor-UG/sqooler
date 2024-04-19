@@ -5,6 +5,7 @@ This is the test tool for the utils module.
 import logging
 import os
 import shutil
+import time
 import uuid
 from typing import Callable, Iterator, Literal, Optional
 
@@ -98,6 +99,10 @@ def test_update_backends(
     # somehow the caplog has some typing issues.
     assert "Uploading it as a new one." in caplog.text
 
+    # test that we can also update it
+    update_backends(storage_provider, backends)
+    assert "Updated the config for " in caplog.text
+
     # test with another backend
     sign_it = True
     test_spooler = Spooler(
@@ -163,6 +168,63 @@ def test_main(
     assert result_dict.job_id == job_id
 
     assert "Looking for jobs" in caplog.text
+
+
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_main_delay(
+    sign_it: bool, caplog: LogCaptureFixture, utils_storage_setup_teardown: Callable
+) -> None:
+    """
+    Test that it is change the delay in the main function.
+    """
+    backend_name = "test"
+
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=sign_it
+    )
+
+    backends = {backend_name: test_spooler}
+
+    caplog.set_level(logging.INFO)
+    # upload the backend
+    update_backends(storage_provider, backends)
+
+    # first we have to upload a dummy job
+    queue_path = "jobs/queued/" + backend_name
+    job_id = (uuid.uuid4().hex)[:24]
+    job_dict = {"job_id": job_id, "job_json_path": "None"}
+    job_dict["job_json_path"] = queue_path
+    storage_provider.upload(job_dict, queue_path, job_id=job_id)
+
+    # also upload a status
+    status_path = "status/" + backend_name
+    status_dict = {
+        "job_id": job_id,
+        "status": "INITIALIZING",
+        "detail": "Got your json.",
+        "error_message": "None",
+    }
+    storage_provider.upload(status_dict, status_path, job_id=job_id)
+
+    # time the duration of the main function
+    start_time = time.time()
+    main(storage_provider, backends, num_iter=3)
+    end_time = time.time()
+
+    duration = end_time - start_time
+    assert 0.8 > duration > 0.4
+
+    # and now also look if we change the waiting time
+    os.environ["T_WAIT_MAIN"] = "0.4"
+    start_time = time.time()
+    main(storage_provider, backends, num_iter=3)
+    end_time = time.time()
+
+    duration = end_time - start_time
+    assert 1.5 > duration > 0.9
+
+    # going back to the default value
+    os.environ["T_WAIT_MAIN"] = "0.2"
 
 
 @pytest.mark.parametrize("sign_it", [True, False])
