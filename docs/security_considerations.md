@@ -4,7 +4,7 @@ comments: true
 
 # Security and signing
 
-In this section we will discuss some of the cryptographic work that we started. All of the code in this regard can be found in the `security` module.  Before we go into more detail on the discussion, let us remind ourselves of the general architecture of the workflow:
+In this section we will discuss some of the cryptographic work that we started. All of the code in this regard can be found in the [security](security_api.md) module.  Before we go into more detail on the discussion, let us remind ourselves of the general architecture of the workflow:
 
 ``` mermaid
 flowchart LR
@@ -60,3 +60,12 @@ Right now we have not yet implemented the verification of the results. This will
 ## Signing the configuration
 
 It is now also possible to sign the backend configuration. This happens automatically if the `Spooler` object is configured to be signed. The `upload_config` and `update_config` will then sign the document before uploading it to the storage. This enables us now to have several backend providers in parallel without a central authority. Importantly, we can now hinder the collusion of two backends with the same name because you can only update the files if you are the owner of the private key.
+
+## Ideas on signing as Alice
+
+For Alice the situation is more complicated than for Bob. She typically communicates with the devices through an API. So there are actually several levels of identification that we need to consider:
+
+- Alice sign in to `qlued`. This is happening through her token.
+- Alice then also uploads the resulting job directory to the storage.
+
+Idealley the uploaded job directory would be signed by Alice. This would allow Bob to verify that the job directory is authentic. This is not yet implemented but it is a future idea. However, how would this possibly work ? We currrently only have her token but no private key nor a public key. Do we want those ? Maybe we could work with OpenID services or things like this ? 

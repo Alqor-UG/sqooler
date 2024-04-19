@@ -16,13 +16,14 @@ nav:
   - Introduction: "index.md"
   - "General description": "description.md"
   - "Bobs' perspective": "spooler_general.md"
+  - "Security considerations": "security_considerations.md"
   - Contributing: contributing.md
   - Releases: releases.md
   - "Modules":
     - "Schemes": "schemes.md"
     - "Spooler API": "spoolers_api.md"
+    - "Security API": "security_api.md"
     - "Utils": "utils.md"
-    - "Security": "security.md"
   - "Storage Providers":
     - "Basics": "storage_providers.md"
     - "MongoDB": "mongodb.md"
