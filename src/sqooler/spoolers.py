@@ -46,7 +46,6 @@ class BaseSpooler(ABC):
         n_max_experiments: the maximum number of experiments that can be executed
         wire_order: the order of the wires
         num_species: the number of atomic species in the experiment
-        operational: is the backend ready for access by remote users ?
         sign: sign the results of the job
     """
 
@@ -79,7 +78,6 @@ class BaseSpooler(ABC):
         self.num_species = num_species
         self._display_name: str = ""
         self.sign = sign
-        self.operational = False
 
     def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
@@ -104,6 +102,12 @@ class BaseSpooler(ABC):
         """
         Sends back the configuration dictionary of the spooler.
 
+        This creates the configuration of the Spooler. However, it does not contain
+        any information about the operational status. This is not really connected to
+        the machine but much rather to the queue etc. So items of the `BackendConfigSchemaIn`
+        like `operational` or `last_queue_check` are not set here at just the default values.
+        ``
+
         Returns:
             The configuration dictionary of the spooler.
         """
@@ -123,7 +127,6 @@ class BaseSpooler(ABC):
             "num_wires": self.n_wires,
             "wire_order": self.wire_order,
             "num_species": self.num_species,
-            "operational": self.operational,
             "display_name": self.display_name,
             "sign": self.sign,
         }

@@ -3,8 +3,8 @@ The module that contains common logic for schemes, validation etc.
 There is no obvious need, why this code should be touch in a new back-end.
 """
 
-from typing import Optional, Literal, Annotated
 from datetime import datetime
+from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -142,7 +142,7 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
     num_wires: int = Field(description="The number of qubits / wires for the backend")
     wire_order: WireOrderStr
     num_species: int = Field(description="The number of species in the system.")
-    operational: bool = Field(description="True if the backend is operational")
+
     pending_jobs: Optional[int] = Field(
         default=None, description="The number of pending jobs on the backend"
     )

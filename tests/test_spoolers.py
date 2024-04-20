@@ -117,7 +117,6 @@ def test_spooler_config(sign_it: bool) -> None:
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
-    assert not spooler_config.operational
 
     # and that the signing is properly done
     assert spooler_config.sign == sign_it
@@ -165,7 +164,6 @@ def test_spooler_cold_atom() -> None:
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
-    assert not spooler_config.operational
 
     with pytest.raises(ValidationError):
         test_spooler = Spooler(
@@ -175,22 +173,6 @@ def test_spooler_cold_atom() -> None:
             cold_atom_type="something",
         )
         spooler_config = test_spooler.get_configuration()
-
-
-def test_spooler_operational() -> None:
-    """
-    Test that it is possible to set the operational status of the spooler.
-    """
-    test_spooler = Spooler(ins_schema_dict={}, device_config=DummyExperiment, n_wires=2)
-
-    spooler_config = test_spooler.get_configuration()
-    assert spooler_config.num_wires == 2
-    assert not spooler_config.operational
-
-    # TODO: test that we can update the status
-    test_spooler.operational = True
-    spooler_config = test_spooler.get_configuration()
-    assert spooler_config.operational
 
 
 def test_spooler_add_job_fail(
@@ -499,31 +481,6 @@ def test_labscript_spooler_config(sign_it: bool, ls_storage_setup_td: Callable) 
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
-    assert not spooler_config.operational
-
-
-def test_labscript_spooler_op(ls_storage_setup_td: Callable) -> None:
-    """
-    Test that it is possible to set the operational status of the spooler.
-    """
-    labscript_params = LabscriptParams(exp_script_folder="test", t_wait=2)
-    test_spooler = LabscriptSpooler(
-        ins_schema_dict={},
-        device_config=DummyExperiment,
-        remote_client=DummyRemoteClient(),
-        run=DummyRun,
-        n_wires=2,
-        labscript_params=labscript_params,
-    )
-
-    spooler_config = test_spooler.get_configuration()
-    assert spooler_config.num_wires == 2
-    assert not spooler_config.operational
-
-    # now also the operational status
-    test_spooler.operational = True
-    spooler_config = test_spooler.get_configuration()
-    assert spooler_config.operational
 
 
 def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
