@@ -331,21 +331,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The operational status">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#current-reflections" class="md-nav__link">
-    <span class="md-ellipsis">
-      Current reflections
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -723,21 +708,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The operational status">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#current-reflections" class="md-nav__link">
-    <span class="md-ellipsis">
-      Current reflections
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -790,23 +760,15 @@
 <p>One of the hardest things to get right is the operational status of your machine. </p>
 <ul>
 <li>In the most naive approach you might say that Alice will figure it out if the device is not around and that's it. </li>
-<li>In the second step, you would like to be able to set the operational status and make it transparent to Alice. This is actually possible through the <code>operational</code> property.</li>
+<li>In the second step, you would like to be able to set the operational status and make it transparent to Alice. This was actually possible through the <code>operational</code> property for some time.</li>
 <li>But bad things might happen to your system and it might take Bob quite some time to see that the machine is currently not available. And once Bob figures this out he certainly has better things to do than to set the operational status to <code>False</code>. </li>
 </ul>
 <p>So with <code>v0.6</code> of the code we have introduced the <code>last_queue_check</code> as a property of the <code>Sqooler</code> configuration. This provides Alice additional information and might allow Alice to decide on her own if she sees the machine as active. </p>
-<h3 id="current-reflections">Current reflections</h3>
-<p>We have started in <code>v0.7</code> to calculate the <code>operational</code> status based on the <code>last_queue_check</code>. However, this has proven to open a number of questions on the specific implementation and we will scribble down the current analysis here.</p>
+<p>In <code>v0.7</code> we started to calculate the <code>operational</code> status based on the <code>last_queue_check</code>. This made the parameter <code>operational</code> of the spooler irrelevant and we could simply calculate it for the config dictionary. So based on these properties, we are currently at the following situation:</p>
 <ul>
-<li>The <code>Spooler</code> has the property <code>operational</code>. It might be only set by Bob if he choses to sign his config.</li>
-<li>For the <code>Spooler</code> we store the value <code>last_queue_check</code>. It is not a property of the class itself, but it is stored in its config file.</li>
+<li>Each <code>StorageProvider</code> has a function <code>get_backend_status</code> that gives back the current status of the device. The here is just calculated from the last time the queue was checked.</li>
 </ul>
-<p>Based on these properties, we have a few functions that give back the configuration of the device:</p>
-<ul>
-<li>The <code>Spooler.get_configuration</code> function that gives back the configuration of the device based on the properties of the <code>Spooler</code> class. This is typically only called when we upload the configuration to the <code>StorageProvider</code>.</li>
-<li>Each <code>StorageProvider</code> has a function <code>get_config</code> that gives back the configuration of the device based on the values stored in the config dictionary. This can be only updated by Bob. The <code>last_queue_check</code> and the <code>operational</code> status can be changed there. </li>
-<li>Each <code>StorageProvider</code> has a function <code>get_backend_status</code> that gives back the current status of the device. The values are also based on the config dict. This function is however closer to the Qiskit status.</li>
-</ul>
-<p>So it might be that the <code>operational</code> status does not need to be set by Bob at all. We might just calculate it based on the other information provided by Bob. </p>
+<p>So the <code>operational</code> status does not need to be set by Bob at all. We just calculate it based on the other information provided by Bob.</p>
 
 
 
