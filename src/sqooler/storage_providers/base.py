@@ -221,6 +221,23 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def verify_result(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> ResultDict:
+        """
+        This function verifies the result and returns the success. If the backend does not sign the
+        result, we will reutrn `False` by default, given that we were not able to establish ownership.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            If it was possible to verify the result dict positively.
+        """
+
+    @abstractmethod
     def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content. It replaces the old content with the new content.
