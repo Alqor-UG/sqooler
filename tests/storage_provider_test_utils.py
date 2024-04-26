@@ -11,6 +11,7 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
+from icecream import ic
 from pydantic import ValidationError
 
 from sqooler.schemes import BackendConfigSchemaIn, ResultDict
@@ -324,6 +325,79 @@ class StorageProviderTestUtils:
 
         return backend_name, storage_provider
 
+    def status_tests(self, db_name: str, sign: bool = True) -> None:
+        """
+        Test the status upload and download.
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        backend_name, config_info = self.get_dummy_config(sign=sign)
+        # create a dummy key
+        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
+        username = config("TEST_USERNAME")
+        job_id = uuid.uuid4().hex[:24]
+
+        # now also test that we can upload the status
+        if sign:
+            with pytest.raises(ValueError):
+                storage_provider.upload_status(
+                    display_name=backend_name,
+                    username=username,
+                    job_id=job_id,
+                )
+
+        status_msg_dict = storage_provider.upload_status(
+            display_name=backend_name,
+            username=username,
+            job_id=job_id,
+            private_jwk=private_jwk,
+        )
+
+        assert len(status_msg_dict.job_id) > 1
+        # now test what happens with a poor job id
+        job_status = storage_provider.get_status(
+            display_name=backend_name,
+            username=username,
+            job_id="jdsfssdfs",
+        )
+        assert job_status.status == "ERROR"
+
+        # now test that we can get the job status
+        job_status = storage_provider.get_status(
+            display_name=backend_name,
+            username=username,
+            job_id=job_id,
+        )
+        assert job_status.job_id == job_id
+
+        # clean up
+        storage_provider._delete_status(
+            display_name=backend_name,
+            username=username,
+            job_id=job_id,
+        )
+        # now test that we can upload the status without the private key if we are not singing
+        if not sign:
+            storage_provider.upload_status(
+                display_name=backend_name,
+                username=username,
+                job_id=job_id,
+            )
+            storage_provider._delete_status(
+                display_name=backend_name,
+                username=username,
+                job_id=job_id,
+            )
+
     def job_tests(self, db_name: str, sign: bool = True) -> Tuple[str, str, str, Any]:
         """
         Test the job upload and download.
@@ -384,11 +458,21 @@ class StorageProviderTestUtils:
         assert len(job_id) > 1
 
         # now also test that we can upload the status
+        if sign:
+            with pytest.raises(ValueError):
+                storage_provider.upload_status(
+                    display_name=backend_name,
+                    username=username,
+                    job_id=job_id,
+                )
+
         status_msg_dict = storage_provider.upload_status(
             display_name=backend_name,
             username=username,
             job_id=job_id,
+            private_jwk=private_jwk,
         )
+
         assert len(status_msg_dict.job_id) > 1
         # now test what happens with a poor job id
         job_status = storage_provider.get_status(
