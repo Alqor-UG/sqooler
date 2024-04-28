@@ -11,7 +11,6 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
-from icecream import ic
 from pydantic import ValidationError
 
 from sqooler.schemes import BackendConfigSchemaIn, ResultDict
@@ -338,7 +337,7 @@ class StorageProviderTestUtils:
 
         backend_name, config_info = self.get_dummy_config(sign=sign)
         # create a dummy key
-        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        private_jwk, _ = create_jwk_pair(backend_name)
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
