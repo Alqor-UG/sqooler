@@ -445,6 +445,38 @@ class StorageProvider(ABC):
             upload_dict = config_dict.model_dump()
         return upload_dict
 
+    def _format_status_dict(
+        self,
+        status_dict: StatusMsgDict,
+        storage_path: str,
+        display_name: DisplayNameStr,
+        job_id: str,
+        private_jwk: Optional[JWK] = None,
+    ) -> None:
+        """
+        Allows us to upload the appropiate status dict to the storage provider.
+        """
+        # get the backend config
+        config_dict = self.get_config(display_name)
+        if config_dict.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend needs to be signed."
+                )
+            # we sign the result now
+            signed_status = sign_payload(status_dict.model_dump(), private_jwk)
+            upload_dict = signed_status.model_dump()
+        else:
+            upload_dict = status_dict.model_dump()
+
+        # now upload the status dict
+        self.upload(
+            content_dict=upload_dict,
+            storage_path=storage_path,
+            job_id=job_id,
+        )
+
     def _format_update_config(
         self,
         old_config_jws: dict,

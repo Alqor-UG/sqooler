@@ -246,25 +246,12 @@ class LocalProviderExtended(StorageProvider):
         # should we also upload the username into the dict ?
         status_dict = StatusMsgDict(**status_draft)
 
-        # get the backend config
-        config_dict = self.get_config(display_name)
-        if config_dict.sign:
-            # get the private key
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend needs to be signed."
-                )
-            # we sign the result now
-            signed_status = sign_payload(status_dict.model_dump(), private_jwk)
-            upload_dict = signed_status.model_dump()
-        else:
-            upload_dict = status_dict.model_dump()
-
-        # now upload the status dict
-        self.upload(
-            content_dict=upload_dict,
-            storage_path=storage_path,
-            job_id=job_id,
+        self._format_status_dict(
+            status_dict,
+            storage_path,
+            display_name,
+            job_id,
+            private_jwk,
         )
         return status_dict
 

@@ -4,13 +4,13 @@ The tests for the extended mongodb storage provider
 
 import uuid
 from typing import Any
-from decouple import config
 
 import pytest
 from bson.objectid import ObjectId
+from decouple import config
 
-from sqooler.storage_providers.mongodb import MongodbProviderExtended
 from sqooler.schemes import MongodbLoginInformation
+from sqooler.storage_providers.mongodb import MongodbProviderExtended
 
 from .storage_provider_test_utils import StorageProviderTestUtils
 
@@ -279,6 +279,13 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
 
         result_found = collection.find_one(document_to_find)
         storage_provider.delete_file(config_path, str(result_found["_id"]))
+
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_status_dict(self, sign_it: bool) -> None:
+        """
+        Test that we can get the status of a backend.
+        """
+        self.status_tests(DB_NAME, sign=sign_it)
 
     def test_jobs(self) -> None:
         """
