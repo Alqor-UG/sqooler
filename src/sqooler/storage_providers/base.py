@@ -452,6 +452,7 @@ class StorageProvider(ABC):
         display_name: DisplayNameStr,
         job_id: str,
         private_jwk: Optional[JWK] = None,
+        status_json_name: Optional[str] = None,
     ) -> None:
         """
         Allows us to upload the appropiate status dict to the storage provider.
@@ -471,11 +472,18 @@ class StorageProvider(ABC):
             upload_dict = status_dict.model_dump()
 
         # now upload the status dict
-        self.upload(
-            content_dict=upload_dict,
-            storage_path=storage_path,
-            job_id=job_id,
-        )
+        if status_json_name is None:
+            self.upload(
+                content_dict=upload_dict,
+                storage_path=storage_path,
+                job_id=job_id,
+            )
+        else:
+            self.upload(
+                content_dict=upload_dict,
+                storage_path=storage_path,
+                job_id=status_json_name,
+            )
 
     def _format_update_config(
         self,
