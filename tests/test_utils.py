@@ -16,6 +16,7 @@ from pytest import LogCaptureFixture
 from typing_extensions import Annotated
 
 from sqooler.schemes import LocalLoginInformation
+from sqooler.security import jwk_from_config_str
 from sqooler.spoolers import Spooler
 from sqooler.storage_providers.local import LocalProvider
 from sqooler.utils import main, run_json_circuit, update_backends
@@ -266,10 +267,12 @@ def test_main_with_instructions(
         job_dict=job_payload, display_name=backend_name, username=username
     )
     # now also test that we can upload the status
+    private_jwk = jwk_from_config_str(config("PRIVATE_JWK_STR"))
     storage_provider.upload_status(
         display_name=backend_name,
         username=username,
         job_id=job_id,
+        private_jwk=private_jwk,
     )
 
     main(storage_provider, backends, num_iter=3)
@@ -330,11 +333,19 @@ def test_main_without_jwk(
         job_dict=job_payload, display_name=backend_name, username=username
     )
     # now also test that we can upload the status
-    storage_provider.upload_status(
-        display_name=backend_name,
-        username=username,
-        job_id=job_id,
-    )
+    if sign_it:
+        with pytest.raises(FileNotFoundError):
+            storage_provider.upload_status(
+                display_name=backend_name,
+                username=username,
+                job_id=job_id,
+            )
+    else:
+        storage_provider.upload_status(
+            display_name=backend_name,
+            username=username,
+            job_id=job_id,
+        )
 
     if sign_it:
         with pytest.raises(ValueError):

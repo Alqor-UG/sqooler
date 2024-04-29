@@ -2,8 +2,8 @@
 The tests for the storage provider using mongodb
 """
 
-import uuid
 import shutil
+import uuid
 from typing import Any
 
 import pytest
@@ -11,11 +11,11 @@ import pytest
 # get the environment variables
 from decouple import config
 
-from sqooler.storage_providers.local import LocalProvider
-from sqooler.schemes import ResultDict, LocalLoginInformation
+from sqooler.schemes import LocalLoginInformation, ResultDict
 from sqooler.security import create_jwk_pair
-from .storage_provider_test_utils import StorageProviderTestUtils
+from sqooler.storage_providers.local import LocalProvider
 
+from .storage_provider_test_utils import StorageProviderTestUtils
 
 DB_NAME = "storage"
 
@@ -141,7 +141,7 @@ class TestLocalProvider(StorageProviderTestUtils):
         # upload the status dict without other status.
         status_json_dir = "status/" + backend_name
         status_msg_dict = storage_provider.upload_status(
-            backend_name, "test_user", job_id
+            backend_name, "test_user", job_id, private_jwk
         )
 
         status_msg_dict.status = "DONE"
