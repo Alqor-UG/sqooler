@@ -173,7 +173,11 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def upload_status(
-        self, display_name: DisplayNameStr, username: str, job_id: str
+        self,
+        display_name: DisplayNameStr,
+        username: str,
+        job_id: str,
+        private_jwk: Optional[JWK] = None,
     ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
@@ -182,6 +186,7 @@ class StorageProvider(ABC):
             display_name: The name of the backend to which we want to upload the job
             username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
+            private_jwk: The private key of the backend
 
         Returns:
             The status dict of the job
@@ -201,6 +206,25 @@ class StorageProvider(ABC):
 
         Returns:
             The status dict of the job
+        """
+
+    @abstractmethod
+    def _delete_status(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> bool:
+        """
+        Delete a status from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
         """
 
     @abstractmethod
@@ -421,6 +445,46 @@ class StorageProvider(ABC):
             upload_dict = config_dict.model_dump()
         return upload_dict
 
+    def _format_status_dict(
+        self,
+        status_dict: StatusMsgDict,
+        storage_path: str,
+        display_name: DisplayNameStr,
+        job_id: str,
+        private_jwk: Optional[JWK] = None,
+        status_json_name: Optional[str] = None,
+    ) -> None:
+        """
+        Allows us to upload the appropiate status dict to the storage provider.
+        """
+        # get the backend config
+        config_dict = self.get_config(display_name)
+        if config_dict.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend needs to be signed."
+                )
+            # we sign the result now
+            signed_status = sign_payload(status_dict.model_dump(), private_jwk)
+            upload_dict = signed_status.model_dump()
+        else:
+            upload_dict = status_dict.model_dump()
+
+        # now upload the status dict
+        if status_json_name is None:
+            self.upload(
+                content_dict=upload_dict,
+                storage_path=storage_path,
+                job_id=job_id,
+            )
+        else:
+            self.upload(
+                content_dict=upload_dict,
+                storage_path=storage_path,
+                job_id=status_json_name,
+            )
+
     def _format_update_config(
         self,
         old_config_jws: dict,
@@ -516,6 +580,25 @@ class StorageProvider(ABC):
         else:
             result_dict["backend_name"] = backend_config_info.backend_name
             typed_result = ResultDict(**result_dict)
+        return typed_result
+
+    def _adapt_status_dict(self, status_dict: dict) -> StatusMsgDict:
+        """
+        This function adapts the status dict to the standard format that we use in the system.
+
+        Args:
+            status_dict: The status dictionary
+            backend_config_info: The configuration of the backend
+
+        Returns:
+            The status dict in the standard format
+        """
+        # done day we should verify the result before we send it out
+        expected_keys_for_jws = {"header", "payload", "signature"}
+        if set(status_dict.keys()) == expected_keys_for_jws:
+            typed_result = StatusMsgDict(**status_dict["payload"])
+        else:
+            typed_result = StatusMsgDict(**status_dict)
         return typed_result
 
     def timestamp_queue(

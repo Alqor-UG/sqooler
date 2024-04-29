@@ -2,17 +2,16 @@
 The tests for the local storage provider
 """
 
-import uuid
 import os
 import shutil
+import uuid
 from typing import Any
 
+import pytest
 from decouple import config
 
-import pytest
-
+from sqooler.schemes import BackendConfigSchemaIn, LocalLoginInformation
 from sqooler.storage_providers.local import LocalProviderExtended
-from sqooler.schemes import LocalLoginInformation, BackendConfigSchemaIn
 
 from .storage_provider_test_utils import StorageProviderTestUtils
 
@@ -182,6 +181,13 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
 
         config_path = "backends/configs"
         storage_provider.delete_file(config_path, backend_name)
+
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_status_dict(self, sign_it: bool) -> None:
+        """
+        Test that we can get the status of a backend.
+        """
+        self.status_tests(DB_NAME, sign=sign_it)
 
     def test_update_raise_error(self) -> None:
         """
