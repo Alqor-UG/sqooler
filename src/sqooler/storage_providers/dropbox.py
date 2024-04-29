@@ -2,29 +2,28 @@
 The module that contains all the necessary logic for communication with the Dropbox providers.
 """
 
-import sys
-import uuid
-import json
-
-from typing import Mapping, Optional
-
 # necessary for the dropbox provider
 import datetime
+import json
+import sys
+import uuid
 from datetime import timezone
+from typing import Mapping, Optional
+
 import dropbox
-from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
+from dropbox.files import WriteMode
 
 from ..schemes import (
+    BackendConfigSchemaIn,
+    DisplayNameStr,
+    DropboxLoginInformation,
+    NextJobSchema,
     ResultDict,
     StatusMsgDict,
-    DropboxLoginInformation,
-    BackendConfigSchemaIn,
-    NextJobSchema,
-    DisplayNameStr,
 )
 from ..security import JWK, sign_payload
-from .base import StorageProvider, validate_active, datetime_handler
+from .base import StorageProvider, datetime_handler, validate_active
 
 
 class DropboxProviderExtended(StorageProvider):
@@ -538,7 +537,11 @@ class DropboxProviderExtended(StorageProvider):
         return job_id
 
     def upload_status(
-        self, display_name: DisplayNameStr, username: str, job_id: str
+        self,
+        display_name: DisplayNameStr,
+        username: str,
+        job_id: str,
+        private_jwk: Optional[JWK] = None,
     ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
@@ -547,6 +550,7 @@ class DropboxProviderExtended(StorageProvider):
             display_name: The name of the backend to which we want to upload the job
             username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
+            private_jwk: The private key of the backend
 
         Returns:
             The status dict of the job
@@ -560,10 +564,13 @@ class DropboxProviderExtended(StorageProvider):
             "error_message": "None",
         }
         status_dict = StatusMsgDict(**status_draft)
-        self.upload(
-            content_dict=status_dict.model_dump(),
-            storage_path=status_json_dir,
-            job_id=status_json_name,
+        self._format_status_dict(
+            status_dict,
+            status_json_dir,
+            display_name,
+            job_id,
+            private_jwk,
+            status_json_name,
         )
         return status_dict
 
@@ -588,7 +595,6 @@ class DropboxProviderExtended(StorageProvider):
             status_dict = self.get_file_content(
                 storage_path=status_json_dir, job_id=status_json_name
             )
-            return StatusMsgDict(**status_dict)
         except FileNotFoundError:
             status_draft = {
                 "job_id": job_id,
@@ -597,6 +603,31 @@ class DropboxProviderExtended(StorageProvider):
                 "error_message": f"Missing status file for {job_id}.",
             }
             return StatusMsgDict(**status_draft)
+
+        return self._adapt_status_dict(status_dict)
+
+    def _delete_status(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> bool:
+        """
+        Delete a status from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
+        status_json_name = "status-" + job_id
+
+        self.delete_file(storage_path=status_json_dir, job_id=status_json_name)
+        return True
 
     def get_result(
         self, display_name: DisplayNameStr, username: str, job_id: str

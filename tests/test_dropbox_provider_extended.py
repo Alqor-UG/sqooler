@@ -2,14 +2,14 @@
 The tests for the storage provider
 """
 
+import uuid
 from typing import Any
 
-import uuid
-from decouple import config
 import pytest
+from decouple import config
 
-from sqooler.storage_providers.dropbox import DropboxProviderExtended
 from sqooler.schemes import DropboxLoginInformation
+from sqooler.storage_providers.dropbox import DropboxProviderExtended
 
 from .storage_provider_test_utils import (
     StorageProviderTestUtils,
@@ -179,6 +179,13 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
 
         # delete also the old folder
         storage_provider.delete_folder(dummy_path)
+
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_status_dict(self, sign_it: bool) -> None:
+        """
+        Test that we can get the status of a backend.
+        """
+        self.status_tests(DB_NAME, sign=sign_it)
 
     def test_jobs(self) -> None:
         """

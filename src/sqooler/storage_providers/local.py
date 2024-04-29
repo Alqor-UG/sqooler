@@ -2,26 +2,24 @@
 The module that contains all the necessary logic for communication with the local storage providers.
 """
 
-import uuid
 import json
-
-from typing import Mapping, Optional
+import os
 
 # necessary for the local provider
 import shutil
-import os
+import uuid
+from typing import Mapping, Optional
 
 from ..schemes import (
+    BackendConfigSchemaIn,
+    DisplayNameStr,
+    LocalLoginInformation,
+    NextJobSchema,
     ResultDict,
     StatusMsgDict,
-    LocalLoginInformation,
-    BackendConfigSchemaIn,
-    NextJobSchema,
-    DisplayNameStr,
 )
-
-from .base import StorageProvider, validate_active, datetime_handler
 from ..security import JWK, sign_payload
+from .base import StorageProvider, datetime_handler, validate_active
 
 
 class LocalProviderExtended(StorageProvider):
@@ -219,7 +217,11 @@ class LocalProviderExtended(StorageProvider):
         return job_id
 
     def upload_status(
-        self, display_name: DisplayNameStr, username: str, job_id: str
+        self,
+        display_name: DisplayNameStr,
+        username: str,
+        job_id: str,
+        private_jwk: Optional[JWK] = None,
     ) -> StatusMsgDict:
         """
         This function uploads a status file to the backend and creates the status dict.
@@ -228,6 +230,7 @@ class LocalProviderExtended(StorageProvider):
             display_name: The name of the backend to which we want to upload the job
             username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
+            private_jwk: The private key of the backend
 
         Returns:
             The status dict of the job
@@ -242,11 +245,13 @@ class LocalProviderExtended(StorageProvider):
 
         # should we also upload the username into the dict ?
         status_dict = StatusMsgDict(**status_draft)
-        # now upload the status dict
-        self.upload(
-            content_dict=status_dict.model_dump(),
-            storage_path=storage_path,
-            job_id=job_id,
+
+        self._format_status_dict(
+            status_dict,
+            storage_path,
+            display_name,
+            job_id,
+            private_jwk,
         )
         return status_dict
 
@@ -270,7 +275,7 @@ class LocalProviderExtended(StorageProvider):
             status_dict = self.get_file_content(
                 storage_path=status_json_dir, job_id=job_id
             )
-            return StatusMsgDict(**status_dict)
+            # return StatusMsgDict(**status_dict)
         except FileNotFoundError:
             # if the job_id is not valid, we return an error
             return StatusMsgDict(
@@ -279,6 +284,30 @@ class LocalProviderExtended(StorageProvider):
                 detail="Cannot get status",
                 error_message=f"Could not find status for {display_name} with job_id {job_id}.",
             )
+
+        return self._adapt_status_dict(status_dict)
+
+    def _delete_status(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> bool:
+        """
+        Delete a status from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        status_json_dir = "status/" + display_name
+
+        self.delete_file(storage_path=status_json_dir, job_id=job_id)
+        return True
 
     def get_result(
         self, display_name: DisplayNameStr, username: str, job_id: str
