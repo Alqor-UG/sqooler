@@ -116,6 +116,12 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         """
         self.remove_file_not_found_test(DB_NAME)
 
+    def test_sign_and_verify_result(self) -> None:
+        """
+        Test that it is possible a result a verify it properly.
+        """
+        self.sign_and_verify_result_test(DB_NAME)
+
     def test_configs(self) -> None:
         """
         Test that we are able to obtain a list of backends.

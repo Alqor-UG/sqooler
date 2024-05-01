@@ -18,7 +18,7 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
 )
-from ..security import JWK, sign_payload
+from ..security import JWK, JWSDict, sign_payload
 from .base import StorageProvider, datetime_handler, validate_active
 
 
@@ -358,6 +358,28 @@ class LocalProviderExtended(StorageProvider):
                 results=[],
             )
         return self._adapt_result_dict(result_dict, backend_config_info)
+
+    def verify_result(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> bool:
+        """
+        This function verifies the result and returns the success. If the backend does not sign the
+        result, we will reutrn `False` by default, given that we were not able to establish ownership.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            If it was possible to verify the result dict positively.
+        """
+        result_json_dir = "results/" + display_name
+        result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
+        public_jwk = self.get_public_key(display_name)
+
+        result_jws = JWSDict(**result_dict)
+        return result_jws.verify_signature(public_jwk)
 
     def update_config(
         self,

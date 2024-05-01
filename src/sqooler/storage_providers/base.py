@@ -247,7 +247,7 @@ class StorageProvider(ABC):
     @abstractmethod
     def verify_result(
         self, display_name: DisplayNameStr, username: str, job_id: str
-    ) -> ResultDict:
+    ) -> bool:
         """
         This function verifies the result and returns the success. If the backend does not sign the
         result, we will reutrn `False` by default, given that we were not able to establish ownership.

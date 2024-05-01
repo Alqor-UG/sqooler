@@ -11,9 +11,15 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
+from icecream import ic
 from pydantic import ValidationError
 
-from sqooler.schemes import BackendConfigSchemaIn, ResultDict
+from sqooler.schemes import (
+    BackendConfigSchemaIn,
+    ResultDict,
+    get_init_results,
+    get_init_status,
+)
 from sqooler.security import create_jwk_pair
 from sqooler.storage_providers.base import StorageProvider
 
@@ -323,6 +329,61 @@ class StorageProviderTestUtils:
         assert status_schema.operational is True
 
         return backend_name, storage_provider
+
+    def sign_and_verify_result_test(self, db_name: str) -> None:
+        """
+        Test the ability to sign and verify a result with a JWK
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        backend_name, config_info = self.get_dummy_config(sign=True)
+        private_jwk, public_jwk = create_jwk_pair("test_kid")
+
+        # upload the public key
+        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
+
+        # upload the config
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
+        # create dummies
+        result_dict = get_init_results()
+        status_msg_dict = get_init_status()
+        job_id = uuid.uuid4().hex[:24]
+
+        # upload a signed status
+        storage_provider.upload_status(
+            display_name=backend_name,
+            username=config("TEST_USERNAME"),
+            job_id=job_id,
+            private_jwk=private_jwk,
+        )
+
+        # upload a signed result
+        storage_provider.update_in_database(
+            result_dict,
+            status_msg_dict,
+            job_id,
+            backend_name,
+            private_jwk,
+        )
+
+        # now test that we can get the result
+        obtained_result = storage_provider.get_result(
+            backend_name, config("TEST_USERNAME"), job_id
+        )
+        ic(obtained_result)
+        # now test that we can verify the result
+        verified_result = storage_provider.verify_result(
+            backend_name, config("TEST_USERNAME"), job_id
+        )
+        assert verified_result is True
 
     def status_tests(self, db_name: str, sign: bool = True) -> None:
         """
