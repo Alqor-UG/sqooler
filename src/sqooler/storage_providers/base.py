@@ -228,6 +228,45 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def upload_result(
+        self,
+        result_dict: ResultDict,
+        display_name: DisplayNameStr,
+        job_id: str,
+        private_jwk: Optional[JWK] = None,
+    ) -> bool:
+        """
+        This function allows us to upload the result file .
+
+        Args:
+            result_dict: The result dictionary
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            The result dict of the job. If the information is not available, the result dict
+            has a status of "ERROR".
+        """
+
+    @abstractmethod
+    def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
+        """
+        Delete a result from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Raises:
+            FileNotFoundError: If the result does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+
+    @abstractmethod
     def get_result(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> ResultDict:

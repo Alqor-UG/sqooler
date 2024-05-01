@@ -357,20 +357,11 @@ class StorageProviderTestUtils:
         status_msg_dict = get_init_status()
         job_id = uuid.uuid4().hex[:24]
 
-        # upload a signed status
-        storage_provider.upload_status(
-            display_name=backend_name,
-            username=config("TEST_USERNAME"),
-            job_id=job_id,
-            private_jwk=private_jwk,
-        )
-
         # upload a signed result
-        storage_provider.update_in_database(
+        storage_provider.upload_result(
             result_dict,
-            status_msg_dict,
-            job_id,
             backend_name,
+            job_id,
             private_jwk,
         )
 
@@ -384,6 +375,25 @@ class StorageProviderTestUtils:
             backend_name, config("TEST_USERNAME"), job_id
         )
         assert verified_result is True
+
+        # now also verify the it fails if we use another private key to sign the result
+        wrong_private_jwk, _ = create_jwk_pair("other_kid")
+        wrong_job_id = uuid.uuid4().hex[:24]
+        # upload another signed with another job_id result
+        storage_provider.upload_result(
+            result_dict,
+            backend_name,
+            wrong_job_id,
+            wrong_private_jwk,
+        )
+        poor_result = storage_provider.verify_result(
+            backend_name, config("TEST_USERNAME"), wrong_job_id
+        )
+        assert poor_result is False
+
+        # remove the useless results
+        storage_provider._delete_result(backend_name, job_id)
+        storage_provider._delete_result(backend_name, wrong_job_id)
 
     def status_tests(self, db_name: str, sign: bool = True) -> None:
         """
@@ -588,4 +598,9 @@ class StorageProviderTestUtils:
         )
 
         assert obtained_result.backend_version == "0.0.1"
+
+        # clean stuff up
+        storage_provider._delete_result(backend_name, job_id)
+        storage_provider._delete_status(backend_name, username, job_id)
+
         return backend_name, job_id, username, storage_provider
