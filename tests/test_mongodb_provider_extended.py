@@ -331,3 +331,9 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         document_to_find = {"payload.display_name": backend_name}
         result_found = collection.find_one(document_to_find)
         storage_provider.delete_file(config_path, str(result_found["_id"]))
+
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)

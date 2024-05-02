@@ -565,11 +565,13 @@ class MongodbProviderExtended(StorageProvider):
         if public_jwk.d is not None:
             raise ValueError("The key contains a private key")
 
+        if not public_jwk.kid == display_name:
+            raise ValueError("The key id does not match the display name")
         pk_paths = "backends/public_keys"
 
         # first we have to check if the device already exists in the database
 
-        document_to_find = {"display_name": display_name}
+        document_to_find = {"kid": display_name}
 
         # get the database on which we work
         database = self.client["backends"]
@@ -607,7 +609,7 @@ class MongodbProviderExtended(StorageProvider):
         collection = database["public_keys"]
 
         # create the filter for the document with display_name that is equal to display_name
-        document_to_find = {"display_name": display_name}
+        document_to_find = {"kid": display_name}
         public_jwk_dict = collection.find_one(document_to_find)
 
         if not public_jwk_dict:

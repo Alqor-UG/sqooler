@@ -156,6 +156,10 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
         default=False,
         description="True if the results are signed by the backend provider.",
     )
+    kid: Optional[str] = Field(
+        default=None,
+        description="The identifier for the public and private key of the backend.",
+    )
 
 
 class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
