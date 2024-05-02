@@ -183,12 +183,12 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
-    def test_upload_and_update_config(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_upload_and_update_config(self, sign_it: bool) -> None:
         """
         Test that we can upload and update a config.
         """
-        self.config_tests(DB_NAME)
-        self.config_tests(DB_NAME, sign=False)
+        self.config_tests(DB_NAME, sign=sign_it)
 
     def test_configs(self) -> None:
         """
@@ -258,6 +258,12 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(storage_path, mongo_id)
 
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)
+
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_backend_status(self, sign_it: bool) -> None:
         """
@@ -279,6 +285,12 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
 
         result_found = collection.find_one(document_to_find)
         storage_provider.delete_file(config_path, str(result_found["_id"]))
+
+    def test_sign_and_verify_result(self) -> None:
+        """
+        Test that it is possible a result a verify it properly.
+        """
+        self.sign_and_verify_result_test(DB_NAME)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:
@@ -306,18 +318,11 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         collection = database[f"queued.{backend_name}"]
         collection.drop()
 
-        # remove the obsolete status from the storage
-        status_dir = "status/" + backend_name
-        storage_provider.delete_file(status_dir, job_id)
-
         # remove the obsolete collection from the storage
         database = storage_provider.client["status"]
         collection = database[backend_name]
         collection.drop()
 
-        # remove the obsolete result from the storage
-        result_json_dir = "results/" + backend_name
-        storage_provider.delete_file(result_json_dir, job_id)
         # remove the obsolete collection from the storage
         database = storage_provider.client["results"]
         collection = database[backend_name]

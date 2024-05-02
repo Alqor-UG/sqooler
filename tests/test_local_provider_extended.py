@@ -169,12 +169,12 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
             storage_provider.get_backend_dict("dummy_non_existing")
         storage_provider.delete_file(config_path, backend_name)
 
-    def test_upload_and_update_config(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_upload_and_update_config(self, sign_it: bool) -> None:
         """
         Test that we can upload and update a config.
         """
-        self.config_tests(DB_NAME)
-        self.config_tests(DB_NAME, sign=False)
+        self.config_tests(DB_NAME, sign=sign_it)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_backend_status(self, sign_it: bool) -> None:

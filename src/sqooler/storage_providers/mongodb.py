@@ -21,7 +21,7 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
 )
-from ..security import JWK, sign_payload
+from ..security import JWK, JWSDict, sign_payload
 from .base import StorageProvider, validate_active
 
 
@@ -511,6 +511,31 @@ class MongodbProviderExtended(StorageProvider):
         self.delete_file(storage_path=status_json_dir, job_id=job_id)
         return True
 
+    def upload_result(
+        self,
+        result_dict: ResultDict,
+        display_name: DisplayNameStr,
+        job_id: str,
+        private_jwk: Optional[JWK] = None,
+    ) -> bool:
+        # let us create the result json file
+        result_json_dir = "results/" + display_name
+
+        # let us see if we should sign the result
+        backend_config = self.get_config(display_name)
+        if backend_config.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend is configured to sign."
+                )
+            # we should sign the result
+            signed_result = sign_payload(result_dict.model_dump(), private_jwk)
+            self.upload(signed_result.model_dump(), result_json_dir, job_id)
+        else:
+            self.upload(result_dict.model_dump(), result_json_dir, job_id)
+        return True
+
     def get_result(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> ResultDict:
@@ -545,6 +570,49 @@ class MongodbProviderExtended(StorageProvider):
             )
         backend_config_info = self.get_backend_dict(display_name)
         return self._adapt_result_dict(result_dict, backend_config_info)
+
+    def verify_result(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> bool:
+        """
+        This function verifies the result and returns the success. If the backend does not sign the
+        result, we will reutrn `False` by default, given that we were not able to establish ownership.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            If it was possible to verify the result dict positively.
+        """
+        result_json_dir = "results/" + display_name
+        result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
+        public_jwk = self.get_public_key(display_name)
+
+        result_jws = JWSDict(**result_dict)
+        return result_jws.verify_signature(public_jwk)
+
+    def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
+        """
+        Delete a result from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Raises:
+            FileNotFoundError: If the result does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+
+        result_json_dir = "results/" + display_name
+
+        self.delete_file(storage_path=result_json_dir, job_id=job_id)
+        return True
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """
@@ -653,22 +721,11 @@ class MongodbProviderExtended(StorageProvider):
                 raise ValueError(
                     "The 'result_dict' argument cannot be None if the job is done."
                 )
-            # let us create the result json file
-            result_json_dir = "results/" + display_name
-
-            # let us see if we should sign the result
-            backend_config = self.get_config(display_name)
-            if backend_config.sign:
-                # get the private key
-                if private_jwk is None:
-                    raise ValueError(
-                        "The private key is not given, but the backend is configured to sign."
-                    )
-                # we should sign the result
-                signed_result = sign_payload(result_dict.model_dump(), private_jwk)
-                self.upload(signed_result.model_dump(), result_json_dir, job_id)
-            else:
-                self.upload(result_dict.model_dump(), result_json_dir, job_id)
+            result_uploaded = self.upload_result(
+                result_dict, display_name, job_id, private_jwk
+            )
+            if not result_uploaded:
+                raise ValueError("The result was not uploaded successfully.")
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + display_name
