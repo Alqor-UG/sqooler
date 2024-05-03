@@ -406,7 +406,7 @@ class MongodbProviderExtended(StorageProvider):
             display_name: The name of the backend to which we want to upload the job
 
         Raises:
-            FileNotFoundError: If the status does not exist.
+            FileNotFoundError: If the config does not exist.
 
         Returns:
             Success if the file was deleted successfully
@@ -423,6 +423,8 @@ class MongodbProviderExtended(StorageProvider):
             document_to_find = {"payload.display_name": display_name}
 
         result_found = collection.find_one(document_to_find)
+        if result_found is None:
+            raise FileNotFoundError(f"the config for {display_name} does not exist.")
         self.delete_file(config_path, str(result_found["_id"]))
 
         return True
@@ -662,7 +664,7 @@ class MongodbProviderExtended(StorageProvider):
             kid: The key id of the public key
 
         Raises:
-            FileNotFoundError: If the status does not exist.
+            FileNotFoundError: If the public key does not exist.
 
         Returns:
             Success if the file was deleted successfully
@@ -673,6 +675,8 @@ class MongodbProviderExtended(StorageProvider):
         database = self.client["backends"]
         collection = database["public_keys"]
         result_found = collection.find_one(document_to_find)
+        if result_found is None:
+            raise FileNotFoundError(f"The public key with kid {kid} does not exist")
         self.delete_file(key_path, str(result_found["_id"]))
         return True
 
