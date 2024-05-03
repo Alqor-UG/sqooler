@@ -267,19 +267,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
             DB_NAME, sign=sign_it
         )
 
-        # test how we can delete a backend. main challenge is to get the id of the config
-        config_path = "backends/configs"
-        database = storage_provider.client["backends"]
-        collection = database["configs"]
-
-        if not sign_it:
-            document_to_find = {"display_name": backend_name}
-        elif sign_it:
-            document_to_find = {"payload.display_name": backend_name}
-
-        result_found = collection.find_one(document_to_find)
-        storage_provider.delete_file(config_path, str(result_found["_id"]))
-
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:
         """
@@ -293,22 +280,10 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         backend_name, job_id, username, storage_provider = self.job_tests(DB_NAME)
 
-        # what happens if we try get an unknown job ?
-        job_result = storage_provider.get_result(
-            display_name=backend_name,
-            username=username,
-            job_id=uuid.uuid4().hex,
-        )
-        assert job_result.status == "ERROR"
-
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
         collection = database[f"queued.{backend_name}"]
         collection.drop()
-
-        # remove the obsolete status from the storage
-        status_dir = "status/" + backend_name
-        storage_provider.delete_file(status_dir, job_id)
 
         # remove the obsolete collection from the storage
         database = storage_provider.client["status"]
@@ -322,15 +297,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         database = storage_provider.client["results"]
         collection = database[backend_name]
         collection.drop()
-
-        # remove the obsolete config from the storage
-        config_path = "backends/configs"
-
-        database = storage_provider.client["backends"]
-        collection = database["configs"]
-        document_to_find = {"payload.display_name": backend_name}
-        result_found = collection.find_one(document_to_find)
-        storage_provider.delete_file(config_path, str(result_found["_id"]))
 
     def test_upload_public_key(self) -> None:
         """

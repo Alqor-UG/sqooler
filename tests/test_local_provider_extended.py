@@ -270,11 +270,8 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         full_path = os.path.join(storage_provider.base_path, job_dir)
         os.rmdir(full_path)
 
-        # remove the obsolete status from the storage
-        status_dir = "status/" + backend_name
-        storage_provider.delete_file(status_dir, job_id)
-
         # remove the obsolete collection from the storage
+        status_dir = "status/" + backend_name
         full_path = os.path.join(storage_provider.base_path, status_dir)
         os.rmdir(full_path)
 

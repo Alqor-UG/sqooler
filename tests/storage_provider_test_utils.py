@@ -563,4 +563,9 @@ class StorageProviderTestUtils:
         # clean up old stuff
         storage_provider._delete_config(backend_name)
         storage_provider._delete_public_key(key_id)
+        storage_provider._delete_status(
+            display_name=backend_name,
+            username=username,
+            job_id=next_job.job_id,
+        )
         return backend_name, job_id, username, storage_provider
