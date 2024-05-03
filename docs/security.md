@@ -48,7 +48,6 @@ Once the private is set up, Bob can upload the public key to the `StorageProvide
 - We store the public key as [Json Web Key (JWK)](https://datatracker.ietf.org/doc/html/rfc7517) in the storage. This allows us to store some context around the key.
 - Importantly this also allows us to add the algorithm and a key id.
 - However, for the moment anyone with access to the storage can access and change the public key. This is a security risk that we have not yet addressed. The key challenge will be that the public key is stored and immutable once it is published. 
-- Another collusion can happen right now if two backends have the same backend name. This might happen by accident or by malice. But using the private keys and some authentication we can already reduce the accidental risks and then move on to problems of authentification.
 
 ## Verifying the results
 

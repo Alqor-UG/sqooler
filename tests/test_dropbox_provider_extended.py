@@ -216,3 +216,9 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         # remove the obsolete result from the storage folder on the dropbox
         result_path = "/Backend_files/Result/" + backend_name
         storage_provider.delete_folder(result_path)
+
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)

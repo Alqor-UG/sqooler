@@ -306,6 +306,24 @@ class DropboxProviderExtended(StorageProvider):
         upload_dict = self._format_config_dict(config_dict, private_jwk)
         self.upload(upload_dict, config_path, "config")
 
+    def _delete_config(self, display_name: DisplayNameStr) -> bool:
+        """
+        Delete a config from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        config_path = "Backend_files/Config/" + display_name
+
+        self.delete_file(storage_path=config_path, job_id="config")
+        return True
+
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
@@ -325,9 +343,14 @@ class DropboxProviderExtended(StorageProvider):
         if public_jwk.d is not None:
             raise ValueError("The key contains a private key")
 
+        # make sure that the key has the correct kid
+        config_dict = self.get_config(display_name)
+        if public_jwk.kid != config_dict.kid:
+            raise ValueError("The key does not have the correct kid.")
+
         pk_paths = "Backend_files/public_keys"
 
-        self.upload_string(public_jwk.model_dump_json(), pk_paths, display_name)
+        self.upload_string(public_jwk.model_dump_json(), pk_paths, config_dict.kid)
 
     def get_public_key(self, display_name: DisplayNameStr) -> JWK:
         """
@@ -340,10 +363,33 @@ class DropboxProviderExtended(StorageProvider):
             JWk : The public JWK object
         """
         pk_paths = "Backend_files/public_keys"
+
+        # now get the appropiate kid
+        config_dict = self.get_config(display_name)
+        if config_dict.kid is None:
+            raise ValueError("The kid is not set in the backend configuration.")
+
         public_jwk_dict = self.get_file_content(
-            storage_path=pk_paths, job_id=display_name
+            storage_path=pk_paths, job_id=config_dict.kid
         )
         return JWK(**public_jwk_dict)
+
+    def _delete_public_key(self, kid: str) -> bool:
+        """
+        Delete a public key from the storage. This is only intended for test purposes.
+
+        Args:
+            kid: The key id of the public key
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        pk_paths = "Backend_files/public_keys"
+        self.delete_file(storage_path=pk_paths, job_id=kid)
+        return True
 
     def update_in_database(
         self,
