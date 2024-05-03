@@ -560,6 +560,7 @@ class StorageProvider(ABC):
                     )
 
             # now that we know that the private key is the same, we can sign the new config
+            config_dict.kid = private_jwk.kid
             signed_config = sign_payload(config_dict.model_dump(), private_jwk)
             upload_dict = signed_config.model_dump()
         else:
