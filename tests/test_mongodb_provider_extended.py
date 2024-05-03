@@ -269,22 +269,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that we can get the status of a backend.
         """
-        backend_name, storage_provider = self.backend_status_tests(
-            DB_NAME, sign=sign_it
-        )
-
-        # test how we can delete a backend. main challenge is to get the id of the config
-        config_path = "backends/configs"
-        database = storage_provider.client["backends"]
-        collection = database["configs"]
-
-        if not sign_it:
-            document_to_find = {"display_name": backend_name}
-        elif sign_it:
-            document_to_find = {"payload.display_name": backend_name}
-
-        result_found = collection.find_one(document_to_find)
-        storage_provider.delete_file(config_path, str(result_found["_id"]))
+        self.backend_status_tests(DB_NAME, sign=sign_it)
 
     def test_sign_and_verify_result(self) -> None:
         """
@@ -303,15 +288,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        backend_name, job_id, username, storage_provider = self.job_tests(DB_NAME)
-
-        # what happens if we try get an unknown job ?
-        job_result = storage_provider.get_result(
-            display_name=backend_name,
-            username=username,
-            job_id=uuid.uuid4().hex,
-        )
-        assert job_result.status == "ERROR"
+        backend_name, job_id, _, storage_provider = self.job_tests(DB_NAME)
 
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
@@ -328,11 +305,8 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         collection = database[backend_name]
         collection.drop()
 
-        # remove the obsolete config from the storage
-        config_path = "backends/configs"
-
-        database = storage_provider.client["backends"]
-        collection = database["configs"]
-        document_to_find = {"payload.display_name": backend_name}
-        result_found = collection.find_one(document_to_find)
-        storage_provider.delete_file(config_path, str(result_found["_id"]))
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)

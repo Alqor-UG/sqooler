@@ -264,11 +264,17 @@ class StorageProviderTestUtils:
             storage_provider = storage_provider_class(self.get_login(), db_name)
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
-        dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy{dummy_id}"
 
         # create a dummy key
-        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        key_id = "dummy_key"
+        private_jwk, public_jwk = create_jwk_pair(key_id)
+
+        # create a dummy config
+        backend_name, config_info = self.get_dummy_config(sign=True)
+
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
         storage_provider.upload_public_key(public_jwk, display_name=backend_name)
 
         with pytest.raises(ValueError):
@@ -280,6 +286,26 @@ class StorageProviderTestUtils:
 
         with pytest.raises(FileNotFoundError):
             obtained_public_jwk = storage_provider.get_public_key("random")
+
+        # now make sure that we can use the same public key for a different backend
+        other_backend_name, other_config_info = self.get_dummy_config(sign=True)
+        storage_provider.upload_config(
+            other_config_info, display_name=other_backend_name, private_jwk=private_jwk
+        )
+        obtained_public_jwk = storage_provider.get_public_key(other_backend_name)
+        assert obtained_public_jwk.x == public_jwk.x
+
+        # now make sure that we cannot upload a public key with a poor kid
+        _, poor_public_jwk = create_jwk_pair("random")
+        with pytest.raises(ValueError):
+            storage_provider.upload_public_key(
+                poor_public_jwk, display_name=backend_name
+            )
+
+        # remove old stuff
+        storage_provider._delete_config(backend_name)
+        storage_provider._delete_config(other_backend_name)
+        storage_provider._delete_public_key(key_id)
 
     def backend_status_tests(self, db_name: str, sign: bool) -> Tuple[str, Any]:
         """
@@ -328,6 +354,8 @@ class StorageProviderTestUtils:
         status_schema = storage_provider.get_backend_status(backend_name)
         assert status_schema.operational is True
 
+        # clean up
+        storage_provider._delete_config(backend_name)
         return backend_name, storage_provider
 
     def sign_and_verify_result_test(self, db_name: str) -> None:
@@ -468,6 +496,9 @@ class StorageProviderTestUtils:
                 job_id=job_id,
             )
 
+        # clean up the config
+        storage_provider._delete_config(backend_name)
+
     def job_tests(self, db_name: str, sign: bool = True) -> Tuple[str, str, str, Any]:
         """
         Test the job upload and download.
@@ -489,7 +520,8 @@ class StorageProviderTestUtils:
         backend_name, config_info = self.get_dummy_config(sign=sign)
 
         # create a dummy key
-        private_jwk, public_jwk = create_jwk_pair(backend_name)
+        key_id = "dummy_key"
+        private_jwk, public_jwk = create_jwk_pair(key_id)
 
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
@@ -602,5 +634,7 @@ class StorageProviderTestUtils:
         # clean stuff up
         storage_provider._delete_result(backend_name, job_id)
         storage_provider._delete_status(backend_name, username, job_id)
+        storage_provider._delete_config(backend_name)
+        storage_provider._delete_public_key(key_id)
 
         return backend_name, job_id, username, storage_provider

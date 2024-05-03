@@ -176,17 +176,18 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         """
         self.config_tests(DB_NAME, sign=sign_it)
 
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)
+
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_backend_status(self, sign_it: bool) -> None:
         """
         Test that we can get the status of a backend.
         """
-        backend_name, storage_provider = self.backend_status_tests(
-            DB_NAME, sign=sign_it
-        )
-
-        config_path = "backends/configs"
-        storage_provider.delete_file(config_path, backend_name)
+        self.backend_status_tests(DB_NAME, sign=sign_it)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:
