@@ -290,7 +290,7 @@ class StorageProviderTestUtils:
         assert obtained_public_jwk.x == public_jwk.x
 
         # now make sure that we cannot upload a public key with a poor kid
-        poor_private_jwk, poor_public_jwk = create_jwk_pair("random")
+        _, poor_public_jwk = create_jwk_pair("random")
         with pytest.raises(ValueError):
             storage_provider.upload_public_key(
                 poor_public_jwk, display_name=backend_name

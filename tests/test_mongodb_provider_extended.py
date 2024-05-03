@@ -263,9 +263,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that we can get the status of a backend.
         """
-        backend_name, storage_provider = self.backend_status_tests(
-            DB_NAME, sign=sign_it
-        )
+        self.backend_status_tests(DB_NAME, sign=sign_it)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:
@@ -278,7 +276,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        backend_name, job_id, username, storage_provider = self.job_tests(DB_NAME)
+        backend_name, job_id, _, storage_provider = self.job_tests(DB_NAME)
 
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]

@@ -187,6 +187,13 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         """
         self.status_tests(DB_NAME, sign=sign_it)
 
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_backend_status(self, sign_it: bool) -> None:
+        """
+        Test that we can get the status of a backend.
+        """
+        self.backend_status_tests(DB_NAME, sign=sign_it)
+
     def test_jobs(self) -> None:
         """
         Test that we can handle the necessary functions for the jobs and status.
