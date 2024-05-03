@@ -59,6 +59,12 @@ def update_backends(
             )
 
         if spooler.sign:
+            # this line is IMHO needless but somehow mypy thinks that it could be a
+            # None (no idea how this could happen)
+            private_jwk = spooler.get_private_jwk()
+
+            # this has to happen after the config was uploaded to be sure
+            # the we know the appropiate kid
             public_jwk = public_from_private_jwk(private_jwk)
             storage_provider.upload_public_key(public_jwk, requested_backend)
 
