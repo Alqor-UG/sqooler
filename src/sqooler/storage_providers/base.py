@@ -340,6 +340,21 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def _delete_config(self, display_name: DisplayNameStr) -> bool:
+        """
+        Delete a config from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+
+    @abstractmethod
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
@@ -362,6 +377,21 @@ class StorageProvider(ABC):
 
         Returns:
             JWk : The public JWK object
+        """
+
+    @abstractmethod
+    def _delete_public_key(self, kid: str) -> bool:
+        """
+        Delete a public key from the storage. This is only intended for test purposes.
+
+        Args:
+            kid: The key id of the public key
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
         """
 
     @abstractmethod
@@ -439,6 +469,7 @@ class StorageProvider(ABC):
                     "The private key is not given, but the backend needs to be signed."
                 )
             # we sign the result now
+            config_dict.kid = private_jwk.kid
             signed_config = sign_payload(config_dict.model_dump(), private_jwk)
             upload_dict = signed_config.model_dump()
         else:
@@ -529,6 +560,7 @@ class StorageProvider(ABC):
                     )
 
             # now that we know that the private key is the same, we can sign the new config
+            config_dict.kid = private_jwk.kid
             signed_config = sign_payload(config_dict.model_dump(), private_jwk)
             upload_dict = signed_config.model_dump()
         else:

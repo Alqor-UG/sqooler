@@ -4,7 +4,7 @@ comments: true
 
 # Security and signing
 
-In this section we will discuss some of the cryptographic work that we started. All of the code in this regard can be found in the `security` module.  Before we go into more detail on the discussion, let us remind ourselves of the general architecture of the workflow:
+In this section we will discuss some of the cryptographic work that we started. All of the code in this regard can be found in the [security](security_api.md) module.  Before we go into more detail on the discussion, let us remind ourselves of the general architecture of the workflow:
 
 ``` mermaid
 flowchart LR
@@ -47,8 +47,9 @@ Once the private is set up, Bob can upload the public key to the `StorageProvide
 
 - We store the public key as [Json Web Key (JWK)](https://datatracker.ietf.org/doc/html/rfc7517) in the storage. This allows us to store some context around the key.
 - Importantly this also allows us to add the algorithm and a key id.
-- However, for the moment anyone with access to the storage can access and change the public key. This is a security risk that we have not yet addressed. The key challenge will be that the public key is stored and immutable once it is published. 
-- Another collusion can happen right now if two backends have the same backend name. This might happen by accident or by malice. But using the private keys and some authentication we can already reduce the accidental risks and then move on to problems of authentification.
+- However, for the moment anyone with access to the storage can access and change the public key. This is a security risk that we have not yet addressed. The key challenge will be that the public key is stored and immutable once it is published.
+- It is possible that several `Sqooler` objects use the same private/public key pair if they run on the same control machine. While this is unlikely for real hardware it is actually exactly the configuration of the [sqooler-example](https://github.com/Alqor-UG/sqooler-example). For this reason, we have attached the kid of the pair to each configuration.
+
 
 ## Verifying the results
 

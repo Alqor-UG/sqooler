@@ -170,17 +170,18 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         self.config_tests(DB_NAME)
         self.config_tests(DB_NAME, sign=False)
 
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)
+
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_backend_status(self, sign_it: bool) -> None:
         """
         Test that we can get the status of a backend.
         """
-        backend_name, storage_provider = self.backend_status_tests(
-            DB_NAME, sign=sign_it
-        )
-
-        config_path = "backends/configs"
-        storage_provider.delete_file(config_path, backend_name)
+        self.backend_status_tests(DB_NAME, sign=sign_it)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:
@@ -269,11 +270,8 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         full_path = os.path.join(storage_provider.base_path, job_dir)
         os.rmdir(full_path)
 
-        # remove the obsolete status from the storage
-        status_dir = "status/" + backend_name
-        storage_provider.delete_file(status_dir, job_id)
-
         # remove the obsolete collection from the storage
+        status_dir = "status/" + backend_name
         full_path = os.path.join(storage_provider.base_path, status_dir)
         os.rmdir(full_path)
 

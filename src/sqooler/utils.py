@@ -35,8 +35,6 @@ def update_backends(
         # upload the public key if the backend has one and is designed to sign
         if spooler.sign:
             private_jwk = spooler.get_private_jwk()
-            public_jwk = public_from_private_jwk(private_jwk)
-            storage_provider.upload_public_key(public_jwk, requested_backend)
         else:
             private_jwk = None
 
@@ -45,6 +43,7 @@ def update_backends(
             storage_provider.update_config(
                 backend_config_dict, requested_backend, private_jwk=private_jwk
             )
+
             logging.info(
                 "Updated the config for %s .",
                 requested_backend,
@@ -55,14 +54,19 @@ def update_backends(
                 "Failed to update the configuration for %s . Uploading it as a new one.",
                 requested_backend,
             )
-            if spooler.sign:
-                storage_provider.upload_config(
-                    backend_config_dict, requested_backend, private_jwk
-                )
-            else:
-                storage_provider.upload_config(
-                    backend_config_dict, requested_backend, private_jwk=None
-                )
+            storage_provider.upload_config(
+                backend_config_dict, requested_backend, private_jwk
+            )
+
+        if spooler.sign:
+            # this line is IMHO needless but somehow mypy thinks that it could be a
+            # None (no idea how this could happen)
+            private_jwk = spooler.get_private_jwk()
+
+            # this has to happen after the config was uploaded to be sure
+            # the we know the appropiate kid
+            public_jwk = public_from_private_jwk(private_jwk)
+            storage_provider.upload_public_key(public_jwk, requested_backend)
 
 
 def main(

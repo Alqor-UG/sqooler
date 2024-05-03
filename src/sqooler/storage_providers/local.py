@@ -467,9 +467,28 @@ class LocalProviderExtended(StorageProvider):
         typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
 
+    def _delete_config(self, display_name: DisplayNameStr) -> bool:
+        """
+        Delete a config from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        config_path = "/backends/configs"
+
+        self.delete_file(storage_path=config_path, job_id=display_name)
+        return True
+
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
         """
-        The function that uploads the spooler public JWK to the storage.
+        The function that uploads the spooler public JWK to the storage. It should
+        only be used after `upload_config` as the kid is set there.
 
         Args:
             public_jwk: The JWK that contains the public key
@@ -486,6 +505,11 @@ class LocalProviderExtended(StorageProvider):
         if public_jwk.d is not None:
             raise ValueError("The key contains a private key")
 
+        # make sure that the key has the correct kid
+        config_dict = self.get_config(display_name)
+        if public_jwk.kid != config_dict.kid:
+            raise ValueError("The key does not have the correct kid.")
+
         # path of the public keys
         key_path = os.path.join(self.base_path, "backends/public_keys")
         key_path = os.path.normpath(key_path)
@@ -494,7 +518,7 @@ class LocalProviderExtended(StorageProvider):
             os.makedirs(key_path)
 
         # this should most likely depend on the kid at some point
-        file_name = display_name + ".json"
+        file_name = f"{public_jwk.kid}.json"
         full_json_path = os.path.join(key_path, file_name)
         secure_path = os.path.normpath(full_json_path)
         with open(secure_path, "w", encoding="utf-8") as json_file:
@@ -511,9 +535,12 @@ class LocalProviderExtended(StorageProvider):
             JWk : The public JWK object
         """
 
+        # first we have to get the kid
+        config_info = self.get_config(display_name)
+
         # path of the configs
         key_path = os.path.join(self.base_path, "backends/public_keys")
-        file_name = display_name + ".json"
+        file_name = f"{config_info.kid}.json"
         full_json_path = os.path.join(key_path, file_name)
         secure_path = os.path.normpath(full_json_path)
         with open(secure_path, "r", encoding="utf-8") as json_file:
@@ -523,6 +550,24 @@ class LocalProviderExtended(StorageProvider):
             raise FileNotFoundError("The backend does not exist for the given storage.")
 
         return JWK(**public_key_dict)
+
+    def _delete_public_key(self, kid: str) -> bool:
+        """
+        Delete a public key from the storage. This is only intended for test purposes.
+
+        Args:
+            kid: The key id of the public key
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        key_path = "backends/public_keys"
+
+        self.delete_file(storage_path=key_path, job_id=kid)
+        return True
 
     def update_in_database(
         self,

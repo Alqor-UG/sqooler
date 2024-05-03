@@ -398,6 +398,37 @@ class MongodbProviderExtended(StorageProvider):
 
         raise FileNotFoundError("The backend does not exist for the given storage.")
 
+    def _delete_config(self, display_name: DisplayNameStr) -> bool:
+        """
+        Delete a config from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+
+        Raises:
+            FileNotFoundError: If the config does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+
+        config_dict = self.get_config(display_name)
+        config_path = "backends/configs"
+        database = self.client["backends"]
+        collection = database["configs"]
+
+        if not config_dict.sign:
+            document_to_find = {"display_name": display_name}
+        else:
+            document_to_find = {"payload.display_name": display_name}
+
+        result_found = collection.find_one(document_to_find)
+        if result_found is None:
+            raise FileNotFoundError(f"the config for {display_name} does not exist.")
+        self.delete_file(config_path, str(result_found["_id"]))
+
+        return True
+
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str
     ) -> str:
@@ -567,9 +598,14 @@ class MongodbProviderExtended(StorageProvider):
 
         pk_paths = "backends/public_keys"
 
+        # make sure that the key has the correct kid
+        config_dict = self.get_config(display_name)
+        if public_jwk.kid != config_dict.kid:
+            raise ValueError("The key does not have the correct kid.")
+
         # first we have to check if the device already exists in the database
 
-        document_to_find = {"display_name": display_name}
+        document_to_find = {"kid": config_dict.kid}
 
         # get the database on which we work
         database = self.client["backends"]
@@ -588,7 +624,6 @@ class MongodbProviderExtended(StorageProvider):
             return
 
         # if the device does not exist, we have to create it
-
         config_id = uuid.uuid4().hex[:24]
         self.upload(public_jwk.model_dump(), pk_paths, config_id)
 
@@ -606,8 +641,13 @@ class MongodbProviderExtended(StorageProvider):
         database = self.client["backends"]
         collection = database["public_keys"]
 
+        # now get the appropiate kid
+        config_dict = self.get_config(display_name)
+        if config_dict.kid is None:
+            raise ValueError("The kid is not set in the backend configuration.")
+
         # create the filter for the document with display_name that is equal to display_name
-        document_to_find = {"display_name": display_name}
+        document_to_find = {"kid": config_dict.kid}
         public_jwk_dict = collection.find_one(document_to_find)
 
         if not public_jwk_dict:
@@ -615,6 +655,30 @@ class MongodbProviderExtended(StorageProvider):
 
         public_jwk_dict.pop("_id")
         return JWK(**public_jwk_dict)
+
+    def _delete_public_key(self, kid: str) -> bool:
+        """
+        Delete a public key from the storage. This is only intended for test purposes.
+
+        Args:
+            kid: The key id of the public key
+
+        Raises:
+            FileNotFoundError: If the public key does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        key_path = "backends/public_keys"
+        document_to_find = {"kid": kid}
+
+        database = self.client["backends"]
+        collection = database["public_keys"]
+        result_found = collection.find_one(document_to_find)
+        if result_found is None:
+            raise FileNotFoundError(f"The public key with kid {kid} does not exist")
+        self.delete_file(key_path, str(result_found["_id"]))
+        return True
 
     def update_in_database(
         self,
