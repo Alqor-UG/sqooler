@@ -817,11 +817,7 @@ Even if you are a good person and you want to share it with your friends, don't 
 <li>It is possible that several <code>Sqooler</code> objects use the same private/public key pair if they run on the same control machine. While this is unlikely for real hardware it is actually exactly the configuration of the <a href="https://github.com/Alqor-UG/sqooler-example">sqooler-example</a>. For this reason, we have attached the kid of the pair to each configuration.</li>
 </ul>
 <h2 id="verifying-the-results">Verifying the results</h2>
-<p>Right now we have not yet implemented the verification of the results. This will have to be part of the API of <code>qlued</code>. The future workflow for the verification would be:</p>
-<ul>
-<li>Alice has the full result JWS including header, payload and signature.</li>
-<li>Alice has the appropiate public key the corresponds to the <code>kid</code> from the JWS header. She can now verify the signature. </li>
-</ul>
+<p>Alice is now also able to verify the results through the <code>verify_result</code>, which is available for each <code>StorageProvider</code>. It uses the <code>display_name</code> to get the appropiate public key, the <code>job_id</code> to pull the result and then verifies the payload. </p>
 <h2 id="signing-the-configuration">Signing the configuration</h2>
 <p>It is now also possible to sign the backend configuration. This happens automatically if the <code>Spooler</code> object is configured to be signed. The <code>upload_config</code> and <code>update_config</code> will then sign the document before uploading it to the storage. This enables us now to have several backend providers in parallel without a central authority. Importantly, we can now hinder the collusion of two backends with the same name because you can only update the files if you are the owner of the private key.</p>
 
