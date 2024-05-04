@@ -21,7 +21,7 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
 )
-from ..security import JWK, JWSDict, sign_payload
+from ..security import JWK, JWSDict
 from .base import StorageProvider, validate_active
 
 
@@ -549,23 +549,28 @@ class MongodbProviderExtended(StorageProvider):
         job_id: str,
         private_jwk: Optional[JWK] = None,
     ) -> bool:
-        # let us create the result json file
+        """
+        This function allows us to upload the result file .
+
+        Args:
+            result_dict: The result dictionary
+            display_name: The name of the backend to which we want to upload the job
+            job_id: The job_id of the job that we want to upload the status for
+            private_jwk: The private key of the backend
+
+        Returns:
+            The success of the upload process
+        """
         result_json_dir = "results/" + display_name
 
-        # let us see if we should sign the result
-        backend_config = self.get_config(display_name)
-        if backend_config.sign:
-            # get the private key
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend is configured to sign."
-                )
-            # we should sign the result
-            signed_result = sign_payload(result_dict.model_dump(), private_jwk)
-            self.upload(signed_result.model_dump(), result_json_dir, job_id)
-        else:
-            self.upload(result_dict.model_dump(), result_json_dir, job_id)
-        return True
+        return self._common_upload_result(
+            result_dict,
+            display_name,
+            job_id,
+            result_json_dir,
+            result_json_name=job_id,
+            private_jwk=private_jwk,
+        )
 
     def get_result(
         self, display_name: DisplayNameStr, username: str, job_id: str

@@ -22,7 +22,7 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
 )
-from ..security import JWK, JWSDict, sign_payload
+from ..security import JWK, JWSDict
 from .base import StorageProvider, datetime_handler, validate_active
 
 
@@ -676,31 +676,22 @@ class DropboxProviderExtended(StorageProvider):
             private_jwk: The private key of the backend
 
         Returns:
-            The result dict of the job. If the information is not available, the result dict
-            has a status of "ERROR".
+            The success of the upload process
         """
         extracted_username = job_id.split("-")[2]
-        # let us create the result json file
         result_json_dir = (
             "/Backend_files/Result/" + display_name + "/" + extracted_username + "/"
         )
         result_json_name = "result-" + job_id
 
-        # let us see if we should sign the result
-        backend_config = self.get_config(display_name)
-        if backend_config.sign:
-            # get the private key
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend is configured to sign."
-                )
-            # we should sign the result
-            signed_result = sign_payload(result_dict.model_dump(), private_jwk)
-            self.upload(signed_result.model_dump(), result_json_dir, result_json_name)
-        else:
-            self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
-
-        return True
+        return self._common_upload_result(
+            result_dict,
+            display_name,
+            job_id,
+            result_json_dir,
+            result_json_name=result_json_name,
+            private_jwk=private_jwk,
+        )
 
     def get_result(
         self, display_name: DisplayNameStr, username: str, job_id: str

@@ -404,7 +404,6 @@ class StorageProviderTestUtils:
         obtained_result = storage_provider.get_result(
             backend_name, config("TEST_USERNAME"), job_id
         )
-
         assert obtained_result.job_id == job_id
 
         # now test that we can verify the result

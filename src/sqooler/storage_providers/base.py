@@ -4,6 +4,7 @@ storage for the jobs. It creates an abstract API layer for the storage providers
 """
 
 import functools
+import logging
 import re
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
@@ -497,6 +498,50 @@ class StorageProvider(ABC):
         Returns:
             the job dict
         """
+
+    def _common_upload_result(
+        self,
+        result_dict: ResultDict,
+        display_name: DisplayNameStr,
+        job_id: str,
+        result_json_dir: str,
+        result_json_name: str,
+        private_jwk: Optional[JWK] = None,
+    ) -> bool:
+        """
+        Common code for the upload of the results.
+
+        Args:
+            result_dict: The dictionary containing the result of the job
+            display_name: The name of the backend
+            job_id: The name of the job
+            result_json_dir: The directory where the result should be stored
+            result_json_name: The name of the result file
+            private_jwk: The private JWK to sign the result with
+
+        Returns:
+            The success of the upload process
+        """
+        # make sure that the job_id is in the result_dict
+        if not result_dict.job_id == job_id:
+            logging.warning(
+                "Tried to upload an inconsistent result for job_id %s.", job_id
+            )
+            result_dict.job_id = job_id
+        # let us see if we should sign the result
+        backend_config = self.get_config(display_name)
+        if backend_config.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend is configured to sign."
+                )
+            # we should sign the result
+            signed_result = sign_payload(result_dict.model_dump(), private_jwk)
+            self.upload(signed_result.model_dump(), result_json_dir, result_json_name)
+        else:
+            self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
+        return True
 
     def _format_config_dict(
         self, config_dict: BackendConfigSchemaIn, private_jwk: Optional[JWK] = None
