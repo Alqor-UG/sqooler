@@ -384,16 +384,13 @@ class LocalProviderExtended(StorageProvider):
             )
         return self._adapt_result_dict(result_dict, backend_config_info)
 
-    def verify_result(
-        self, display_name: DisplayNameStr, username: str, job_id: str
-    ) -> bool:
+    def verify_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
         """
         This function verifies the result and returns the success. If the backend does not sign the
         result, we will reutrn `False` by default, given that we were not able to establish ownership.
 
         Args:
             display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
 
         Returns:

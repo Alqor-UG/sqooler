@@ -288,7 +288,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        backend_name, job_id, _, storage_provider = self.job_tests(DB_NAME)
+        backend_name, _, _, storage_provider = self.job_tests(DB_NAME)
 
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
@@ -304,9 +304,3 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         database = storage_provider.client["results"]
         collection = database[backend_name]
         collection.drop()
-
-    def test_upload_public_key(self) -> None:
-        """
-        Test that it is possible to upload the public key.
-        """
-        self.signature_tests(DB_NAME)

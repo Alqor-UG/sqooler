@@ -241,12 +241,11 @@ class StorageProvider(ABC):
         Args:
             result_dict: The result dictionary
             display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
+            private_jwk: The private key of the backend
 
         Returns:
-            The result dict of the job. If the information is not available, the result dict
-            has a status of "ERROR".
+            The success of the upload process
         """
 
     @abstractmethod
@@ -284,16 +283,13 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
-    def verify_result(
-        self, display_name: DisplayNameStr, username: str, job_id: str
-    ) -> bool:
+    def verify_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
         """
         This function verifies the result and returns the success. If the backend does not sign the
         result, we will reutrn `False` by default, given that we were not able to establish ownership.
 
         Args:
             display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
 
         Returns:

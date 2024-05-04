@@ -53,10 +53,7 @@ Once the private is set up, Bob can upload the public key to the `StorageProvide
 
 ## Verifying the results
 
-Right now we have not yet implemented the verification of the results. This will have to be part of the API of `qlued`. The future workflow for the verification would be:
-
-- Alice has the full result JWS including header, payload and signature.
-- Alice has the appropiate public key the corresponds to the `kid` from the JWS header. She can now verify the signature. 
+Alice is now also able to verify the results through the `verify_result`, which is available for each `StorageProvider`. It uses the `display_name` to get the appropiate public key, the `job_id` to pull the result and then verifies the payload. 
 
 ## Signing the configuration
 

@@ -11,15 +11,9 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
-from icecream import ic
 from pydantic import ValidationError
 
-from sqooler.schemes import (
-    BackendConfigSchemaIn,
-    ResultDict,
-    get_init_results,
-    get_init_status,
-)
+from sqooler.schemes import BackendConfigSchemaIn, ResultDict, get_init_results
 from sqooler.security import create_jwk_pair
 from sqooler.storage_providers.base import StorageProvider
 
@@ -382,8 +376,21 @@ class StorageProviderTestUtils:
 
         # create dummies
         result_dict = get_init_results()
-        status_msg_dict = get_init_status()
-        job_id = uuid.uuid4().hex[:24]
+
+        # the following is a bit of a dirty hack to get the job_id such
+        # that we can test the dropbox provider
+        if db_name == "dropboxtest":
+            job_id = (
+                (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
+                + "-"
+                + backend_name
+                + "-"
+                + config("TEST_USERNAME")
+                + "-"
+                + (uuid.uuid4().hex)[:5]
+            )
+        else:
+            job_id = uuid.uuid4().hex[:24]
 
         # upload a signed result
         storage_provider.upload_result(
@@ -397,16 +404,29 @@ class StorageProviderTestUtils:
         obtained_result = storage_provider.get_result(
             backend_name, config("TEST_USERNAME"), job_id
         )
-        ic(obtained_result)
+
+        assert obtained_result.job_id == job_id
+
         # now test that we can verify the result
-        verified_result = storage_provider.verify_result(
-            backend_name, config("TEST_USERNAME"), job_id
-        )
+        verified_result = storage_provider.verify_result(backend_name, job_id)
         assert verified_result is True
 
         # now also verify the it fails if we use another private key to sign the result
         wrong_private_jwk, _ = create_jwk_pair("other_kid")
-        wrong_job_id = uuid.uuid4().hex[:24]
+
+        if db_name == "dropboxtest":
+            wrong_job_id = (
+                (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
+                + "-"
+                + backend_name
+                + "-"
+                + config("TEST_USERNAME")
+                + "-"
+                + (uuid.uuid4().hex)[:5]
+            )
+        else:
+            wrong_job_id = uuid.uuid4().hex[:24]
+
         # upload another signed with another job_id result
         storage_provider.upload_result(
             result_dict,
@@ -414,9 +434,7 @@ class StorageProviderTestUtils:
             wrong_job_id,
             wrong_private_jwk,
         )
-        poor_result = storage_provider.verify_result(
-            backend_name, config("TEST_USERNAME"), wrong_job_id
-        )
+        poor_result = storage_provider.verify_result(backend_name, wrong_job_id)
         assert poor_result is False
 
         # remove the useless results
