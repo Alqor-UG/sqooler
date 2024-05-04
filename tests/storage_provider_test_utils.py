@@ -372,13 +372,13 @@ class StorageProviderTestUtils:
         backend_name, config_info = self.get_dummy_config(sign=True)
         private_jwk, public_jwk = create_jwk_pair("test_kid")
 
-        # upload the public key
-        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
-
         # upload the config
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
+
+        # upload the public key
+        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
 
         # create dummies
         result_dict = get_init_results()
