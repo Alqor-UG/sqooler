@@ -4,6 +4,7 @@ storage for the jobs. It creates an abstract API layer for the storage providers
 """
 
 import functools
+import logging
 import re
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
@@ -228,6 +229,44 @@ class StorageProvider(ABC):
         """
 
     @abstractmethod
+    def upload_result(
+        self,
+        result_dict: ResultDict,
+        display_name: DisplayNameStr,
+        job_id: str,
+        private_jwk: Optional[JWK] = None,
+    ) -> bool:
+        """
+        This function allows us to upload the result file .
+
+        Args:
+            result_dict: The result dictionary
+            display_name: The name of the backend to which we want to upload the job
+            job_id: The job_id of the job that we want to upload the status for
+            private_jwk: The private key of the backend
+
+        Returns:
+            The success of the upload process
+        """
+
+    @abstractmethod
+    def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
+        """
+        Delete a result from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Raises:
+            FileNotFoundError: If the result does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+
+    @abstractmethod
     def get_result(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> ResultDict:
@@ -242,6 +281,20 @@ class StorageProvider(ABC):
         Returns:
             The result dict of the job. If the information is not available, the result dict
             has a status of "ERROR".
+        """
+
+    @abstractmethod
+    def verify_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
+        """
+        This function verifies the result and returns the success. If the backend does not sign the
+        result, we will reutrn `False` by default, given that we were not able to establish ownership.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Returns:
+            If it was possible to verify the result dict positively.
         """
 
     @abstractmethod
@@ -445,6 +498,50 @@ class StorageProvider(ABC):
         Returns:
             the job dict
         """
+
+    def _common_upload_result(
+        self,
+        result_dict: ResultDict,
+        display_name: DisplayNameStr,
+        job_id: str,
+        result_json_dir: str,
+        result_json_name: str,
+        private_jwk: Optional[JWK] = None,
+    ) -> bool:
+        """
+        Common code for the upload of the results.
+
+        Args:
+            result_dict: The dictionary containing the result of the job
+            display_name: The name of the backend
+            job_id: The name of the job
+            result_json_dir: The directory where the result should be stored
+            result_json_name: The name of the result file
+            private_jwk: The private JWK to sign the result with
+
+        Returns:
+            The success of the upload process
+        """
+        # make sure that the job_id is in the result_dict
+        if not result_dict.job_id == job_id:
+            logging.warning(
+                "Tried to upload an inconsistent result for job_id %s.", job_id
+            )
+            result_dict.job_id = job_id
+        # let us see if we should sign the result
+        backend_config = self.get_config(display_name)
+        if backend_config.sign:
+            # get the private key
+            if private_jwk is None:
+                raise ValueError(
+                    "The private key is not given, but the backend is configured to sign."
+                )
+            # we should sign the result
+            signed_result = sign_payload(result_dict.model_dump(), private_jwk)
+            self.upload(signed_result.model_dump(), result_json_dir, result_json_name)
+        else:
+            self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
+        return True
 
     def _format_config_dict(
         self, config_dict: BackendConfigSchemaIn, private_jwk: Optional[JWK] = None

@@ -13,7 +13,7 @@ from decouple import config
 from dropbox.exceptions import ApiError, AuthError
 from pydantic import ValidationError
 
-from sqooler.schemes import BackendConfigSchemaIn, ResultDict
+from sqooler.schemes import BackendConfigSchemaIn, ResultDict, get_init_results
 from sqooler.security import create_jwk_pair
 from sqooler.storage_providers.base import StorageProvider
 
@@ -352,6 +352,94 @@ class StorageProviderTestUtils:
         storage_provider._delete_config(backend_name)
         return backend_name, storage_provider
 
+    def sign_and_verify_result_test(self, db_name: str) -> None:
+        """
+        Test the ability to sign and verify a result with a JWK
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        backend_name, config_info = self.get_dummy_config(sign=True)
+        private_jwk, public_jwk = create_jwk_pair("test_kid")
+
+        # upload the config
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
+        # upload the public key
+        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
+
+        # create dummies
+        result_dict = get_init_results()
+
+        # the following is a bit of a dirty hack to get the job_id such
+        # that we can test the dropbox provider
+        if db_name == "dropboxtest":
+            job_id = (
+                (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
+                + "-"
+                + backend_name
+                + "-"
+                + config("TEST_USERNAME")
+                + "-"
+                + (uuid.uuid4().hex)[:5]
+            )
+        else:
+            job_id = uuid.uuid4().hex[:24]
+
+        # upload a signed result
+        storage_provider.upload_result(
+            result_dict,
+            backend_name,
+            job_id,
+            private_jwk,
+        )
+
+        # now test that we can get the result
+        obtained_result = storage_provider.get_result(
+            backend_name, config("TEST_USERNAME"), job_id
+        )
+        assert obtained_result.job_id == job_id
+
+        # now test that we can verify the result
+        verified_result = storage_provider.verify_result(backend_name, job_id)
+        assert verified_result is True
+
+        # now also verify the it fails if we use another private key to sign the result
+        wrong_private_jwk, _ = create_jwk_pair("other_kid")
+
+        if db_name == "dropboxtest":
+            wrong_job_id = (
+                (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
+                + "-"
+                + backend_name
+                + "-"
+                + config("TEST_USERNAME")
+                + "-"
+                + (uuid.uuid4().hex)[:5]
+            )
+        else:
+            wrong_job_id = uuid.uuid4().hex[:24]
+
+        # upload another signed with another job_id result
+        storage_provider.upload_result(
+            result_dict,
+            backend_name,
+            wrong_job_id,
+            wrong_private_jwk,
+        )
+        poor_result = storage_provider.verify_result(backend_name, wrong_job_id)
+        assert poor_result is False
+
+        # remove the useless results
+        storage_provider._delete_result(backend_name, job_id)
+        storage_provider._delete_result(backend_name, wrong_job_id)
+
     def status_tests(self, db_name: str, sign: bool = True) -> None:
         """
         Test the status upload and download.
@@ -560,12 +648,10 @@ class StorageProviderTestUtils:
 
         assert obtained_result.backend_version == "0.0.1"
 
-        # clean up old stuff
+        # clean stuff up
+        storage_provider._delete_result(backend_name, job_id)
+        storage_provider._delete_status(backend_name, username, job_id)
         storage_provider._delete_config(backend_name)
         storage_provider._delete_public_key(key_id)
-        storage_provider._delete_status(
-            display_name=backend_name,
-            username=username,
-            job_id=next_job.job_id,
-        )
+
         return backend_name, job_id, username, storage_provider

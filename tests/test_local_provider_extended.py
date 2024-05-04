@@ -116,6 +116,12 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         """
         self.remove_file_not_found_test(DB_NAME)
 
+    def test_sign_and_verify_result(self) -> None:
+        """
+        Test that it is possible a result a verify it properly.
+        """
+        self.sign_and_verify_result_test(DB_NAME)
+
     def test_configs(self) -> None:
         """
         Test that we are able to obtain a list of backends.
@@ -163,12 +169,12 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
             storage_provider.get_backend_dict("dummy_non_existing")
         storage_provider.delete_file(config_path, backend_name)
 
-    def test_upload_and_update_config(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_upload_and_update_config(self, sign_it: bool) -> None:
         """
         Test that we can upload and update a config.
         """
-        self.config_tests(DB_NAME)
-        self.config_tests(DB_NAME, sign=False)
+        self.config_tests(DB_NAME, sign=sign_it)
 
     def test_upload_public_key(self) -> None:
         """
@@ -270,7 +276,7 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         full_path = os.path.join(storage_provider.base_path, job_dir)
         os.rmdir(full_path)
 
-        # remove the obsolete collection from the storage
+        # remove the obsolete status from the storage
         status_dir = "status/" + backend_name
         full_path = os.path.join(storage_provider.base_path, status_dir)
         os.rmdir(full_path)

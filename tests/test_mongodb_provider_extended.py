@@ -183,12 +183,12 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(second_path, job_id)
 
-    def test_upload_and_update_config(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_upload_and_update_config(self, sign_it: bool) -> None:
         """
         Test that we can upload and update a config.
         """
-        self.config_tests(DB_NAME)
-        self.config_tests(DB_NAME, sign=False)
+        self.config_tests(DB_NAME, sign=sign_it)
 
     def test_configs(self) -> None:
         """
@@ -258,12 +258,24 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(storage_path, mongo_id)
 
+    def test_upload_public_key(self) -> None:
+        """
+        Test that it is possible to upload the public key.
+        """
+        self.signature_tests(DB_NAME)
+
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_backend_status(self, sign_it: bool) -> None:
         """
         Test that we can get the status of a backend.
         """
         self.backend_status_tests(DB_NAME, sign=sign_it)
+
+    def test_sign_and_verify_result(self) -> None:
+        """
+        Test that it is possible a result a verify it properly.
+        """
+        self.sign_and_verify_result_test(DB_NAME)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:
@@ -276,7 +288,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        backend_name, job_id, _, storage_provider = self.job_tests(DB_NAME)
+        backend_name, _, _, storage_provider = self.job_tests(DB_NAME)
 
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
@@ -288,16 +300,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         collection = database[backend_name]
         collection.drop()
 
-        # remove the obsolete result from the storage
-        result_json_dir = "results/" + backend_name
-        storage_provider.delete_file(result_json_dir, job_id)
         # remove the obsolete collection from the storage
         database = storage_provider.client["results"]
         collection = database[backend_name]
         collection.drop()
-
-    def test_upload_public_key(self) -> None:
-        """
-        Test that it is possible to upload the public key.
-        """
-        self.signature_tests(DB_NAME)
