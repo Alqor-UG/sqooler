@@ -13,6 +13,7 @@ from decouple import config
 from dropbox.exceptions import ApiError, AuthError
 from icecream import ic
 from pydantic import ValidationError
+from pytest import LogCaptureFixture
 
 from sqooler.schemes import BackendConfigSchemaIn, ResultDict, get_init_results
 from sqooler.security import create_jwk_pair
@@ -317,7 +318,12 @@ class StorageProviderTestUtils:
         storage_provider._delete_config(other_backend_name)
         storage_provider._delete_public_key(key_id)
 
-    def backend_status_tests(self, db_name: str, sign: bool) -> Tuple[str, Any]:
+    def backend_status_tests(
+        self,
+        db_name: str,
+        sign: bool,
+        caplog: LogCaptureFixture,
+    ) -> Tuple[str, Any]:
         """
         Test the backend status.
         """
@@ -334,6 +340,15 @@ class StorageProviderTestUtils:
         # and make sure that we raise an error if the backend is not there
         with pytest.raises(FileNotFoundError):
             status_schema = storage_provider.get_backend_status(backend_name)
+
+        # make sure that we fail safely if the backend config is not there
+        with pytest.raises(FileNotFoundError):
+            storage_provider.timestamp_queue(backend_name, private_jwk)
+
+        assert (
+            f"The configuration for the backend {backend_name} does not exist."
+            in caplog.text
+        )
 
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
@@ -560,7 +575,8 @@ class StorageProviderTestUtils:
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
 
-        storage_provider.upload_public_key(public_jwk, display_name=backend_name)
+        if sign:
+            storage_provider.upload_public_key(public_jwk, display_name=backend_name)
 
         # let us first test the we can upload a dummy job
         job_payload = {
@@ -642,10 +658,11 @@ class StorageProviderTestUtils:
 
         job_status.status = "DONE"
         # this should fail as the signing key is missing
-        with pytest.raises(ValueError):
-            storage_provider.update_in_database(
-                result_dict, job_status, next_job.job_id, backend_name
-            )
+        if sign:
+            with pytest.raises(ValueError):
+                storage_provider.update_in_database(
+                    result_dict, job_status, next_job.job_id, backend_name
+                )
 
         storage_provider.update_in_database(
             result_dict,
@@ -668,6 +685,7 @@ class StorageProviderTestUtils:
         storage_provider._delete_result(backend_name, job_id)
         storage_provider._delete_status(backend_name, username, job_id)
         storage_provider._delete_config(backend_name)
-        storage_provider._delete_public_key(key_id)
+        if sign:
+            storage_provider._delete_public_key(key_id)
 
         return backend_name, job_id, username, storage_provider

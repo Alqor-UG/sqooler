@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 from decouple import config
+from pytest import LogCaptureFixture
 
 from sqooler.schemes import BackendConfigSchemaIn, LocalLoginInformation
 from sqooler.storage_providers.local import LocalProviderExtended
@@ -183,11 +184,15 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         self.signature_tests(DB_NAME)
 
     @pytest.mark.parametrize("sign_it", [True, False])
-    def test_backend_status(self, sign_it: bool) -> None:
+    def test_backend_status(
+        self,
+        sign_it: bool,
+        caplog: LogCaptureFixture,
+    ) -> None:
         """
         Test that we can get the status of a backend.
         """
-        self.backend_status_tests(DB_NAME, sign=sign_it)
+        self.backend_status_tests(DB_NAME, sign=sign_it, caplog=caplog)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:
@@ -229,11 +234,14 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(storage_path, mongo_id)
 
-    def test_jobs(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_jobs(self, sign_it: bool) -> None:
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        backend_name, job_id, username, storage_provider = self.job_tests(DB_NAME)
+        backend_name, job_id, username, storage_provider = self.job_tests(
+            DB_NAME, sign_it
+        )
         # test that we can get a job result
         # first upload a dummy result
         dummy_result: dict = {
