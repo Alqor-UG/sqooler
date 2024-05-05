@@ -76,6 +76,7 @@ class DropboxProviderExtended(StorageProvider):
                 content_string.encode("utf-8"), full_path, mode=WriteMode("overwrite")
             )
 
+    @validate_active
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the content_dict as a json file to the dropbox
@@ -91,6 +92,7 @@ class DropboxProviderExtended(StorageProvider):
 
         self.upload_string(dump_str, storage_path, job_id)
 
+    @validate_active
     def get_file_content(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the dropbox
