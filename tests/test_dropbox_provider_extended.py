@@ -205,11 +205,14 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         """
         self.sign_and_verify_result_test(DB_NAME)
 
-    def test_jobs(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_jobs(self, sign_it: bool) -> None:
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        backend_name, _, username, storage_provider = self.job_tests(DB_NAME)
+        backend_name, _, username, storage_provider = self.job_tests(
+            DB_NAME, sign=sign_it
+        )
 
         # what happens if we try to get a result that does not exist ?
         result_info = storage_provider.get_result(

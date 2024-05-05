@@ -289,11 +289,12 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         self.status_tests(DB_NAME, sign=sign_it)
 
-    def test_jobs(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_jobs(self, sign_it: bool) -> None:
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        backend_name, _, _, storage_provider = self.job_tests(DB_NAME)
+        backend_name, _, _, storage_provider = self.job_tests(DB_NAME, sign=sign_it)
 
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
