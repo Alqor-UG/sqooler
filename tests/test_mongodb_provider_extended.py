@@ -131,24 +131,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that we cannot work with the provider if it is not active.
         """
-        storage_provider = MongodbProviderExtended(
-            self.get_login(), DB_NAME, is_active=False
-        )
-
-        # make sure that we cannot upload if it is not active
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test/subcollection"
-
-        job_id = uuid.uuid4().hex[:24]
-        second_path = "test/subcollection_2"
-        with pytest.raises(ValueError):
-            storage_provider.upload(test_content, storage_path, job_id)
-        with pytest.raises(ValueError):
-            storage_provider.get_file_content(storage_path, job_id)
-        with pytest.raises(ValueError):
-            storage_provider.move_file(storage_path, second_path, job_id)
-        with pytest.raises(ValueError):
-            storage_provider.delete_file(second_path, job_id)
+        self.active_tests(DB_NAME)
 
     def test_upload_etc(self) -> None:
         """

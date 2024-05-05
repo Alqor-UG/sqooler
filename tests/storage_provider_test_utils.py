@@ -182,6 +182,35 @@ class StorageProviderTestUtils:
                 self.get_login(), "Whatever%/iswrong"
             )
 
+    def active_tests(self, db_name: str) -> None:
+        """
+        Test that we cannot work with the provider if it is not active.
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        # set the storage_provider to inactive
+        storage_provider.is_active = False
+
+        # make sure that we cannot upload if it is not active
+        test_content = {"experiment_0": "Nothing happened here."}
+        storage_path = "test/subcollection"
+
+        job_id = uuid.uuid4().hex[:24]
+        second_path = "test/subcollection_2"
+        with pytest.raises(ValueError):
+            storage_provider.upload(test_content, storage_path, job_id)
+        with pytest.raises(ValueError):
+            storage_provider.get_file_content(storage_path, job_id)
+        with pytest.raises(ValueError):
+            storage_provider.move_file(storage_path, second_path, job_id)
+        with pytest.raises(ValueError):
+            storage_provider.delete_file(second_path, job_id)
+
     def upload_tests(self, db_name: str) -> None:
         """
         Test that we can upload a file.

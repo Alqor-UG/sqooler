@@ -75,6 +75,12 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         """
         self.remove_file_not_found_test(DB_NAME)
 
+    def test_not_active(self) -> None:
+        """
+        Test that we cannot work with the provider if it is not active.
+        """
+        self.active_tests(DB_NAME)
+
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
