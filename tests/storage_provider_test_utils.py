@@ -12,6 +12,7 @@ import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
 from pydantic import ValidationError
+from pytest import LogCaptureFixture
 
 from sqooler.schemes import BackendConfigSchemaIn, ResultDict, get_init_results
 from sqooler.security import create_jwk_pair
@@ -301,7 +302,12 @@ class StorageProviderTestUtils:
         storage_provider._delete_config(other_backend_name)
         storage_provider._delete_public_key(key_id)
 
-    def backend_status_tests(self, db_name: str, sign: bool) -> Tuple[str, Any]:
+    def backend_status_tests(
+        self,
+        db_name: str,
+        sign: bool,
+        caplog: LogCaptureFixture,
+    ) -> Tuple[str, Any]:
         """
         Test the backend status.
         """
@@ -318,6 +324,15 @@ class StorageProviderTestUtils:
         # and make sure that we raise an error if the backend is not there
         with pytest.raises(FileNotFoundError):
             status_schema = storage_provider.get_backend_status(backend_name)
+
+        # make sure that we fail safely if the backend config is not there
+        with pytest.raises(FileNotFoundError):
+            storage_provider.timestamp_queue(backend_name, private_jwk)
+
+        assert (
+            f"The configuration for the backend {backend_name} does not exist."
+            in caplog.text
+        )
 
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk

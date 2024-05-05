@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 from decouple import config
+from pytest import LogCaptureFixture
 
 from sqooler.schemes import BackendConfigSchemaIn, LocalLoginInformation
 from sqooler.storage_providers.local import LocalProviderExtended
@@ -183,11 +184,15 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         self.signature_tests(DB_NAME)
 
     @pytest.mark.parametrize("sign_it", [True, False])
-    def test_backend_status(self, sign_it: bool) -> None:
+    def test_backend_status(
+        self,
+        sign_it: bool,
+        caplog: LogCaptureFixture,
+    ) -> None:
         """
         Test that we can get the status of a backend.
         """
-        self.backend_status_tests(DB_NAME, sign=sign_it)
+        self.backend_status_tests(DB_NAME, sign=sign_it, caplog=caplog)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:

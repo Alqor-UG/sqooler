@@ -192,7 +192,7 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         """
         Test that we can get the status of a backend.
         """
-        self.backend_status_tests(DB_NAME, sign=sign_it)
+        self.backend_status_tests(DB_NAME, sign=sign_it, caplog)
 
     def test_sign_and_verify_result(self) -> None:
         """

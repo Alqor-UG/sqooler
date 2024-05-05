@@ -744,10 +744,17 @@ class StorageProvider(ABC):
         Returns:
             None
         """
-
         # first let us get the current configuration
-        config_dict = self.get_config(display_name)
-
+        try:
+            config_dict = self.get_config(display_name)
+        except FileNotFoundError as exc:
+            # if the config does not exist, we raise the informed error
+            logging.error(
+                "The configuration for the backend %s does not exist.", display_name
+            )
+            raise FileNotFoundError(
+                f"The configuration for the backend {display_name} does not exist."
+            ) from exc
         # get the current time
         current_time = datetime.now(timezone.utc).replace(microsecond=0)
 
