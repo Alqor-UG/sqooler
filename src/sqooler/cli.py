@@ -25,4 +25,4 @@ def cli_private_key_str(kid: str) -> None:
 
 
 if __name__ == "__main__":
-    cli_private_key_str()
+    cli_private_key_str(kid="test_key")

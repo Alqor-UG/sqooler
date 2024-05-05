@@ -27,7 +27,7 @@ In this release, we continued the work on clean typing and we introduced first c
 
 - We have changed the syntax for the `gen_circuit` function to make it simpler to understand the code. It now takes the `exp_name` as the first argument and the `exp_dict` of the new type `ExperimentalInputDict` as the second argument. 
 - We are now distinguishing pretty strictly between the `backend_name` and the `display_name`. The `display_name` is the short alphanumeric string that acts as identifier. The `backend_name` also contains the name of the `StorageProvider` and if the system is a simulator or not.
-- To sign the results and the config you need to store a private `jwk` as described in the documentation for [security](security.md).
+- To sign the results and the config you need to store a private `jwk` as described in the documentation for [security](security_general.md#setting-up-the-private-key).
 - The `add_job` function now takes the `job_id` as the second parameter instead of the the `StatusMsgDict`. This removed some error sources.
 
 

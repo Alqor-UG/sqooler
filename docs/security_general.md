@@ -24,17 +24,13 @@ Having chosen the results as a first step allows us to keep the workflow as simp
 
 We have decided to work with the widely used crypotgraphic python library [cryptography](https://cryptography.io/en/latest/). To use it, Bob first needs to create and store a private key. This done with [Json Web Keys](https://datatracker.ietf.org/doc/html/rfc7517) as they allow us also to store some context around the key.
 
-This is done by running the following code in the terminal:
+This is done by running the following command in the terminal:
 
-```python
-
-from sqooler.security import create_jwk_pair
-
-private_jwk, public_jwk = create_jwk_pair("doc_example_key")
-
-print(private_jwk.to_config_str())
+```zsh
+sqoolerkey --kid <YOUR-PREFERRED-KEY-ID> 
 ```
-As Bob you can then copy this string into your preferred storage from which we load it.
+
+The `kid` is the key id and should be unique for each key. As Bob you can then copy this string into your preferred storage from which we load it.
 
 !!! warning
     The private key should be kept secret and should not be shared with anyone. Never ever ever. Don't do it.
