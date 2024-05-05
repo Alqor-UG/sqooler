@@ -234,11 +234,14 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         # clean up our mess
         storage_provider.delete_file(storage_path, mongo_id)
 
-    def test_jobs(self) -> None:
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_jobs(self, sign_it: bool) -> None:
         """
         Test that we can handle the necessary functions for the jobs and status.
         """
-        backend_name, job_id, username, storage_provider = self.job_tests(DB_NAME)
+        backend_name, job_id, username, storage_provider = self.job_tests(
+            DB_NAME, sign_it
+        )
         # test that we can get a job result
         # first upload a dummy result
         dummy_result: dict = {

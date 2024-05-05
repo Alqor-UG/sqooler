@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 from decouple import config
+from pytest import LogCaptureFixture
 
 from sqooler.schemes import DropboxLoginInformation
 from sqooler.storage_providers.dropbox import DropboxProviderExtended
@@ -188,11 +189,15 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         self.status_tests(DB_NAME, sign=sign_it)
 
     @pytest.mark.parametrize("sign_it", [True, False])
-    def test_backend_status(self, sign_it: bool) -> None:
+    def test_backend_status(
+        self,
+        sign_it: bool,
+        caplog: LogCaptureFixture,
+    ) -> None:
         """
         Test that we can get the status of a backend.
         """
-        self.backend_status_tests(DB_NAME, sign=sign_it, caplog)
+        self.backend_status_tests(DB_NAME, sign=sign_it, caplog=caplog)
 
     def test_sign_and_verify_result(self) -> None:
         """
