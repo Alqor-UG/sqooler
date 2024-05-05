@@ -20,6 +20,7 @@ nav:
   - Contributing: contributing.md
   - Releases: releases.md
   - "Modules":
+    - "Cli API": "cli_api.md"
     - "Schemes": "schemes.md"
     - "Spooler API": "spoolers_api.md"
     - "Utils": "utils.md"
