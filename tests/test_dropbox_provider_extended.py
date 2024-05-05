@@ -2,7 +2,6 @@
 The tests for the storage provider
 """
 
-import uuid
 from typing import Any
 
 import pytest

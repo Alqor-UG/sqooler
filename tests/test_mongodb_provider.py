@@ -2,16 +2,15 @@
 The tests for the storage provider using mongodb
 """
 
-import uuid
 from typing import Any
+
+from bson.objectid import ObjectId
 
 # get the environment variables
 from decouple import config
 
-from bson.objectid import ObjectId
-
+from sqooler.schemes import MongodbLoginInformation
 from sqooler.storage_providers.mongodb import MongodbProvider
-from sqooler.schemes import ResultDict, MongodbLoginInformation
 
 from .storage_provider_test_utils import StorageProviderTestUtils
 
@@ -116,130 +115,8 @@ class TestMongodbProvider(StorageProviderTestUtils):
                 print("Deleting random config")
                 collection.delete_one({"_id": ObjectId(config_dict["_id"])})
 
-    def test_config_upload(self) -> None:
-        """
-        Test that we can upload a config and modify it properly.
-        """
-        self.config_tests(DB_NAME)
-        self.config_tests(DB_NAME, sign=False)
-
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
         """
-        login_dict = self.get_login()
-        storage_provider = MongodbProvider(login_dict)
-        # upload a file and get it back
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test/subcollection"
-
-        job_id = uuid.uuid4().hex[:24]
-        storage_provider.upload(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
-
-        assert test_content["experiment_0"] == test_result["experiment_0"]
-
-        # move it and get it back
-        second_path = "test/subcollection_2"
-        storage_provider.move_file(storage_path, second_path, job_id)
-        test_result = storage_provider.get_file_content(second_path, job_id)
-        assert test_content["experiment_0"] == test_result["experiment_0"]
-
-        # test that we can also get the job from the database
-        test_result = storage_provider.get_job_content(second_path, job_id)
-        assert test_content["experiment_0"] == test_result["experiment_0"]
-
-        # test that we can update the file properly
-
-        new_content = {"experiment_0": "What happened here."}
-        storage_provider.update_file(new_content, second_path, job_id)
-        test_result = storage_provider.get_job_content(second_path, job_id)
-        assert new_content["experiment_0"] == test_result["experiment_0"]
-
-        # clean up our mess
-        storage_provider.delete_file(second_path, job_id)
-
-    def test_get_next_job_in_queue(self) -> None:
-        """
-        Is it possible to work through the queue of jobs?
-        """
-        storage_provider = MongodbProvider(self.get_login())
-
-        # create a dummy backend
-        backend_name, backend_info = self.get_dummy_config(sign=False)
-        storage_provider.upload_config(backend_info, backend_name)
-
-        # get the backend and test that it was uploaded properly
-        config_dict = storage_provider.get_config(backend_name)
-        print(config_dict)
-        assert config_dict.sign is False
-        # first we have to upload a dummy job
-        job_id = (uuid.uuid4().hex)[:24]
-        job_dict = {"job_id": job_id, "job_json_path": "None"}
-        queue_path = "jobs/queued/" + backend_name
-        job_dict["job_json_path"] = queue_path
-
-        storage_provider.upload(job_dict, queue_path, job_id=job_id)
-
-        # test if the file_queue is working
-
-        job_list = storage_provider.get_file_queue(queue_path)
-        assert job_list
-
-        # the last step is to get the next job and see if this nicely worked out
-        next_job = storage_provider.get_next_job_in_queue(backend_name)
-
-        assert next_job.job_id == job_id
-
-        # now also get the job content
-        job_json_dict = storage_provider.get_job_content(
-            storage_path=next_job.job_json_path, job_id=next_job.job_id
-        )
-        assert "_id" not in job_json_dict.keys()
-
-        # we now also need to test the update_in_database part of the storage provider
-
-        result_dict = ResultDict(
-            display_name=backend_name,
-            backend_version="0.0.1",
-            job_id=next_job.job_id,
-            status="INITIALIZING",
-        )
-
-        # upload the status dict without other status.
-        status_msg_dict = storage_provider.upload_status(
-            backend_name, "test_user", next_job.job_id
-        )
-
-        status_msg_dict.status = "DONE"
-        storage_provider.update_in_database(
-            result_dict, status_msg_dict, next_job.job_id, backend_name
-        )
-
-        # we now need to check if the job is in the finished jobs folder
-        job_finished_json_dir = "jobs/finished/" + backend_name
-
-        finshed_job = storage_provider.get_file_content(job_finished_json_dir, job_id)
-        assert finshed_job["job_id"] == job_id
-
-        # we check if the status was updated
-        status_json_dir = "status/" + backend_name
-        status_dict = storage_provider.get_file_content(status_json_dir, job_id)
-        assert status_dict["status"] == "DONE"
-
-        # clean up the mess
-        storage_provider.delete_file(job_finished_json_dir, job_id)
-        storage_provider.delete_file(status_json_dir, job_id)
-
-        # remove the unused collections in the jobs
-        database = storage_provider.client["jobs"]
-        collection = database[f"queued.{backend_name}"]
-        collection.drop()
-
-        collection = database[f"finished.{backend_name}"]
-        collection.drop()
-
-        # remove the unused collections in the status
-        database = storage_provider.client["status"]
-        collection = database[f"{backend_name}"]
-        collection.drop()
+        self.upload_tests(DB_NAME)

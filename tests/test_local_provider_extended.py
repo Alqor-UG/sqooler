@@ -4,14 +4,13 @@ The tests for the local storage provider
 
 import os
 import shutil
-import uuid
 from typing import Any
 
 import pytest
 from decouple import config
 from pytest import LogCaptureFixture
 
-from sqooler.schemes import BackendConfigSchemaIn, LocalLoginInformation
+from sqooler.schemes import LocalLoginInformation
 from sqooler.storage_providers.local import LocalProviderExtended
 
 from .storage_provider_test_utils import StorageProviderTestUtils
