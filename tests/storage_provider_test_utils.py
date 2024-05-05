@@ -11,6 +11,7 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
+from icecream import ic
 from pydantic import ValidationError
 
 from sqooler.schemes import BackendConfigSchemaIn, ResultDict, get_init_results
@@ -247,6 +248,21 @@ class StorageProviderTestUtils:
                 )
         with pytest.raises(FileNotFoundError):
             storage_provider.update_config(config_info, display_name="randonname")
+
+        # can we get the backend in the list ?
+        backends = storage_provider.get_backends()
+        assert backend_name in backends
+
+        # can we get the config of the backend ?
+        backend_info = storage_provider.get_backend_dict(backend_name)
+        backend_dict = backend_info.model_dump()
+        assert backend_dict["backend_name"] == f"{db_name}_{backend_name}_simulator"
+        # make sure that we raise an error if we try to get a backend that does not exist
+        with pytest.raises(FileNotFoundError):
+            storage_provider.get_backend_dict("dummy_non_existing")
+
+        # clean up
+        storage_provider._delete_config(backend_name)
 
     def signature_tests(self, db_name: str) -> None:
         """

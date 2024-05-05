@@ -190,41 +190,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         self.config_tests(DB_NAME, sign=sign_it)
 
-    def test_configs(self) -> None:
-        """
-        Test that we are able to obtain a list of backends.
-        """
-        # create a mongodb object
-        storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-        backend_name, backend_config_info = self.get_dummy_config(sign=False)
-        config_path = "backends/configs"
-
-        storage_provider.upload_config(backend_config_info, backend_name)
-
-        # can we get the backend in the list ?
-        backends = storage_provider.get_backends()
-        assert backend_name in backends
-
-        # can we get the config of the backend ?
-        backend_info = storage_provider.get_backend_dict(backend_name)
-        backend_dict = backend_info.model_dump()
-        assert (
-            backend_dict["backend_name"]
-            == f"mongodbtest_{backend_config_info.display_name}_simulator"
-        )
-        # make sure that we raise an error if we try to get a backend that does not exist
-        with pytest.raises(FileNotFoundError):
-            storage_provider.get_backend_dict("dummy_non_existing")
-
-        # test how we can delete a backend. main challenge is to get the id of the config
-        document_to_find = {"display_name": backend_name}
-
-        database = storage_provider.client["backends"]
-        collection = database["configs"]
-
-        result_found = collection.find_one(document_to_find)
-        storage_provider.delete_file(config_path, str(result_found["_id"]))
-
     def test_update_raise_error(self) -> None:
         """
         Test that it is update a file once it was uploaded.
@@ -293,6 +258,8 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
         collection = database[f"queued.{backend_name}"]
+        collection.drop()
+        collection = database[f"finished.{backend_name}"]
         collection.drop()
 
         # remove the obsolete collection from the storage
