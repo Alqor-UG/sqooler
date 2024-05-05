@@ -84,32 +84,7 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         """
         Test that it is possible to upload a file.
         """
-        # create a storageprovider object
-        storage_provider = LocalProviderExtended(self.get_login(), DB_NAME)
-
-        # upload a file and get it back
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test/subcollection"
-
-        job_id = uuid.uuid4().hex[:24]
-        storage_provider.upload(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
-
-        assert test_content == test_result
-
-        # make sure that get_file_content raises an error if the file does not exist
-        with pytest.raises(FileNotFoundError):
-            storage_provider.get_file_content(storage_path, "non_existing")
-
-        # move it and get it back
-        second_path = "test/subcollection_2"
-        storage_provider.move_file(storage_path, second_path, job_id)
-        test_result = storage_provider.get_file_content(second_path, job_id)
-
-        assert test_content == test_result
-
-        # clean up our mess
-        storage_provider.delete_file(second_path, job_id)
+        self.upload_tests(DB_NAME)
 
     def test_file_remove(self) -> None:
         """

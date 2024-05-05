@@ -154,35 +154,7 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that it is possible to upload a file.
         """
-        # create a mongodb object
-        storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-
-        # upload a file and get it back
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test/subcollection"
-
-        job_id = uuid.uuid4().hex[:24]
-        storage_provider.upload(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
-
-        assert test_content == test_result
-
-        # make sure that get_file_content raises an error if the file does not exist
-        with pytest.raises(FileNotFoundError):
-            storage_provider.get_file_content(storage_path, "non_existing")
-
-        with pytest.raises(FileNotFoundError):
-            storage_provider.get_file_content(storage_path, uuid.uuid4().hex[:24])
-
-        # move it and get it back
-        second_path = "test/subcollection_2"
-        storage_provider.move_file(storage_path, second_path, job_id)
-        test_result = storage_provider.get_file_content(second_path, job_id)
-
-        assert test_content == test_result
-
-        # clean up our mess
-        storage_provider.delete_file(second_path, job_id)
+        self.upload_tests(DB_NAME)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_upload_and_update_config(self, sign_it: bool) -> None:
@@ -195,7 +167,6 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that it is update a file once it was uploaded.
         """
-
         self.update_raise_error_test(DB_NAME)
 
     def test_upload_public_key(self) -> None:

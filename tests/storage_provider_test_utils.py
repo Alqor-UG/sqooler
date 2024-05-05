@@ -182,6 +182,42 @@ class StorageProviderTestUtils:
                 self.get_login(), "Whatever%/iswrong"
             )
 
+    def upload_tests(self, db_name: str) -> None:
+        """
+        Test that we can upload a file.
+        """
+
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        # upload a file and get it back
+        test_content = {"experiment_0": "Nothing happened here."}
+        storage_path = "test/subcollection"
+
+        job_id = uuid.uuid4().hex[:24]
+        storage_provider.upload(test_content, storage_path, job_id)
+        test_result = storage_provider.get_file_content(storage_path, job_id)
+
+        assert test_content == test_result
+
+        # make sure that get_file_content raises an error if the file does not exist
+        with pytest.raises(FileNotFoundError):
+            storage_provider.get_file_content(storage_path, "non_existing")
+
+        # move it and get it back
+        second_path = "test/subcollection_2"
+        storage_provider.move_file(storage_path, second_path, job_id)
+        test_result = storage_provider.get_file_content(second_path, job_id)
+
+        assert test_content == test_result
+
+        # clean up our mess
+        storage_provider.delete_file(second_path, job_id)
+
     def update_raise_error_test(self, db_name: str) -> None:
         """
         Test that it is update a file once it was uploaded.

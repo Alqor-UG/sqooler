@@ -79,36 +79,7 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         """
         Test that it is possible to upload a file.
         """
-
-        # create a dropbox object
-        storage_provider = DropboxProviderExtended(self.get_login(), DB_NAME)
-
-        # upload a file and get it back
-        file_id = uuid.uuid4().hex
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test_folder"
-        job_id = f"world-{file_id}"
-        storage_provider.upload(test_content, storage_path, job_id)
-
-        # make sure that this did not add the _id field to the dict
-        assert "_id" not in test_content
-
-        test_result = storage_provider.get_file_content(storage_path, job_id)
-
-        assert test_content == test_result
-
-        # move it and get it back
-        second_path = "test_folder_2"
-        storage_provider.move_file(storage_path, second_path, job_id)
-        test_result = storage_provider.get_file_content(second_path, job_id)
-        assert test_content == test_result
-
-        # make sure that get_file_content raises an error if the file does not exist
-        with pytest.raises(FileNotFoundError):
-            storage_provider.get_file_content(storage_path, "non_existing")
-
-        # clean up our mess
-        storage_provider.delete_file(second_path, job_id)
+        self.upload_tests(DB_NAME)
 
     def test_update_raise_error(self) -> None:
         """
