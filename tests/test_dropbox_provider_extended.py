@@ -115,34 +115,7 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         Test that it is update a file once it was uploaded.
         """
 
-        # create a dropbox object
-        storage_provider = DropboxProviderExtended(self.get_login(), DB_NAME)
-
-        # file properties
-        file_id = uuid.uuid4().hex
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test_folder"
-        job_id = f"world-{file_id}"
-
-        # make sure that we cannot update a file if it does not exist
-
-        with pytest.raises(FileNotFoundError):
-            storage_provider.update_file(test_content, storage_path, job_id)
-
-        # upload a file and get it back
-        storage_provider.upload(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
-
-        assert test_content == test_result
-
-        # update it and get it back
-        test_content = {"experiment_1": "Nothing happened here."}
-        storage_provider.update_file(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
-        assert test_content == test_result
-
-        # clean up our mess
-        storage_provider.delete_file(storage_path, job_id)
+        self.update_raise_error_test(DB_NAME)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_upload_and_update_config(self, sign_it: bool) -> None:

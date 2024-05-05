@@ -182,6 +182,42 @@ class StorageProviderTestUtils:
                 self.get_login(), "Whatever%/iswrong"
             )
 
+    def update_raise_error_test(self, db_name: str) -> None:
+        """
+        Test that it is update a file once it was uploaded.
+        """
+
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        # file properties
+        test_content = {"experiment_0": "Nothing happened here."}
+        storage_path = "test/test_folder"
+        mongo_id = uuid.uuid4().hex[:24]
+
+        # make sure that we cannot update a file if it does not exist
+
+        with pytest.raises(FileNotFoundError):
+            storage_provider.update_file(test_content, storage_path, mongo_id)
+
+        # upload a file and get it back
+        storage_provider.upload(test_content, storage_path, mongo_id)
+        test_result = storage_provider.get_file_content(storage_path, mongo_id)
+
+        assert test_content == test_result
+
+        # update it and get it back
+        test_content = {"experiment_1": "Nothing happened here."}
+        storage_provider.update_file(test_content, storage_path, mongo_id)
+        test_result = storage_provider.get_file_content(storage_path, mongo_id)
+        assert test_content == test_result
+
+        # clean up our mess
+        storage_provider.delete_file(storage_path, mongo_id)
+
     def config_tests(self, db_name: str, sign: bool = True) -> None:
         """
         Test that we can create a config and update it.
