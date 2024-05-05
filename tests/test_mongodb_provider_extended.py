@@ -2,7 +2,6 @@
 The tests for the extended mongodb storage provider
 """
 
-import uuid
 from typing import Any
 
 import pytest
@@ -131,58 +130,13 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         Test that we cannot work with the provider if it is not active.
         """
-        storage_provider = MongodbProviderExtended(
-            self.get_login(), DB_NAME, is_active=False
-        )
-
-        # make sure that we cannot upload if it is not active
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test/subcollection"
-
-        job_id = uuid.uuid4().hex[:24]
-        second_path = "test/subcollection_2"
-        with pytest.raises(ValueError):
-            storage_provider.upload(test_content, storage_path, job_id)
-        with pytest.raises(ValueError):
-            storage_provider.get_file_content(storage_path, job_id)
-        with pytest.raises(ValueError):
-            storage_provider.move_file(storage_path, second_path, job_id)
-        with pytest.raises(ValueError):
-            storage_provider.delete_file(second_path, job_id)
+        self.active_tests(DB_NAME)
 
     def test_upload_etc(self) -> None:
         """
         Test that it is possible to upload a file.
         """
-        # create a mongodb object
-        storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-
-        # upload a file and get it back
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test/subcollection"
-
-        job_id = uuid.uuid4().hex[:24]
-        storage_provider.upload(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
-
-        assert test_content == test_result
-
-        # make sure that get_file_content raises an error if the file does not exist
-        with pytest.raises(FileNotFoundError):
-            storage_provider.get_file_content(storage_path, "non_existing")
-
-        with pytest.raises(FileNotFoundError):
-            storage_provider.get_file_content(storage_path, uuid.uuid4().hex[:24])
-
-        # move it and get it back
-        second_path = "test/subcollection_2"
-        storage_provider.move_file(storage_path, second_path, job_id)
-        test_result = storage_provider.get_file_content(second_path, job_id)
-
-        assert test_content == test_result
-
-        # clean up our mess
-        storage_provider.delete_file(second_path, job_id)
+        self.upload_tests(DB_NAME)
 
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_upload_and_update_config(self, sign_it: bool) -> None:
@@ -191,73 +145,11 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         self.config_tests(DB_NAME, sign=sign_it)
 
-    def test_configs(self) -> None:
-        """
-        Test that we are able to obtain a list of backends.
-        """
-        # create a mongodb object
-        storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-        backend_name, backend_config_info = self.get_dummy_config(sign=False)
-        config_path = "backends/configs"
-
-        storage_provider.upload_config(backend_config_info, backend_name)
-
-        # can we get the backend in the list ?
-        backends = storage_provider.get_backends()
-        assert backend_name in backends
-
-        # can we get the config of the backend ?
-        backend_info = storage_provider.get_backend_dict(backend_name)
-        backend_dict = backend_info.model_dump()
-        assert (
-            backend_dict["backend_name"]
-            == f"mongodbtest_{backend_config_info.display_name}_simulator"
-        )
-        # make sure that we raise an error if we try to get a backend that does not exist
-        with pytest.raises(FileNotFoundError):
-            storage_provider.get_backend_dict("dummy_non_existing")
-
-        # test how we can delete a backend. main challenge is to get the id of the config
-        document_to_find = {"display_name": backend_name}
-
-        database = storage_provider.client["backends"]
-        collection = database["configs"]
-
-        result_found = collection.find_one(document_to_find)
-        storage_provider.delete_file(config_path, str(result_found["_id"]))
-
     def test_update_raise_error(self) -> None:
         """
         Test that it is update a file once it was uploaded.
         """
-
-        # create a dropbox object
-        storage_provider = MongodbProviderExtended(self.get_login(), DB_NAME)
-
-        # file properties
-        test_content = {"experiment_0": "Nothing happened here."}
-        storage_path = "test/test_folder"
-        mongo_id = uuid.uuid4().hex[:24]
-
-        # make sure that we cannot update a file if it does not exist
-
-        with pytest.raises(FileNotFoundError):
-            storage_provider.update_file(test_content, storage_path, mongo_id)
-
-        # upload a file and get it back
-        storage_provider.upload(test_content, storage_path, mongo_id)
-        test_result = storage_provider.get_file_content(storage_path, mongo_id)
-
-        assert test_content == test_result
-
-        # update it and get it back
-        test_content = {"experiment_1": "Nothing happened here."}
-        storage_provider.update_file(test_content, storage_path, mongo_id)
-        test_result = storage_provider.get_file_content(storage_path, mongo_id)
-        assert test_content == test_result
-
-        # clean up our mess
-        storage_provider.delete_file(storage_path, mongo_id)
+        self.update_raise_error_test(DB_NAME)
 
     def test_upload_public_key(self) -> None:
         """
@@ -299,6 +191,8 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         # remove the obsolete collection from the storage
         database = storage_provider.client["jobs"]
         collection = database[f"queued.{backend_name}"]
+        collection.drop()
+        collection = database[f"finished.{backend_name}"]
         collection.drop()
 
         # remove the obsolete collection from the storage
