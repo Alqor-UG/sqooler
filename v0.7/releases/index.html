@@ -12,11 +12,11 @@
         <link rel="prev" href="../contributing/">
       
       
-        <link rel="next" href="../schemes/">
+        <link rel="next" href="../cli_api/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
     
     
       
@@ -499,6 +499,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../cli_api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cli API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../schemes/" class="md-nav__link">
         
   
@@ -877,7 +898,7 @@
 <ul>
 <li>We have changed the syntax for the <code>gen_circuit</code> function to make it simpler to understand the code. It now takes the <code>exp_name</code> as the first argument and the <code>exp_dict</code> of the new type <code>ExperimentalInputDict</code> as the second argument. </li>
 <li>We are now distinguishing pretty strictly between the <code>backend_name</code> and the <code>display_name</code>. The <code>display_name</code> is the short alphanumeric string that acts as identifier. The <code>backend_name</code> also contains the name of the <code>StorageProvider</code> and if the system is a simulator or not.</li>
-<li>To sign the results and the config you need to store a private <code>jwk</code> as described in the documentation for <a href="security.md">security</a>.</li>
+<li>To sign the results and the config you need to store a private <code>jwk</code> as described in the documentation for <a href="../security_general/#setting-up-the-private-key">security</a>.</li>
 <li>The <code>add_job</code> function now takes the <code>job_id</code> as the second parameter instead of the the <code>StatusMsgDict</code>. This removed some error sources.</li>
 </ul>
 <h2 id="v05">v0.5</h2>
@@ -1004,13 +1025,13 @@
         
         
           
-          <a href="../schemes/" class="md-footer__link md-footer__link--next" aria-label="Next: Schemes">
+          <a href="../cli_api/" class="md-footer__link md-footer__link--next" aria-label="Next: Cli API">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Schemes
+                Cli API
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1047,7 +1068,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.footer", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
       
     
   </body>

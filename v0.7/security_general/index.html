@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.20">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
     
     
       
@@ -463,6 +463,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../cli_api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cli API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../schemes/" class="md-nav__link">
         
   
@@ -795,14 +816,10 @@
 <p>Having chosen the results as a first step allows us to keep the workflow as simple as possible. It further introduces the possibility for Bob to show that he is producer of the results and Alice to verify that the results are authentic through the public key. So for the moment it is only needed for Bob to set up a private key and upload the public key to the storage. Similiar possbilities for Alice might follow in the future.</p>
 <h2 id="setting-up-the-private-key">Setting up the private key</h2>
 <p>We have decided to work with the widely used crypotgraphic python library <a href="https://cryptography.io/en/latest/">cryptography</a>. To use it, Bob first needs to create and store a private key. This done with <a href="https://datatracker.ietf.org/doc/html/rfc7517">Json Web Keys</a> as they allow us also to store some context around the key.</p>
-<p>This is done by running the following code in the terminal:</p>
-<p><div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">sqooler.security</span> <span class="kn">import</span> <span class="n">create_jwk_pair</span>
-
-<span class="n">private_jwk</span><span class="p">,</span> <span class="n">public_jwk</span> <span class="o">=</span> <span class="n">create_jwk_pair</span><span class="p">(</span><span class="s2">&quot;doc_example_key&quot;</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">private_jwk</span><span class="o">.</span><span class="n">to_config_str</span><span class="p">())</span>
+<p>This is done by running the following command in the terminal:</p>
+<div class="highlight"><pre><span></span><code>sqoolerkey<span class="w"> </span>--kid<span class="w"> </span>&lt;YOUR-PREFERRED-KEY-ID&gt;<span class="w"> </span>
 </code></pre></div>
-As Bob you can then copy this string into your preferred storage from which we load it.</p>
+<p>The <code>kid</code> is the key id and should be unique for each key. As Bob you can then copy this string into your preferred storage from which we load it.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>The private key should be kept secret and should not be shared with anyone. Never ever ever. Don't do it.
@@ -962,7 +979,7 @@ Even if you are a good person and you want to share it with your friends, don't 
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.expand", "navigation.footer", "toc.follow", "content.code.copy"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.dd8806f2.min.js"></script>
+      <script src="../assets/javascripts/bundle.a7c05c9e.min.js"></script>
       
     
   </body>
