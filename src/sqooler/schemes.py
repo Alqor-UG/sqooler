@@ -160,6 +160,9 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
         default=None,
         description="The identifier for the public and private key of the backend.",
     )
+    operational: Optional[bool] = Field(
+        default=True, description="True if the backend is operational", deprecated=True
+    )
 
 
 class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
