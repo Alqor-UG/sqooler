@@ -3,7 +3,6 @@ This is the test schemes module.
 """
 
 import pytest
-from icecream import ic
 from pydantic import ValidationError
 
 from sqooler.schemes import (
