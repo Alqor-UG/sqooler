@@ -4,11 +4,12 @@ This is the test schemes module.
 
 import pytest
 from pydantic import ValidationError
+
 from sqooler.schemes import (
-    ResultDict,
     BackendConfigSchemaIn,
-    get_init_status,
+    ResultDict,
     get_init_results,
+    get_init_status,
 )
 
 
@@ -58,7 +59,6 @@ def test_config_in_out() -> None:
         num_wires=1,
         wire_order="interleaved",
         num_species=1,
-        operational=True,
         pending_jobs=1,
         status_msg="test",
     )
@@ -77,7 +77,6 @@ def test_config_in_out() -> None:
             num_wires=1,
             wire_order="interleaved",
             num_species=1,
-            operational=True,
             pending_jobs=1,
             status_msg="test",
         )
@@ -96,13 +95,12 @@ def test_config_in_out() -> None:
             num_wires=1,
             wire_order="interleaved",
             num_species=1,
-            operational=True,
             pending_jobs=1,
             status_msg="test",
         )
 
     # test that we can append a public key
-    BackendConfigSchemaIn(
+    backend_info = BackendConfigSchemaIn(
         description="Whatever",
         version="1.0.0",
         display_name="nicename",
@@ -115,11 +113,18 @@ def test_config_in_out() -> None:
         num_wires=1,
         wire_order="interleaved",
         num_species=1,
-        operational=True,
         pending_jobs=1,
         status_msg="test",
         sign=True,
     )
+
+    # the following is important for compatibility with the old version
+    with pytest.warns(DeprecationWarning):
+        assert backend_info.operational is True
+
+    # now test the model dump
+    backend_dict = backend_info.model_dump()
+    assert backend_dict["operational"] is True
 
 
 def test_get_init_status() -> None:
