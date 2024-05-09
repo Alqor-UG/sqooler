@@ -10,20 +10,20 @@ In this guide we will cover the key information about the different releases.
 
 We focused on a simpler usage of the sqooler in this release and the stabilization of the code.
 
-## What's Changed
-* Make the operational status depend on last checked in https://github.com/Alqor-UG/sqooler/pull/252
-* Fix the default if the private_jwk is missing  in https://github.com/Alqor-UG/sqooler/pull/249
-* Make the delay between runs in the main loop adjustable in https://github.com/Alqor-UG/sqooler/pull/256
-* Remove the operational status from the backend config in https://github.com/Alqor-UG/sqooler/pull/257
-* Sign also upload status in https://github.com/Alqor-UG/sqooler/pull/263
-* Identify the kid with the display name of the spooler in https://github.com/Alqor-UG/sqooler/pull/271
-* Add a simple option to verify results in https://github.com/Alqor-UG/sqooler/pull/273
-* Have a command line option to create the private jwk string  in https://github.com/Alqor-UG/sqooler/pull/274
-* Fail get next safely if no config is present in https://github.com/Alqor-UG/sqooler/pull/275
-* Cleaner tests in https://github.com/Alqor-UG/sqooler/pull/276
-* Migration fixes in https://github.com/Alqor-UG/sqooler/pull/279 and https://github.com/Alqor-UG/sqooler/pull/281
+### What's Changed
+* Make the operational status depend on last checked
+* Fix the default if the `private_jwk` is missing 
+* Make the delay between runs in the main loop adjustable
+* Remove the operational status from the backend config. Now calculated directly from the last time the queued was checked
+* Sign also upload status
+* Identify the kid with the display name of the spooler
+* Add a simple option to verify results
+* Have a command line option to create the private jwk string
+* Fail get next safely if no config is presen
+* Cleaner tests for improved coverage and more precise testing
+* Migration fixes for upgrades from v0.6
 
-## Migration Guide
+### Migration Guide
 
 - The operational status is now dependent on the last checked in time. This means that the operational status is now only `True` if the last checked in time is less than the `T_TIMEOUT`. It can be set as a config variable.
 - `T_WAIT_MAIN` set the relay between loops in the `main` function. It can be set as a config variable.
