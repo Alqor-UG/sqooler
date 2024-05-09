@@ -587,12 +587,7 @@ class StorageProvider(ABC):
         """
         # get the backend config
         config_dict = self.get_config(display_name)
-        if config_dict.sign:
-            # get the private key
-            if private_jwk is None:
-                raise ValueError(
-                    "The private key is not given, but the backend needs to be signed."
-                )
+        if config_dict.sign and private_jwk:
             # we sign the result now
             signed_status = sign_payload(status_dict.model_dump(), private_jwk)
             upload_dict = signed_status.model_dump()

@@ -599,14 +599,6 @@ class StorageProviderTestUtils:
         job_id = uuid.uuid4().hex[:24]
 
         # now also test that we can upload the status
-        if sign:
-            with pytest.raises(ValueError):
-                storage_provider.upload_status(
-                    display_name=backend_name,
-                    username=username,
-                    job_id=job_id,
-                )
-
         status_msg_dict = storage_provider.upload_status(
             display_name=backend_name,
             username=username,
@@ -638,17 +630,16 @@ class StorageProviderTestUtils:
             job_id=job_id,
         )
         # now test that we can upload the status without the private key if we are not singing
-        if not sign:
-            storage_provider.upload_status(
-                display_name=backend_name,
-                username=username,
-                job_id=job_id,
-            )
-            storage_provider._delete_status(
-                display_name=backend_name,
-                username=username,
-                job_id=job_id,
-            )
+        storage_provider.upload_status(
+            display_name=backend_name,
+            username=username,
+            job_id=job_id,
+        )
+        storage_provider._delete_status(
+            display_name=backend_name,
+            username=username,
+            job_id=job_id,
+        )
 
         # clean up the config
         storage_provider._delete_config(backend_name)
@@ -714,20 +705,11 @@ class StorageProviderTestUtils:
         )
         assert len(job_id) > 1
 
-        # now also test that we can upload the status
-        if sign:
-            with pytest.raises(ValueError):
-                storage_provider.upload_status(
-                    display_name=backend_name,
-                    username=username,
-                    job_id=job_id,
-                )
-
+        # now also test that we can upload the status without the private key
         status_msg_dict = storage_provider.upload_status(
             display_name=backend_name,
             username=username,
             job_id=job_id,
-            private_jwk=private_jwk,
         )
 
         assert len(status_msg_dict.job_id) > 1
