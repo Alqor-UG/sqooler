@@ -6,6 +6,28 @@ comments: true
 
 In this guide we will cover the key information about the different releases.
 
+## v0.7
+
+We focused on a simpler usage of the sqooler in this release and the stabilization of the code.
+
+### What's Changed
+* Make the operational status depend on last checked
+* Fix the default if the `private_jwk` is missing 
+* Make the delay between runs in the main loop adjustable
+* Remove the operational status from the backend config. Now calculated directly from the last time the queued was checked
+* Sign also upload status
+* Identify the kid with the display name of the spooler
+* Add a simple option to verify results
+* Have a command line option to create the private jwk string
+* Fail get next safely if no config is presen
+* Cleaner tests for improved coverage and more precise testing
+* Migration fixes for upgrades from v0.6
+
+### Migration Guide
+
+- The operational status is now dependent on the last checked in time. This means that the operational status is now only `True` if the last checked in time is less than the `T_TIMEOUT`. It can be set as a config variable.
+- `T_WAIT_MAIN` set the relay between loops in the `main` function. It can be set as a config variable.
+
 ## v0.6
 
 In this release, we continued the work on clean typing and we introduced first concepts for better security and logging, so extending the list of features.
