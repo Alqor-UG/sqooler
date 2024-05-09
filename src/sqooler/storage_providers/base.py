@@ -646,11 +646,7 @@ class StorageProvider(ABC):
 
                 # now proof that the new private key would create the same signature for the old
                 # config to validate that we still have the same private key
-
-                # the following transformation is necessary to make avoid slight differences
-                # in the serialization and then the signing
-                old_config_dict = BackendConfigSchemaIn(**payload)
-                test_signature = sign_payload(old_config_dict.model_dump(), private_jwk)
+                test_signature = sign_payload(payload, private_jwk)
                 if not test_signature.signature == old_config_jws["signature"]:
                     raise ValueError(
                         "The new private key does not create the same signature as the old one."
