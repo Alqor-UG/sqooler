@@ -6,6 +6,28 @@ comments: true
 
 In this guide we will cover the key information about the different releases.
 
+## v0.7
+
+We focused on a simpler usage of the sqooler in this release and the stabilization of the code.
+
+## What's Changed
+* Make the operational status depend on last checked in https://github.com/Alqor-UG/sqooler/pull/252
+* Fix the default if the private_jwk is missing  in https://github.com/Alqor-UG/sqooler/pull/249
+* Make the delay between runs in the main loop adjustable in https://github.com/Alqor-UG/sqooler/pull/256
+* Remove the operational status from the backend config in https://github.com/Alqor-UG/sqooler/pull/257
+* Sign also upload status in https://github.com/Alqor-UG/sqooler/pull/263
+* Identify the kid with the display name of the spooler in https://github.com/Alqor-UG/sqooler/pull/271
+* Add a simple option to verify results in https://github.com/Alqor-UG/sqooler/pull/273
+* Have a command line option to create the private jwk string  in https://github.com/Alqor-UG/sqooler/pull/274
+* Fail get next safely if no config is present in https://github.com/Alqor-UG/sqooler/pull/275
+* Cleaner tests in https://github.com/Alqor-UG/sqooler/pull/276
+* Migration fixes in https://github.com/Alqor-UG/sqooler/pull/279 and https://github.com/Alqor-UG/sqooler/pull/281
+
+## Migration Guide
+
+- The operational status is now dependent on the last checked in time. This means that the operational status is now only `True` if the last checked in time is less than the `T_TIMEOUT`. It can be set as a config variable.
+- `T_WAIT_MAIN` set the relay between loops in the `main` function. It can be set as a config variable.
+
 ## v0.6
 
 In this release, we continued the work on clean typing and we introduced first concepts for better security and logging, so extending the list of features.
