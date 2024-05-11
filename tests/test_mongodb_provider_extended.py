@@ -145,6 +145,17 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         self.config_tests(DB_NAME, sign=sign_it)
 
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_missing_status_in_update(
+        self,
+        sign_it: bool,
+        caplog: LogCaptureFixture,
+    ) -> None:
+        """
+        Test that we can upload and update a config.
+        """
+        self.missing_status_tests(DB_NAME, sign=sign_it, caplog=caplog)
+
     def test_update_raise_error(self) -> None:
         """
         Test that it is update a file once it was uploaded.

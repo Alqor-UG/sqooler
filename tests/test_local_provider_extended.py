@@ -86,6 +86,17 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         """
         self.config_tests(DB_NAME, sign=sign_it)
 
+    @pytest.mark.parametrize("sign_it", [True, False])
+    def test_missing_status_in_update(
+        self,
+        sign_it: bool,
+        caplog: LogCaptureFixture,
+    ) -> None:
+        """
+        Test that we can upload and update a config.
+        """
+        self.missing_status_tests(DB_NAME, sign=sign_it, caplog=caplog)
+
     def test_upload_public_key(self) -> None:
         """
         Test that it is possible to upload the public key.
