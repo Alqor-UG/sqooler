@@ -2,6 +2,7 @@
 The module that contains all the necessary logic for communication with the MongoDb storage providers.
 """
 
+import logging
 import uuid
 from datetime import timezone
 from typing import Optional
@@ -806,7 +807,16 @@ class MongodbProviderExtended(StorageProvider):
 
         # and create the status json file
         status_json_dir = "status/" + display_name
-        self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
+        try:
+            self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
+        except FileNotFoundError:
+            logging.warning(
+                "The status file was missing for %s with job_id %s was missing.",
+                display_name,
+                job_id,
+            )
+            self.upload_status(display_name, "", job_id)
+            self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """

@@ -14,7 +14,12 @@ from dropbox.exceptions import ApiError, AuthError
 from pydantic import ValidationError
 from pytest import LogCaptureFixture
 
-from sqooler.schemes import BackendConfigSchemaIn, ResultDict, get_init_results
+from sqooler.schemes import (
+    BackendConfigSchemaIn,
+    ResultDict,
+    get_init_results,
+    get_init_status,
+)
 from sqooler.security import create_jwk_pair
 from sqooler.storage_providers.base import StorageProvider
 
@@ -642,6 +647,67 @@ class StorageProviderTestUtils:
         )
 
         # clean up the config
+        storage_provider._delete_config(backend_name)
+
+    def missing_status_tests(
+        self,
+        db_name: str,
+        sign: bool,
+        caplog: LogCaptureFixture,
+    ) -> None:
+        """
+        Test that we can handle the missing status for the `update_in_database`.
+        This should normally not happen, but should be explained properly.
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        backend_name, config_info = self.get_dummy_config(sign=sign)
+        key_id = "dummy_key"
+        private_jwk, _ = create_jwk_pair(key_id)
+
+        storage_provider.upload_config(
+            config_info, display_name=backend_name, private_jwk=private_jwk
+        )
+
+        if db_name == "dropboxtest":
+            job_id = (
+                (datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
+                + "-"
+                + backend_name
+                + "-"
+                + config("TEST_USERNAME")
+                + "-"
+                + (uuid.uuid4().hex)[:5]
+            )
+        else:
+            job_id = uuid.uuid4().hex[:24]
+
+        # we now also need to test the update_in_database part of the storage provider
+        result_dict = ResultDict(
+            display_name=backend_name,
+            backend_version="0.0.1",
+            job_id=job_id,
+            status="INITIALIZING",
+        )
+
+        job_status = get_init_status()
+
+        storage_provider.update_in_database(
+            result_dict,
+            job_status,
+            job_id,
+            backend_name,
+            private_jwk=private_jwk,
+        )
+
+        assert "The status file was missing" in caplog.text
+
+        # clean up
         storage_provider._delete_config(backend_name)
 
     def job_tests(self, db_name: str, sign: bool = True) -> Tuple[str, str, str, Any]:
