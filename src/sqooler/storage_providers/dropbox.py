@@ -5,6 +5,7 @@ The module that contains all the necessary logic for communication with the Drop
 # necessary for the dropbox provider
 import datetime
 import json
+import logging
 import sys
 import uuid
 from datetime import timezone
@@ -447,8 +448,20 @@ class DropboxProviderExtended(StorageProvider):
             deleted_json_dir = "Backend_files/Deleted_Jobs"
             self.move_file(job_json_start_dir, deleted_json_dir, job_json_name)
 
-        # and create the status json file
-        self.upload(status_msg_dict.model_dump(), status_json_dir, status_json_name)
+        try:
+            self.update_file(
+                status_msg_dict.model_dump(), status_json_dir, status_json_name
+            )
+        except FileNotFoundError:
+            logging.warning(
+                "The status file was missing for %s with job_id %s was missing.",
+                display_name,
+                job_id,
+            )
+            self.upload_status(display_name, username=extracted_username, job_id=job_id)
+            self.update_file(
+                status_msg_dict.model_dump(), status_json_dir, status_json_name
+            )
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """

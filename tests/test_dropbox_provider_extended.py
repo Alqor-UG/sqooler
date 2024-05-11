@@ -101,6 +101,17 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         self.config_tests(DB_NAME, sign=sign_it)
 
     @pytest.mark.parametrize("sign_it", [True, False])
+    def test_missing_status_in_update(
+        self,
+        sign_it: bool,
+        caplog: LogCaptureFixture,
+    ) -> None:
+        """
+        Test that we can upload and update a config.
+        """
+        self.missing_status_tests(DB_NAME, sign=sign_it, caplog=caplog)
+
+    @pytest.mark.parametrize("sign_it", [True, False])
     def test_status_dict(self, sign_it: bool) -> None:
         """
         Test that we can get the status of a backend.
