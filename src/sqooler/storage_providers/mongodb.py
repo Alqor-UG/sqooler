@@ -23,12 +23,12 @@ from ..schemes import (
     StatusMsgDict,
 )
 from ..security import JWK, JWSDict
-from .base import StorageProvider, validate_active
+from .base import StorageCore, StorageProvider, validate_active
 
 
-class MongodbProviderExtended(StorageProvider):
+class MongodbCore(StorageCore):
     """
-    The access to the mongodb
+    Base class that creates the most important functions for the mongodb storage provider.
     """
 
     def __init__(
@@ -123,21 +123,7 @@ class MongodbProviderExtended(StorageProvider):
         result_found.pop("_id", None)
         return result_found
 
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
-        """
-        Get the content of the job from the storage. This is a wrapper around get_file_content
-        and and handles the different ways of identifiying the job.
-
-        storage_path: the path towards the file, excluding the filename / id
-        job_id: the id of the file we are about to look up
-
-        Returns:
-
-        """
-        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
-        job_dict.pop("_id", None)
-        return job_dict
-
+    @validate_active
     def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content. It replaces the old content with the new content.
@@ -227,6 +213,27 @@ class MongodbProviderExtended(StorageProvider):
             raise FileNotFoundError(
                 f"Could not find a file under {storage_path} with the id {job_id}."
             )
+
+
+class MongodbProviderExtended(StorageProvider, MongodbCore):
+    """
+    The access to the mongodb
+    """
+
+    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the content of the job from the storage. This is a wrapper around get_file_content
+        and and handles the different ways of identifiying the job.
+
+        storage_path: the path towards the file, excluding the filename / id
+        job_id: the id of the file we are about to look up
+
+        Returns:
+
+        """
+        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
+        job_dict.pop("_id", None)
+        return job_dict
 
     @validate_active
     def get_backends(self) -> list[DisplayNameStr]:
