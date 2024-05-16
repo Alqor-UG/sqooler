@@ -20,7 +20,7 @@ DB_NAME = "localtest"
 
 class TestLocalProviderCore(StorageCoreTestUtils):
     """
-    The class that contains all the tests for the extended local provider.
+    The class that contains all the tests for the local core provider.
     """
 
     def get_login_class(self) -> Any:
