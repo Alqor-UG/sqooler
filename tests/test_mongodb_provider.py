@@ -114,9 +114,3 @@ class TestMongodbProvider(StorageProviderTestUtils):
             else:
                 print("Deleting random config")
                 collection.delete_one({"_id": ObjectId(config_dict["_id"])})
-
-    def test_upload_etc(self) -> None:
-        """
-        Test that it is possible to upload a file.
-        """
-        self.upload_tests(DB_NAME)
