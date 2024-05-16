@@ -181,7 +181,6 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
         return job_dict
 
-    @validate_active
     def get_backends(self) -> list[DisplayNameStr]:
         """
         Get a list of all the backends that the provider offers.
