@@ -21,7 +21,7 @@ from sqooler.schemes import (
     get_init_status,
 )
 from sqooler.security import create_jwk_pair
-from sqooler.storage_providers.base import StorageProvider
+from sqooler.storage_providers.base import StorageCore, StorageProvider
 
 
 def clean_dummies_from_folder(folder_path: str) -> None:
@@ -59,9 +59,9 @@ def clean_dummies_from_folder(folder_path: str) -> None:
                     print(f"Failed to delete {full_path}. Most likely already deleted.")
 
 
-class StorageProviderTestUtils:
+class StorageCoreTestUtils:
     """
-    The test utils for the storage providers.
+    The test utils for the storage cores.
     """
 
     def get_login_class(self) -> Any:
@@ -70,7 +70,7 @@ class StorageProviderTestUtils:
         """
         raise NotImplementedError
 
-    def get_storage_provider(self) -> Type[StorageProvider]:
+    def get_storage_provider(self) -> Type[StorageCore]:
         """
         Get the storage provider.
         """
@@ -81,38 +81,6 @@ class StorageProviderTestUtils:
         Get the login information for the storage provider.
         """
         raise NotImplementedError
-
-    def get_dummy_config(self, sign: bool = True) -> Tuple[str, BackendConfigSchemaIn]:
-        """
-        Generate the dummy config of the fermion type.
-
-        Args:
-            sign: Whether to sign the files.
-        Returns:
-            The backend name and the backend config input.
-        """
-
-        dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy{dummy_id}"
-
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["display_name"] = backend_name
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["description"] = "This is a dummy backend."
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["max_experiments"] = 1
-        dummy_dict["max_shots"] = 1
-        dummy_dict["simulator"] = True
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["num_species"] = 1
-        dummy_dict["operational"] = True
-        dummy_dict["sign"] = sign
-
-        backend_info = BackendConfigSchemaIn(**dummy_dict)
-        return backend_name, backend_info
 
     def remove_file_not_found_test(self, db_name: str) -> None:
         """
@@ -151,48 +119,14 @@ class StorageProviderTestUtils:
         # clean up our mess
         storage_provider.delete_file(storage_path, job_id)
 
-    def storage_object_tests(self, db_name: str) -> None:
-        """
-        Test that we can create a MongoDB object.
-
-        Args:
-            db_name: The name of the database.
-        """
-        storage_provider_class = self.get_storage_provider()
-        login_info_class = self.get_login_class()
-        mongodb_provider = storage_provider_class(self.get_login(), db_name)
-        assert not mongodb_provider is None
-        # test that we cannot create a dropbox object a poor login dict structure
-        poor_login_dict = {
-            "app_key_t": "test",
-            "app_secret": "test",
-            "refresh_token": "test",
-        }
-        with pytest.raises(ValidationError):
-            storage_provider_class(login_info_class(**poor_login_dict), db_name)
-
-        # test that the db name is all lowercase
-        storage_provider = storage_provider_class(self.get_login(), "Whatever")
-        assert storage_provider.name == "whatever"
-
-        # test what happens if the name contains contains underscores
-        with pytest.raises(ValueError):
-            storage_provider = storage_provider_class(
-                self.get_login(), "Whatever_is_wrong"
-            )
-
-        # test what happens if the name contains contains underscores
-        with pytest.raises(ValueError):
-            storage_provider = storage_provider_class(
-                self.get_login(), "Whatever%/iswrong"
-            )
-
     def active_tests(self, db_name: str) -> None:
         """
         Test that we cannot work with the provider if it is not active.
         """
         # create a storageprovider object
         storage_provider_class = self.get_storage_provider()
+        print(f"Testing not active for {db_name}")
+        print(self.get_login())
         try:
             storage_provider = storage_provider_class(self.get_login(), db_name)
         except TypeError:
@@ -293,6 +227,98 @@ class StorageProviderTestUtils:
 
         # clean up our mess
         storage_provider.delete_file(storage_path, mongo_id)
+
+
+class StorageProviderTestUtils:
+    """
+    The test utils for the storage providers.
+    """
+
+    def get_login_class(self) -> Any:
+        """
+        Get the login for the provider.
+        """
+        raise NotImplementedError
+
+    def get_storage_provider(self) -> Type[StorageProvider]:
+        """
+        Get the storage provider.
+        """
+        raise NotImplementedError
+
+    def get_login(self) -> Any:
+        """
+        Get the login information for the storage provider.
+        """
+        raise NotImplementedError
+
+    def get_dummy_config(self, sign: bool = True) -> Tuple[str, BackendConfigSchemaIn]:
+        """
+        Generate the dummy config of the fermion type.
+
+        Args:
+            sign: Whether to sign the files.
+        Returns:
+            The backend name and the backend config input.
+        """
+
+        dummy_id = uuid.uuid4().hex[:5]
+        backend_name = f"dummy{dummy_id}"
+
+        dummy_dict: dict = {}
+        dummy_dict["gates"] = []
+        dummy_dict["display_name"] = backend_name
+        dummy_dict["num_wires"] = 3
+        dummy_dict["version"] = "0.0.1"
+        dummy_dict["description"] = "This is a dummy backend."
+        dummy_dict["cold_atom_type"] = "fermion"
+        dummy_dict["max_experiments"] = 1
+        dummy_dict["max_shots"] = 1
+        dummy_dict["simulator"] = True
+        dummy_dict["supported_instructions"] = []
+        dummy_dict["wire_order"] = "interleaved"
+        dummy_dict["num_species"] = 1
+        dummy_dict["operational"] = True
+        dummy_dict["sign"] = sign
+
+        backend_info = BackendConfigSchemaIn(**dummy_dict)
+        return backend_name, backend_info
+
+    def storage_object_tests(self, db_name: str) -> None:
+        """
+        Test that we can create a MongoDB object.
+
+        Args:
+            db_name: The name of the database.
+        """
+        storage_provider_class = self.get_storage_provider()
+        login_info_class = self.get_login_class()
+        mongodb_provider = storage_provider_class(self.get_login(), db_name)
+        assert not mongodb_provider is None
+        # test that we cannot create a dropbox object a poor login dict structure
+        poor_login_dict = {
+            "app_key_t": "test",
+            "app_secret": "test",
+            "refresh_token": "test",
+        }
+        with pytest.raises(ValidationError):
+            storage_provider_class(login_info_class(**poor_login_dict), db_name)
+
+        # test that the db name is all lowercase
+        storage_provider = storage_provider_class(self.get_login(), "Whatever")
+        assert storage_provider.name == "whatever"
+
+        # test what happens if the name contains contains underscores
+        with pytest.raises(ValueError):
+            storage_provider = storage_provider_class(
+                self.get_login(), "Whatever_is_wrong"
+            )
+
+        # test what happens if the name contains contains underscores
+        with pytest.raises(ValueError):
+            storage_provider = storage_provider_class(
+                self.get_login(), "Whatever%/iswrong"
+            )
 
     def config_tests(self, db_name: str, sign: bool = True) -> None:
         """

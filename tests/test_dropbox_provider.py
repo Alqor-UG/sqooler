@@ -60,9 +60,3 @@ class TestDropboxProvider(StorageProviderTestUtils):
         # clean stupid dummy files for the config
         backend_config_path = "/Backend_files/Config/"
         clean_dummies_from_folder(backend_config_path)
-
-    def test_upload_etc(self) -> None:
-        """
-        Test that it is possible to upload a file.
-        """
-        self.upload_tests(DB_NAME)

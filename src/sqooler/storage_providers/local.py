@@ -20,12 +20,12 @@ from ..schemes import (
     StatusMsgDict,
 )
 from ..security import JWK, JWSDict
-from .base import StorageProvider, datetime_handler, validate_active
+from .base import StorageCore, StorageProvider, datetime_handler, validate_active
 
 
-class LocalProviderExtended(StorageProvider):
+class LocalCore(StorageCore):
     """
-    Create a file storage that works on the local machine.
+    Base class that creates the most important functions for the local storage provider.
     """
 
     def __init__(
@@ -94,20 +94,7 @@ class LocalProviderExtended(StorageProvider):
             loaded_data_dict = json.load(json_file)
         return loaded_data_dict
 
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
-        """
-        Get the content of the job from the storage. This is a wrapper around get_file_content
-        and and handles the different ways of identifiying the job.
-
-        storage_path: the path towards the file, excluding the filename / id
-        job_id: the id of the file we are about to look up
-
-        Returns:
-            The content of the job
-        """
-        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
-        return job_dict
-
+    @validate_active
     def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content.
@@ -174,7 +161,26 @@ class LocalProviderExtended(StorageProvider):
         source_file = self.base_path + "/" + storage_path + "/" + job_id + ".json"
         os.remove(source_file)
 
-    @validate_active
+
+class LocalProviderExtended(StorageProvider, LocalCore):
+    """
+    Create a file storage that works on the local machine.
+    """
+
+    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the content of the job from the storage. This is a wrapper around get_file_content
+        and and handles the different ways of identifiying the job.
+
+        storage_path: the path towards the file, excluding the filename / id
+        job_id: the id of the file we are about to look up
+
+        Returns:
+            The content of the job
+        """
+        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
+        return job_dict
+
     def get_backends(self) -> list[DisplayNameStr]:
         """
         Get a list of all the backends that the provider offers.

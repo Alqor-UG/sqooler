@@ -45,9 +45,3 @@ class TestLocalProvider(StorageProviderTestUtils):
         Pull all the login information from the environment variables.
         """
         return LocalLoginInformation(base_path=config("BASE_PATH"))
-
-    def test_upload_etc(self) -> None:
-        """
-        Test that it is possible to upload a file.
-        """
-        self.upload_tests(DB_NAME)

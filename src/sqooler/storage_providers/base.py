@@ -41,10 +41,9 @@ def validate_active(func: Callable) -> Callable:
     return wrapper
 
 
-class StorageProvider(ABC):
+class StorageCore(ABC):
     """
-    The template for accessing any storage providers like dropbox, mongodb, amazon S3 etc.
-    """
+    A base class that is necessary to manipulate files in a consistent way."""
 
     def __init__(self, name: str, is_active: bool = True) -> None:
         """
@@ -94,6 +93,51 @@ class StorageProvider(ABC):
         Raises:
             FileNotFoundError: If the file is not found
         """
+
+    @abstractmethod
+    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+        """
+        Update the file content. It replaces the old content with the new content.
+
+        Args:
+            content_dict: The dictionary containing the new content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
+
+        Returns:
+            None
+
+        Raises:
+            FileNotFoundError: If the file is not found
+        """
+
+    @abstractmethod
+    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+        """
+        Move the file from `start_path` to `final_path`
+        """
+
+    @abstractmethod
+    def delete_file(self, storage_path: str, job_id: str) -> None:
+        """
+        Delete the file from the storage
+
+        Args:
+            storage_path: The path to the file
+            job_id: The id of the job
+
+        Raises:
+            FileNotFoundError: If the file is not found
+
+        Returns:
+            None
+        """
+
+
+class StorageProvider(StorageCore):
+    """
+    The template for accessing any storage providers like dropbox, mongodb, amazon S3 etc.
+    """
 
     @abstractmethod
     def get_backends(self) -> list[str]:
@@ -295,45 +339,6 @@ class StorageProvider(ABC):
 
         Returns:
             If it was possible to verify the result dict positively.
-        """
-
-    @abstractmethod
-    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
-        """
-        Update the file content. It replaces the old content with the new content.
-
-        Args:
-            content_dict: The dictionary containing the new content of the file
-            storage_path: The path to the file
-            job_id: The id of the job
-
-        Returns:
-            None
-
-        Raises:
-            FileNotFoundError: If the file is not found
-        """
-
-    @abstractmethod
-    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
-        """
-        Move the file from `start_path` to `final_path`
-        """
-
-    @abstractmethod
-    def delete_file(self, storage_path: str, job_id: str) -> None:
-        """
-        Delete the file from the storage
-
-        Args:
-            storage_path: The path to the file
-            job_id: The id of the job
-
-        Raises:
-            FileNotFoundError: If the file is not found
-
-        Returns:
-            None
         """
 
     @abstractmethod
