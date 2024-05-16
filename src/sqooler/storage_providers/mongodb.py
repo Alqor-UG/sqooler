@@ -85,7 +85,7 @@ class MongodbCore(StorageCore):
         content_dict.pop("_id", None)
 
     @validate_active
-    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+    def get(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage
 
@@ -124,7 +124,7 @@ class MongodbCore(StorageCore):
         return result_found
 
     @validate_active
-    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    def update(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content. It replaces the old content with the new content.
 
@@ -154,7 +154,7 @@ class MongodbCore(StorageCore):
             raise FileNotFoundError(f"Could not update file under {storage_path}")
 
     @validate_active
-    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+    def move(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
 
@@ -185,7 +185,7 @@ class MongodbCore(StorageCore):
         collection.insert_one(result_found)
 
     @validate_active
-    def delete_file(self, storage_path: str, job_id: str) -> None:
+    def delete(self, storage_path: str, job_id: str) -> None:
         """
         Remove the file from the mongodb database
 
@@ -231,7 +231,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
 
         """
-        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
+        job_dict = self.get(storage_path=storage_path, job_id=job_id)
         job_dict.pop("_id", None)
         return job_dict
 
@@ -362,7 +362,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             old_config_jws, config_dict, private_jwk
         )
 
-        self.update_file(
+        self.update(
             content_dict=upload_dict,
             storage_path=config_path,
             job_id=job_id,
@@ -433,7 +433,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         result_found = collection.find_one(document_to_find)
         if result_found is None:
             raise FileNotFoundError(f"the config for {display_name} does not exist.")
-        self.delete_file(config_path, str(result_found["_id"]))
+        self.delete(config_path, str(result_found["_id"]))
 
         return True
 
@@ -514,9 +514,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         status_json_dir = "status/" + display_name
 
         try:
-            status_dict = self.get_file_content(
-                storage_path=status_json_dir, job_id=job_id
-            )
+            status_dict = self.get(storage_path=status_json_dir, job_id=job_id)
         except FileNotFoundError as err:
             # if the job_id is not valid, we return an error
             return StatusMsgDict(
@@ -547,7 +545,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
         status_json_dir = "status/" + display_name
 
-        self.delete_file(storage_path=status_json_dir, job_id=job_id)
+        self.delete(storage_path=status_json_dir, job_id=job_id)
         return True
 
     def upload_result(
@@ -597,9 +595,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
         result_json_dir = "results/" + display_name
         try:
-            result_dict = self.get_file_content(
-                storage_path=result_json_dir, job_id=job_id
-            )
+            result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
         except FileNotFoundError:
             # if the job_id is not valid, we return an error
             return ResultDict(
@@ -628,7 +624,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             If it was possible to verify the result dict positively.
         """
         result_json_dir = "results/" + display_name
-        result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
+        result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
         public_jwk = self.get_public_key(display_name)
 
         result_jws = JWSDict(**result_dict)
@@ -652,7 +648,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         result_json_dir = "results/" + display_name
 
-        self.delete_file(storage_path=result_json_dir, job_id=job_id)
+        self.delete(storage_path=result_json_dir, job_id=job_id)
         return True
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
@@ -694,7 +690,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         result_found = collection.find_one(document_to_find)
         if result_found:
             # update the file
-            self.update_file(
+            self.update(
                 content_dict=public_jwk.model_dump(),
                 storage_path=pk_paths,
                 job_id=result_found["_id"],
@@ -755,7 +751,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         result_found = collection.find_one(document_to_find)
         if result_found is None:
             raise FileNotFoundError(f"The public key with kid {kid} does not exist")
-        self.delete_file(key_path, str(result_found["_id"]))
+        self.delete(key_path, str(result_found["_id"]))
         return True
 
     def update_in_database(
@@ -803,19 +799,19 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + display_name
-            self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
+            self.move(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
             deleted_json_dir = "jobs/deleted"
-            self.move_file(job_json_start_dir, deleted_json_dir, job_id)
+            self.move(job_json_start_dir, deleted_json_dir, job_id)
 
         # TODO: most likely we should raise an error if the status of the job is not DONE or ERROR
 
         # and create the status json file
         status_json_dir = "status/" + display_name
         try:
-            self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
+            self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
         except FileNotFoundError:
             logging.warning(
                 "The status file was missing for %s with job_id %s was missing.",
@@ -823,7 +819,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
                 job_id,
             )
             self.upload_status(display_name, "", job_id)
-            self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
+            self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
@@ -882,7 +878,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             job_dict["job_id"] = job_id
 
             # and move the file into the right directory
-            self.move_file(queue_dir, "jobs/running", job_id)
+            self.move(queue_dir, "jobs/running", job_id)
             job_dict["job_json_path"] = "jobs/running"
         return NextJobSchema(**job_dict)
 

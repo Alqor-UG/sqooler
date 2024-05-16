@@ -94,7 +94,7 @@ class DropboxCore(StorageCore):
         self.upload_string(dump_str, storage_path, job_id)
 
     @validate_active
-    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+    def get(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the dropbox
 
@@ -127,7 +127,7 @@ class DropboxCore(StorageCore):
         return json.loads(data.decode("utf-8"))
 
     @validate_active
-    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    def update(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content.
 
@@ -169,7 +169,7 @@ class DropboxCore(StorageCore):
             )
 
     @validate_active
-    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+    def move(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
 
@@ -197,7 +197,7 @@ class DropboxCore(StorageCore):
             dbx.files_move_v2(full_start_path, full_final_path)
 
     @validate_active
-    def delete_file(self, storage_path: str, job_id: str) -> None:
+    def delete(self, storage_path: str, job_id: str) -> None:
         """
         Remove the file from the dropbox
 
@@ -281,7 +281,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             The content of the job
         """
-        return self.get_file_content(storage_path=storage_path, job_id=f"job-{job_id}")
+        return self.get(storage_path=storage_path, job_id=f"job-{job_id}")
 
     def update_config(
         self,
@@ -306,7 +306,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
 
         # check that the file exists
         config_path = "Backend_files/Config/" + display_name
-        old_config_jws = self.get_file_content(config_path, "config")
+        old_config_jws = self.get(config_path, "config")
 
         upload_dict = self._format_update_config(
             old_config_jws, config_dict, private_jwk
@@ -338,7 +338,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         config_path = "Backend_files/Config/" + display_name
         # check if the file already exists
         try:
-            self.get_file_content(storage_path=config_path, job_id="config")
+            self.get(storage_path=config_path, job_id="config")
             raise FileExistsError(
                 f"The configuration for {display_name} already exists and should not be overwritten."
             )
@@ -363,7 +363,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
         config_path = "Backend_files/Config/" + display_name
 
-        self.delete_file(storage_path=config_path, job_id="config")
+        self.delete(storage_path=config_path, job_id="config")
         return True
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
@@ -411,9 +411,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         if config_dict.kid is None:
             raise ValueError("The kid is not set in the backend configuration.")
 
-        public_jwk_dict = self.get_file_content(
-            storage_path=pk_paths, job_id=config_dict.kid
-        )
+        public_jwk_dict = self.get(storage_path=pk_paths, job_id=config_dict.kid)
         return JWK(**public_jwk_dict)
 
     def _delete_public_key(self, kid: str) -> bool:
@@ -430,7 +428,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             Success if the file was deleted successfully
         """
         pk_paths = "Backend_files/public_keys"
-        self.delete_file(storage_path=pk_paths, job_id=kid)
+        self.delete(storage_path=pk_paths, job_id=kid)
         return True
 
     def update_in_database(
@@ -480,17 +478,15 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                 + extracted_username
                 + "/"
             )
-            self.move_file(job_json_start_dir, job_finished_json_dir, job_json_name)
+            self.move(job_json_start_dir, job_finished_json_dir, job_json_name)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
             deleted_json_dir = "Backend_files/Deleted_Jobs"
-            self.move_file(job_json_start_dir, deleted_json_dir, job_json_name)
+            self.move(job_json_start_dir, deleted_json_dir, job_json_name)
 
         try:
-            self.update_file(
-                status_msg_dict.model_dump(), status_json_dir, status_json_name
-            )
+            self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
         except FileNotFoundError:
             logging.warning(
                 "The status file was missing for %s with job_id %s was missing.",
@@ -498,9 +494,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                 job_id,
             )
             self.upload_status(display_name, username=extracted_username, job_id=job_id)
-            self.update_file(
-                status_msg_dict.model_dump(), status_json_dir, status_json_name
-            )
+            self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
@@ -581,9 +575,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             The configuration of the backend in complete form.
         """
         backend_json_path = f"Backend_files/Config/{display_name}"
-        backend_config_dict = self.get_file_content(
-            storage_path=backend_json_path, job_id="config"
-        )
+        backend_config_dict = self.get(storage_path=backend_json_path, job_id="config")
         typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
 
@@ -676,7 +668,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         status_json_name = "status-" + job_id
 
         try:
-            status_dict = self.get_file_content(
+            status_dict = self.get(
                 storage_path=status_json_dir, job_id=status_json_name
             )
         except FileNotFoundError:
@@ -710,7 +702,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         status_json_dir = "Backend_files/Status/" + display_name + "/" + username
         status_json_name = "status-" + job_id
 
-        self.delete_file(storage_path=status_json_dir, job_id=status_json_name)
+        self.delete(storage_path=status_json_dir, job_id=status_json_name)
         return True
 
     def upload_result(
@@ -765,7 +757,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         result_json_dir = "Backend_files/Result/" + display_name + "/" + username
         result_json_name = "result-" + job_id
         try:
-            result_dict = self.get_file_content(
+            result_dict = self.get(
                 storage_path=result_json_dir, job_id=result_json_name
             )
         except FileNotFoundError:
@@ -798,9 +790,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         result_json_dir = "Backend_files/Result/" + display_name + "/" + username
         result_json_name = "result-" + job_id
 
-        result_dict = self.get_file_content(
-            storage_path=result_json_dir, job_id=result_json_name
-        )
+        result_dict = self.get(storage_path=result_json_dir, job_id=result_json_name)
         public_jwk = self.get_public_key(display_name)
 
         result_jws = JWSDict(**result_dict)
@@ -827,7 +817,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         )
         result_json_name = "result-" + job_id
 
-        self.delete_file(storage_path=result_json_dir, job_id=result_json_name)
+        self.delete(storage_path=result_json_dir, job_id=result_json_name)
         return True
 
     def get_next_job_in_queue(
@@ -859,7 +849,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             # split the .json from the job_json_name
             job_json_name = job_json_name.split(".")[0]
             # and move the file into the right directory
-            self.move_file(job_json_dir, "Backend_files/Running_Jobs", job_json_name)
+            self.move(job_json_dir, "Backend_files/Running_Jobs", job_json_name)
             job_dict["job_json_path"] = "Backend_files/Running_Jobs"
         return NextJobSchema(**job_dict)
 

@@ -73,7 +73,7 @@ class LocalCore(StorageCore):
             json.dump(content_dict, json_file, default=datetime_handler)
 
     @validate_active
-    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+    def get(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage
         """
@@ -95,7 +95,7 @@ class LocalCore(StorageCore):
         return loaded_data_dict
 
     @validate_active
-    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    def update(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content.
 
@@ -127,7 +127,7 @@ class LocalCore(StorageCore):
             json.dump(content_dict, json_file)
 
     @validate_active
-    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+    def move(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from `start_path` to `final_path`
         """
@@ -143,7 +143,7 @@ class LocalCore(StorageCore):
         shutil.move(source_file, final_path)
 
     @validate_active
-    def delete_file(self, storage_path: str, job_id: str) -> None:
+    def delete(self, storage_path: str, job_id: str) -> None:
         """
         Delete the file from the storage
 
@@ -178,7 +178,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             The content of the job
         """
-        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
+        job_dict = self.get(storage_path=storage_path, job_id=job_id)
         return job_dict
 
     def get_backends(self) -> list[DisplayNameStr]:
@@ -279,9 +279,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         status_json_dir = "status/" + display_name
 
         try:
-            status_dict = self.get_file_content(
-                storage_path=status_json_dir, job_id=job_id
-            )
+            status_dict = self.get(storage_path=status_json_dir, job_id=job_id)
             # return StatusMsgDict(**status_dict)
         except FileNotFoundError:
             # if the job_id is not valid, we return an error
@@ -313,7 +311,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         status_json_dir = "status/" + display_name
 
-        self.delete_file(storage_path=status_json_dir, job_id=job_id)
+        self.delete(storage_path=status_json_dir, job_id=job_id)
         return True
 
     def upload_result(
@@ -379,9 +377,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
         result_json_dir = "results/" + display_name
         try:
-            result_dict = self.get_file_content(
-                storage_path=result_json_dir, job_id=job_id
-            )
+            result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
         except FileNotFoundError:
             # if the job_id is not valid, we return an error
             return ResultDict(
@@ -409,7 +405,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             If it was possible to verify the result dict positively.
         """
         result_json_dir = "results/" + display_name
-        result_dict = self.get_file_content(storage_path=result_json_dir, job_id=job_id)
+        result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
         public_jwk = self.get_public_key(display_name)
 
         result_jws = JWSDict(**result_dict)
@@ -433,7 +429,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
         result_json_dir = "results/" + display_name
 
-        self.delete_file(storage_path=result_json_dir, job_id=job_id)
+        self.delete(storage_path=result_json_dir, job_id=job_id)
         return True
 
     def update_config(
@@ -540,7 +536,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         # path of the configs
         config_path = "/backends/configs"
-        backend_config_dict = self.get_file_content(config_path, job_id=display_name)
+        backend_config_dict = self.get(config_path, job_id=display_name)
         typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
 
@@ -559,7 +555,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         config_path = "/backends/configs"
 
-        self.delete_file(storage_path=config_path, job_id=display_name)
+        self.delete(storage_path=config_path, job_id=display_name)
         return True
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
@@ -643,7 +639,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         key_path = "backends/public_keys"
 
-        self.delete_file(storage_path=key_path, job_id=kid)
+        self.delete(storage_path=key_path, job_id=kid)
         return True
 
     def update_in_database(
@@ -684,17 +680,17 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = "jobs/finished/" + display_name
 
-            self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
+            self.move(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
             deleted_json_dir = "jobs/deleted"
-            self.move_file(job_json_start_dir, deleted_json_dir, job_id)
+            self.move(job_json_start_dir, deleted_json_dir, job_id)
 
         # and create the status json file
         status_json_dir = "status/" + display_name
         try:
-            self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
+            self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
         except FileNotFoundError:
             logging.warning(
                 "The status file was missing for %s with job_id %s was missing.",
@@ -702,7 +698,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 job_id,
             )
             self.upload_status(display_name, "", job_id)
-            self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
+            self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
@@ -748,7 +744,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             job_dict["job_id"] = job_id
 
             # and move the file into the right directory
-            self.move_file(queue_dir, "jobs/running", job_id)
+            self.move(queue_dir, "jobs/running", job_id)
             job_dict["job_json_path"] = "jobs/running"
         return NextJobSchema(**job_dict)
 
