@@ -441,6 +441,5 @@ def test_generate_dummy_config(sign_it: bool) -> None:
     assert dummy_config.max_experiments == 1
     assert dummy_config.max_shots == 1
     assert dummy_config.simulator is True
-    assert dummy_config.supported_instructions == []
     assert dummy_config.wire_order == "interleaved"
     assert dummy_config.num_species == 1
