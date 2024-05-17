@@ -218,7 +218,12 @@ class MongodbCore(StorageCore):
 class MongodbProviderExtended(StorageProvider, MongodbCore):
     """
     The access to the mongodb
+
+    Attributes:
+        configs_path: The path to the folder where the configurations are stored
     """
+
+    configs_path: str = "backends/configs"
 
     def get_job_content(self, storage_path: str, job_id: str) -> dict:
         """
@@ -272,9 +277,10 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             None
         """
-        config_path = "backends/configs"
-        config_dict.display_name = display_name
-
+        if not config_dict.display_name == display_name:
+            raise ValueError(
+                f"The display_name  of the config_dict {config_dict.display_name} does not match the display_name {display_name}."
+            )
         # first we have to check if the device already exists in the database
 
         document_to_find = {"display_name": display_name}
@@ -302,7 +308,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         upload_dict = self._format_config_dict(config_dict, private_jwk)
         config_id = uuid.uuid4().hex[:24]
-        self.upload(upload_dict, config_path, config_id)
+        self.upload(upload_dict, self.configs_path, config_id)
 
     def update_config(
         self,
@@ -321,7 +327,6 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             None
         """
-        config_path = "backends/configs"
 
         config_dict.display_name = display_name
 
@@ -364,7 +369,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         self.update(
             content_dict=upload_dict,
-            storage_path=config_path,
+            storage_path=self.configs_path,
             job_id=job_id,
         )
 
@@ -421,7 +426,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
 
         config_dict = self.get_config(display_name)
-        config_path = "backends/configs"
+        # needs to be changed to the correct path
         database = self.client["backends"]
         collection = database["configs"]
 
@@ -433,7 +438,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         result_found = collection.find_one(document_to_find)
         if result_found is None:
             raise FileNotFoundError(f"the config for {display_name} does not exist.")
-        self.delete(config_path, str(result_found["_id"]))
+        self.delete(self.configs_path, str(result_found["_id"]))
 
         return True
 

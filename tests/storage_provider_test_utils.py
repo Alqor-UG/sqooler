@@ -11,6 +11,7 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
+from icecream import ic
 from pydantic import ValidationError
 from pytest import LogCaptureFixture
 
@@ -307,6 +308,19 @@ class StorageProviderTestUtils:
         if sign:
             with pytest.raises(ValueError):
                 storage_provider.upload_config(config_info, display_name=backend_name)
+
+        # test that we cannot upload the config where the display_name in the config
+        # is different from the display_name in the upload_config
+
+        with pytest.raises(ValueError):
+            poor_backend_name, poor_config_info = get_dummy_config(sign)
+            ic(poor_config_info.display_name)
+            poor_config_info.display_name = "dummynone"
+            storage_provider.upload_config(
+                poor_config_info,
+                display_name=poor_backend_name,
+                private_jwk=private_jwk,
+            )
 
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk

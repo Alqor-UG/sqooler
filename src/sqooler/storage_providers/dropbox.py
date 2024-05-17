@@ -268,7 +268,12 @@ class DropboxCore(StorageCore):
 class DropboxProviderExtended(StorageProvider, DropboxCore):
     """
     The class that implements the dropbox storage provider.
+
+    Attributes:
+        configs_path: The path to the folder where the configurations are stored
     """
+
+    configs_path = "/Backend_files/Config/"
 
     def get_job_content(self, storage_path: str, job_id: str) -> dict:
         """
@@ -305,7 +310,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
 
         # check that the file exists
-        config_path = "Backend_files/Config/" + display_name
+        config_path = self.configs_path + display_name
         old_config_jws = self.get(config_path, "config")
 
         upload_dict = self._format_update_config(
@@ -334,8 +339,13 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             None
         """
+        # make sure that the display_name is as it should be
+        if not config_dict.display_name == display_name:
+            raise ValueError(
+                f"The display_name  of the config_dict {config_dict.display_name} does not match the display_name {display_name}."
+            )
 
-        config_path = "Backend_files/Config/" + display_name
+        config_path = self.configs_path + display_name
         # check if the file already exists
         try:
             self.get(storage_path=config_path, job_id="config")
@@ -361,7 +371,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        config_path = "Backend_files/Config/" + display_name
+        config_path = self.configs_path + display_name
 
         self.delete(storage_path=config_path, job_id="config")
         return True
@@ -542,7 +552,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
         Get a list of all the backends that the provider offers.
         """
-        backend_config_path = "/Backend_files/Config/"
         with dropbox.Dropbox(
             app_key=self.app_key,
             app_secret=self.app_secret,
@@ -554,7 +563,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             except AuthError:
                 sys.exit("ERROR: Invalid access token.")
 
-            folders_results = dbx.files_list_folder(path=backend_config_path)
+            folders_results = dbx.files_list_folder(path=self.configs_path)
             entries = folders_results.entries
             backend_names = []
             for entry in entries:
@@ -574,7 +583,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             The configuration of the backend in complete form.
         """
-        backend_json_path = f"Backend_files/Config/{display_name}"
+        backend_json_path = self.configs_path + display_name
         backend_config_dict = self.get(storage_path=backend_json_path, job_id="config")
         typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config

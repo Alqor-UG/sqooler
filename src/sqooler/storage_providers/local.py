@@ -165,7 +165,12 @@ class LocalCore(StorageCore):
 class LocalProviderExtended(StorageProvider, LocalCore):
     """
     Create a file storage that works on the local machine.
+
+    Attributes:
+        configs_path: The path to the folder where the configurations are stored
     """
+
+    configs_path: str = "backends/configs"
 
     def get_job_content(self, storage_path: str, job_id: str) -> dict:
         """
@@ -450,7 +455,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             None
         """
         # path of the configs
-        config_path = os.path.join(self.base_path, "backends/configs")
+        config_path = os.path.join(self.base_path, self.configs_path)
         config_path = os.path.normpath(config_path)
 
         file_name = display_name + ".json"
@@ -476,7 +481,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         # maybe this should rather become the update method
         self.upload(
             content_dict=upload_dict,
-            storage_path="backends/configs",
+            storage_path=self.configs_path,
             job_id=display_name,
         )
 
@@ -497,8 +502,13 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             None
         """
+        # make sure that the display_name is as it should be
+        if not config_dict.display_name == display_name:
+            raise ValueError(
+                f"The display_name  of the config_dict {config_dict.display_name} does not match the display_name {display_name}."
+            )
         # path of the configs
-        config_path = os.path.join(self.base_path, "backends/configs")
+        config_path = os.path.join(self.base_path, self.configs_path)
         config_path = os.path.normpath(config_path)
         # test if the config path already exists. If it does not, create it
         if not os.path.exists(config_path):
@@ -517,7 +527,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         upload_dict = self._format_config_dict(config_dict, private_jwk)
         self.upload(
             content_dict=upload_dict,
-            storage_path="backends/configs",
+            storage_path=self.configs_path,
             job_id=display_name,
         )
 
