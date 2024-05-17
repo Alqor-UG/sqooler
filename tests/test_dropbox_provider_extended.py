@@ -11,11 +11,7 @@ from pytest import LogCaptureFixture
 from sqooler.schemes import DropboxLoginInformation
 from sqooler.storage_providers.dropbox import DropboxCore, DropboxProviderExtended
 
-from .storage_provider_test_utils import (
-    StorageCoreTestUtils,
-    StorageProviderTestUtils,
-    clean_dummies_from_folder,
-)
+from .storage_provider_test_utils import StorageCoreTestUtils, StorageProviderTestUtils
 
 DB_NAME = "dropboxtest"
 
@@ -53,15 +49,6 @@ class TestDropboxCore(StorageCoreTestUtils):
             "refresh_token": refresh_token,
         }
         return DropboxLoginInformation(**login_dict)
-
-    @classmethod
-    def teardown_class(cls) -> None:
-        """
-        Clean out the old dummy files
-        """
-        # clean stupid dummy files for the config
-        backend_config_path = "/Backend_files/Config/"
-        clean_dummies_from_folder(backend_config_path)
 
     def test_file_remove(self) -> None:
         """
@@ -122,15 +109,6 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
             "refresh_token": refresh_token,
         }
         return DropboxLoginInformation(**login_dict)
-
-    @classmethod
-    def teardown_class(cls) -> None:
-        """
-        Clean out the old dummy files
-        """
-        # clean stupid dummy files for the config
-        backend_config_path = "/Backend_files/Config/"
-        clean_dummies_from_folder(backend_config_path)
 
     def test_dropbox_object(self) -> None:
         """

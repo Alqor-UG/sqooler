@@ -167,7 +167,7 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
 
         # remove the obsolete job from the storage
         job_dir = f"jobs/finished/{backend_name}"
-        storage_provider.delete_file(job_dir, job_id)
+        storage_provider.delete(job_dir, job_id)
 
         # remove the obsolete collection from the storage
         full_path = os.path.join(storage_provider.base_path, job_dir)

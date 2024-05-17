@@ -96,24 +96,24 @@ class StorageCoreTestUtils:
 
         job_id = uuid.uuid4().hex[:24]
         storage_provider.upload(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
+        test_result = storage_provider.get(storage_path, job_id)
 
         assert test_content == test_result
 
         # make sure that get_file_content raises an error if the file does not exist
         with pytest.raises(FileNotFoundError):
-            storage_provider.get_file_content(storage_path, "non_existing")
+            storage_provider.get(storage_path, "non_existing")
 
         # make sure that delete_file raises an error if the file does not exist
         with pytest.raises(FileNotFoundError):
-            storage_provider.delete_file(storage_path, "non_existing")
+            storage_provider.delete(storage_path, "non_existing")
 
         with pytest.raises(FileNotFoundError):
             job_id_test = uuid.uuid4().hex[:24]
-            storage_provider.delete_file(storage_path, job_id_test)
+            storage_provider.delete(storage_path, job_id_test)
 
         # clean up our mess
-        storage_provider.delete_file(storage_path, job_id)
+        storage_provider.delete(storage_path, job_id)
 
     def active_tests(self, db_name: str) -> None:
         """
@@ -140,11 +140,11 @@ class StorageCoreTestUtils:
         with pytest.raises(ValueError):
             storage_provider.upload(test_content, storage_path, job_id)
         with pytest.raises(ValueError):
-            storage_provider.get_file_content(storage_path, job_id)
+            storage_provider.get(storage_path, job_id)
         with pytest.raises(ValueError):
-            storage_provider.move_file(storage_path, second_path, job_id)
+            storage_provider.move(storage_path, second_path, job_id)
         with pytest.raises(ValueError):
-            storage_provider.delete_file(second_path, job_id)
+            storage_provider.delete(second_path, job_id)
 
     def upload_tests(self, db_name: str) -> None:
         """
@@ -164,29 +164,29 @@ class StorageCoreTestUtils:
 
         job_id = uuid.uuid4().hex[:24]
         storage_provider.upload(test_content, storage_path, job_id)
-        test_result = storage_provider.get_file_content(storage_path, job_id)
+        test_result = storage_provider.get(storage_path, job_id)
 
         assert test_content == test_result
 
         # make sure that get_file_content raises an error if the file does not exist
         with pytest.raises(FileNotFoundError):
-            storage_provider.get_file_content(storage_path, "non_existing")
+            storage_provider.get(storage_path, "non_existing")
 
         # move it and get it back
         second_path = "test/subcollection_2"
-        storage_provider.move_file(storage_path, second_path, job_id)
-        test_result = storage_provider.get_file_content(second_path, job_id)
+        storage_provider.move(storage_path, second_path, job_id)
+        test_result = storage_provider.get(second_path, job_id)
 
         assert test_content == test_result
 
         # test that we can update the file properly
         new_content = {"experiment_0": "What happened here."}
-        storage_provider.update_file(new_content, second_path, job_id)
-        test_result = storage_provider.get_file_content(second_path, job_id)
+        storage_provider.update(new_content, second_path, job_id)
+        test_result = storage_provider.get(second_path, job_id)
         assert new_content["experiment_0"] == test_result["experiment_0"]
 
         # clean up our mess
-        storage_provider.delete_file(second_path, job_id)
+        storage_provider.delete(second_path, job_id)
 
     def update_raise_error_test(self, db_name: str) -> None:
         """
@@ -207,22 +207,22 @@ class StorageCoreTestUtils:
         # make sure that we cannot update a file if it does not exist
 
         with pytest.raises(FileNotFoundError):
-            storage_provider.update_file(test_content, storage_path, mongo_id)
+            storage_provider.update(test_content, storage_path, mongo_id)
 
         # upload a file and get it back
         storage_provider.upload(test_content, storage_path, mongo_id)
-        test_result = storage_provider.get_file_content(storage_path, mongo_id)
+        test_result = storage_provider.get(storage_path, mongo_id)
 
         assert test_content == test_result
 
         # update it and get it back
         test_content = {"experiment_1": "Nothing happened here."}
-        storage_provider.update_file(test_content, storage_path, mongo_id)
-        test_result = storage_provider.get_file_content(storage_path, mongo_id)
+        storage_provider.update(test_content, storage_path, mongo_id)
+        test_result = storage_provider.get(storage_path, mongo_id)
         assert test_content == test_result
 
         # clean up our mess
-        storage_provider.delete_file(storage_path, mongo_id)
+        storage_provider.delete(storage_path, mongo_id)
 
 
 class StorageProviderTestUtils:

@@ -79,7 +79,7 @@ class StorageCore(ABC):
         """
 
     @abstractmethod
-    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+    def get(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage.
 
@@ -95,7 +95,7 @@ class StorageCore(ABC):
         """
 
     @abstractmethod
-    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    def update(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content. It replaces the old content with the new content.
 
@@ -112,13 +112,13 @@ class StorageCore(ABC):
         """
 
     @abstractmethod
-    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+    def move(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from `start_path` to `final_path`
         """
 
     @abstractmethod
-    def delete_file(self, storage_path: str, job_id: str) -> None:
+    def delete(self, storage_path: str, job_id: str) -> None:
         """
         Delete the file from the storage
 
