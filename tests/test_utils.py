@@ -19,7 +19,7 @@ from sqooler.schemes import LocalLoginInformation
 from sqooler.security import jwk_from_config_str
 from sqooler.spoolers import Spooler
 from sqooler.storage_providers.local import LocalProvider
-from sqooler.utils import main, run_json_circuit, update_backends
+from sqooler.utils import get_dummy_config, main, run_json_circuit, update_backends
 
 from .sqooler_test_utils import DummyFullInstruction, dummy_gen_circuit
 
@@ -422,3 +422,24 @@ def test_run_json_circuit(
     with pytest.raises(AssertionError):
         run_json_circuit(job_payload, job_id, test_spooler)
     assert "Failed json sanity check." in caplog.text
+
+
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_generate_dummy_config(sign_it: bool) -> None:
+    """
+    Test that it is possible to generate a dummy config.
+    """
+    display_name, dummy_config = get_dummy_config(sign_it)
+    assert "dummy" in dummy_config.display_name
+
+    assert dummy_config.display_name == display_name
+    assert dummy_config.sign == sign_it
+    assert dummy_config.num_wires == 3
+    assert dummy_config.version == "0.0.1"
+    assert dummy_config.description == "This is a dummy backend."
+    assert dummy_config.cold_atom_type == "fermion"
+    assert dummy_config.max_experiments == 1
+    assert dummy_config.max_shots == 1
+    assert dummy_config.simulator is True
+    assert dummy_config.wire_order == "interleaved"
+    assert dummy_config.num_species == 1
