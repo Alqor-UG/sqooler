@@ -11,11 +11,7 @@ from pytest import LogCaptureFixture
 from sqooler.schemes import DropboxLoginInformation
 from sqooler.storage_providers.dropbox import DropboxCore, DropboxProviderExtended
 
-from .storage_provider_test_utils import (
-    StorageCoreTestUtils,
-    StorageProviderTestUtils,
-    clean_dummies_from_folder,
-)
+from .storage_provider_test_utils import StorageCoreTestUtils, StorageProviderTestUtils
 
 DB_NAME = "dropboxtest"
 

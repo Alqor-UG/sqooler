@@ -5,7 +5,6 @@ The tests for the extended mongodb storage provider
 from typing import Any
 
 import pytest
-from bson.objectid import ObjectId
 from decouple import config
 from pytest import LogCaptureFixture
 
