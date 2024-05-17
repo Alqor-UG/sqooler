@@ -14,14 +14,10 @@ from dropbox.exceptions import ApiError, AuthError
 from pydantic import ValidationError
 from pytest import LogCaptureFixture
 
-from sqooler.schemes import (
-    BackendConfigSchemaIn,
-    ResultDict,
-    get_init_results,
-    get_init_status,
-)
+from sqooler.schemes import ResultDict, get_init_results, get_init_status
 from sqooler.security import create_jwk_pair
 from sqooler.storage_providers.base import StorageCore, StorageProvider
+from sqooler.utils import get_dummy_config
 
 
 def clean_dummies_from_folder(folder_path: str) -> None:
@@ -252,38 +248,6 @@ class StorageProviderTestUtils:
         """
         raise NotImplementedError
 
-    def get_dummy_config(self, sign: bool = True) -> Tuple[str, BackendConfigSchemaIn]:
-        """
-        Generate the dummy config of the fermion type.
-
-        Args:
-            sign: Whether to sign the files.
-        Returns:
-            The backend name and the backend config input.
-        """
-
-        dummy_id = uuid.uuid4().hex[:5]
-        backend_name = f"dummy{dummy_id}"
-
-        dummy_dict: dict = {}
-        dummy_dict["gates"] = []
-        dummy_dict["display_name"] = backend_name
-        dummy_dict["num_wires"] = 3
-        dummy_dict["version"] = "0.0.1"
-        dummy_dict["description"] = "This is a dummy backend."
-        dummy_dict["cold_atom_type"] = "fermion"
-        dummy_dict["max_experiments"] = 1
-        dummy_dict["max_shots"] = 1
-        dummy_dict["simulator"] = True
-        dummy_dict["supported_instructions"] = []
-        dummy_dict["wire_order"] = "interleaved"
-        dummy_dict["num_species"] = 1
-        dummy_dict["operational"] = True
-        dummy_dict["sign"] = sign
-
-        backend_info = BackendConfigSchemaIn(**dummy_dict)
-        return backend_name, backend_info
-
     def storage_object_tests(self, db_name: str) -> None:
         """
         Test that we can create a MongoDB object.
@@ -336,7 +300,7 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config(sign)
+        backend_name, config_info = get_dummy_config(sign)
         private_jwk, _ = create_jwk_pair(backend_name)
 
         # does it fail if we try to upload the config without a private key?
@@ -418,7 +382,7 @@ class StorageProviderTestUtils:
         private_jwk, public_jwk = create_jwk_pair(key_id)
 
         # create a dummy config
-        backend_name, config_info = self.get_dummy_config(sign=True)
+        backend_name, config_info = get_dummy_config(sign=True)
 
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
@@ -436,7 +400,7 @@ class StorageProviderTestUtils:
             obtained_public_jwk = storage_provider.get_public_key("random")
 
         # now make sure that we can use the same public key for a different backend
-        other_backend_name, other_config_info = self.get_dummy_config(sign=True)
+        other_backend_name, other_config_info = get_dummy_config(sign=True)
         storage_provider.upload_config(
             other_config_info, display_name=other_backend_name, private_jwk=private_jwk
         )
@@ -471,7 +435,7 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config(sign)
+        backend_name, config_info = get_dummy_config(sign)
         private_jwk, _ = create_jwk_pair(backend_name)
 
         # and make sure that we raise an error if the backend is not there
@@ -531,7 +495,7 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config(sign=True)
+        backend_name, config_info = get_dummy_config(sign=True)
         private_jwk, public_jwk = create_jwk_pair("test_kid")
 
         # upload the config
@@ -619,7 +583,7 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config(sign=sign)
+        backend_name, config_info = get_dummy_config(sign=sign)
         # create a dummy key
         private_jwk, _ = create_jwk_pair(backend_name)
         storage_provider.upload_config(
@@ -692,7 +656,7 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config(sign=sign)
+        backend_name, config_info = get_dummy_config(sign=sign)
         key_id = "dummy_key"
         private_jwk, _ = create_jwk_pair(key_id)
 
@@ -754,7 +718,7 @@ class StorageProviderTestUtils:
         except TypeError:
             storage_provider = storage_provider_class(self.get_login())
 
-        backend_name, config_info = self.get_dummy_config(sign=sign)
+        backend_name, config_info = get_dummy_config(sign=sign)
 
         # create a dummy key
         key_id = "dummy_key"
