@@ -6,6 +6,7 @@ storage for the jobs. It creates an abstract API layer for the storage providers
 import functools
 import logging
 import re
+import warnings
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Optional
@@ -547,6 +548,28 @@ class StorageProvider(StorageCore):
         else:
             self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
         return True
+
+    def _verify_config(
+        self, config_dict: BackendConfigSchemaIn, display_name: DisplayNameStr
+    ) -> BackendConfigSchemaIn:
+        """
+        make sure that members of the config_dict are correct
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            display_name: The name of the backend
+
+        Raises:
+            A warning if the display_name does not match the display_name of the config_dict
+
+        """
+        if not config_dict.display_name == display_name:
+            config_dict.display_name = display_name
+            warnings.warn(
+                f"The display_name of the config_dict had to be matched to {display_name}."
+            )
+
+        return config_dict
 
     def _format_config_dict(
         self, config_dict: BackendConfigSchemaIn, private_jwk: Optional[JWK] = None

@@ -277,10 +277,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             None
         """
-        if not config_dict.display_name == display_name:
-            raise ValueError(
-                f"The display_name  of the config_dict {config_dict.display_name} does not match the display_name {display_name}."
-            )
+        config_dict = self._verify_config(config_dict, display_name)
+
         # first we have to check if the device already exists in the database
 
         document_to_find = {"display_name": display_name}

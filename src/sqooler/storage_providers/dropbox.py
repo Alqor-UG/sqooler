@@ -340,10 +340,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             None
         """
         # make sure that the display_name is as it should be
-        if not config_dict.display_name == display_name:
-            raise ValueError(
-                f"The display_name  of the config_dict {config_dict.display_name} does not match the display_name {display_name}."
-            )
+        config_dict = self._verify_config(config_dict, display_name)
 
         config_path = self.configs_path + display_name
         # check if the file already exists

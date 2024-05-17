@@ -312,7 +312,7 @@ class StorageProviderTestUtils:
         # test that we cannot upload the config where the display_name in the config
         # is different from the display_name in the upload_config
 
-        with pytest.raises(ValueError):
+        with pytest.warns(UserWarning):
             poor_backend_name, poor_config_info = get_dummy_config(sign)
             ic(poor_config_info.display_name)
             poor_config_info.display_name = "dummynone"
@@ -321,6 +321,7 @@ class StorageProviderTestUtils:
                 display_name=poor_backend_name,
                 private_jwk=private_jwk,
             )
+            storage_provider._delete_config(poor_backend_name)
 
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
