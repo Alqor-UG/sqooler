@@ -128,7 +128,7 @@ def main(
             counter += 1
             continue
         logging.debug("Got a job in %s", requested_backend)
-        job_json_dict = storage_provider.get_job_content(
+        job_json_dict = storage_provider.get_job(
             storage_path=job_dict.job_json_path, job_id=job_dict.job_id
         )
 

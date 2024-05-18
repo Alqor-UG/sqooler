@@ -5,17 +5,11 @@ tests that invole the sqooler and the utils.
 
 from typing import Literal, Optional
 
-from typing_extensions import Annotated
 from pydantic import Field
-from sqooler.schemes import (
-    ExperimentDict,
-    ExperimentalInputDict,
-    GateInstruction,
-)
+from typing_extensions import Annotated
 
-from sqooler.spoolers import (
-    create_memory_data,
-)
+from sqooler.schemes import ExperimentalInputDict, ExperimentDict, GateInstruction
+from sqooler.spoolers import create_memory_data
 
 
 class DummyInstruction(GateInstruction):
