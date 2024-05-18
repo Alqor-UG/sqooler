@@ -11,6 +11,7 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
+from icecream import ic
 from pydantic import ValidationError
 from pytest import LogCaptureFixture
 
@@ -308,6 +309,23 @@ class StorageProviderTestUtils:
             with pytest.raises(ValueError):
                 storage_provider.upload_config(config_info, display_name=backend_name)
 
+        # test that we cannot upload the config where the display_name in the config
+        # is different from the display_name in the upload_config
+
+        with pytest.warns(UserWarning):
+            poor_backend_name, poor_config_info = get_dummy_config(sign)
+            ic(poor_config_info.display_name)
+            poor_config_info.display_name = "dummynone"
+            storage_provider.upload_config(
+                poor_config_info,
+                display_name=poor_backend_name,
+                private_jwk=private_jwk,
+            )
+
+            obtained_config = storage_provider.get_config(poor_backend_name)
+            assert obtained_config.display_name == poor_backend_name
+            storage_provider._delete_config(poor_backend_name)
+
         storage_provider.upload_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
@@ -333,12 +351,13 @@ class StorageProviderTestUtils:
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
 
-        # and again
+        # and again also with a poor name in the config_info
         config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
-
-        storage_provider.update_config(
-            config_info, display_name=backend_name, private_jwk=private_jwk
-        )
+        config_info.display_name = "dummy"
+        with pytest.warns(UserWarning):
+            storage_provider.update_config(
+                config_info, display_name=backend_name, private_jwk=private_jwk
+            )
         if sign:
             # test that we cannot update the config with a wrong private key
             wrong_private_jwk, _ = create_jwk_pair(backend_name)
