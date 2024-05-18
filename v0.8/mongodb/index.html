@@ -733,9 +733,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_job_content" class="md-nav__link">
+  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_job" class="md-nav__link">
     <span class="md-ellipsis">
-      get_job_content
+      get_job
     </span>
   </a>
   
@@ -1098,9 +1098,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_job_content" class="md-nav__link">
+  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_job" class="md-nav__link">
     <span class="md-ellipsis">
-      get_job_content
+      get_job
     </span>
   </a>
   
@@ -3366,16 +3366,16 @@ job_id: the id of the file we are about to create</p>
     <span class="n">results_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span>
     <span class="n">pks_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;backends/public_keys&quot;</span>
 
-    <span class="k">def</span> <span class="nf">get_job_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get the content of the job from the storage. This is a wrapper around get_file_content</span>
+<span class="sd">        Get the content of the job from the storage. This is a wrapper around get</span>
 <span class="sd">        and and handles the different ways of identifiying the job.</span>
 
 <span class="sd">        storage_path: the path towards the file, excluding the filename / id</span>
 <span class="sd">        job_id: the id of the file we are about to look up</span>
 
 <span class="sd">        Returns:</span>
-
+<span class="sd">            The content of the job</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">job_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">storage_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_id</span><span class="p">)</span>
         <span class="n">job_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -4364,19 +4364,42 @@ job_id: the id of the file we are about to create</p>
 
 
 
-<h3 id="src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_job_content" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">get_job_content</span><span class="p">(</span><span class="n">storage_path</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span></code>
+<h3 id="src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_job" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">get_job</span><span class="p">(</span><span class="n">storage_path</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span></code>
 
 </h3>
 
 
   <div class="doc doc-contents ">
   
-      <p>Get the content of the job from the storage. This is a wrapper around get_file_content
+      <p>Get the content of the job from the storage. This is a wrapper around get
 and and handles the different ways of identifiying the job.</p>
 <p>storage_path: the path towards the file, excluding the filename / id
 job_id: the id of the file we are about to look up</p>
-<p>Returns:</p>
+
+
+
+  <p><span class="doc-section-title">Returns:</span></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr class="doc-section-item">
+          <td>
+                <code>dict</code>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The content of the job</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
 
           <details class="quote">
             <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
@@ -4393,16 +4416,16 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">254</span>
 <span class="normal">255</span>
 <span class="normal">256</span>
-<span class="normal">257</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_job_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">257</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get the content of the job from the storage. This is a wrapper around get_file_content</span>
+<span class="sd">    Get the content of the job from the storage. This is a wrapper around get</span>
 <span class="sd">    and and handles the different ways of identifiying the job.</span>
 
 <span class="sd">    storage_path: the path towards the file, excluding the filename / id</span>
 <span class="sd">    job_id: the id of the file we are about to look up</span>
 
 <span class="sd">    Returns:</span>
-
+<span class="sd">        The content of the job</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">job_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">storage_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_id</span><span class="p">)</span>
     <span class="n">job_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>

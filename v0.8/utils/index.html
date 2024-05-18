@@ -1165,7 +1165,7 @@ will run forever.</p>
             <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">continue</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got a job in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">requested_backend</span><span class="p">)</span>
-        <span class="n">job_json_dict</span> <span class="o">=</span> <span class="n">storage_provider</span><span class="o">.</span><span class="n">get_job_content</span><span class="p">(</span>
+        <span class="n">job_json_dict</span> <span class="o">=</span> <span class="n">storage_provider</span><span class="o">.</span><span class="n">get_job</span><span class="p">(</span>
             <span class="n">storage_path</span><span class="o">=</span><span class="n">job_dict</span><span class="o">.</span><span class="n">job_json_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_dict</span><span class="o">.</span><span class="n">job_id</span>
         <span class="p">)</span>
 

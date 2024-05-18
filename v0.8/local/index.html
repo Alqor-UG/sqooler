@@ -754,9 +754,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.local.LocalProviderExtended.get_job_content" class="md-nav__link">
+  <a href="#src.sqooler.storage_providers.local.LocalProviderExtended.get_job" class="md-nav__link">
     <span class="md-ellipsis">
-      get_job_content
+      get_job
     </span>
   </a>
   
@@ -1098,9 +1098,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.local.LocalProviderExtended.get_job_content" class="md-nav__link">
+  <a href="#src.sqooler.storage_providers.local.LocalProviderExtended.get_job" class="md-nav__link">
     <span class="md-ellipsis">
-      get_job_content
+      get_job
     </span>
   </a>
   
@@ -3044,7 +3044,7 @@
 
     <span class="n">configs_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;backends/configs&quot;</span>
 
-    <span class="k">def</span> <span class="nf">get_job_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the content of the job from the storage. This is a wrapper around get_file_content</span>
 <span class="sd">        and and handles the different ways of identifiying the job.</span>
@@ -3949,8 +3949,8 @@
 
 
 
-<h3 id="src.sqooler.storage_providers.local.LocalProviderExtended.get_job_content" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">get_job_content</span><span class="p">(</span><span class="n">storage_path</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span></code>
+<h3 id="src.sqooler.storage_providers.local.LocalProviderExtended.get_job" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">get_job</span><span class="p">(</span><span class="n">storage_path</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span></code>
 
 </h3>
 
@@ -4000,7 +4000,7 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
-<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_job_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the content of the job from the storage. This is a wrapper around get_file_content</span>
 <span class="sd">    and and handles the different ways of identifiying the job.</span>
