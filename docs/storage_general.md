@@ -4,7 +4,7 @@ comments: true
 
 # Introduction to storage providers
 
-In this part, we will focus on a general description of the `StorageProvider` object as they are essential links between the backend provider, i.e. Bob from the [general description](description.md), and the frontend provider, i.e. Alice. For the specific implementation of the `StorageProvider` object, see the [API documentation](storage_provider/storage_provider.md). The `StorageProvider` fulfills two major objectives:
+In this part, we will focus on a general description of the `StorageProvider` object as they are essential links between the backend provider, i.e. Bob from the [general description](description.md), and the frontend provider, i.e. Alice. For the specific implementation of the `StorageProvider` object, see the [API documentation](storage_providers/storage_providers.md). The `StorageProvider` fulfills two major objectives:
 
 1. It gives a common set of functions to the backend provider to store and retrieve information that is necessary for the operation.
 2. It provides a basic interface that is implemented by different storages like a local file system, an unstructured database, or a cloud storage.
@@ -30,9 +30,9 @@ So it is basically a standardized CRUD interface, which allows you to build upon
 The `StorageProvider` wraps around the `StorageCore` and provides a more high-level interface that really makes it possible to send quantum circuits around and check their status. It provides functionality to manipulate the following main points:
 
 - *Configuration:* Somehow Alice and Bob need to exchange information about the configuration of the backend on which the calculation should be performed. This can be done with the appropiate `upload_config`, `update_config` and `get_config`. The `get_backend_dict` and `get_backend_status` wrapped around the `get_config` to provide information that is compatible with `QISKIT`. 
-- *Job:* Alice main interest in the system is to submit jobs. So the `StorageProvider` has functions to `upload_job`, `get_job_content`. Bob is further able to handle the jobs in th queue through `get_next_job_in_queue`.
+- *Job:* Alice main interest in the system is to submit jobs. So the `StorageProvider` has functions to `upload_job`, `get_job`. Bob is further able to handle the jobs in th queue through `get_next_job_in_queue`.
 - *Result:* After the job is done, Bob needs to store the results. This is done with the `upload_result` and `get_result` functions. It is also possible to verify the origin with `verify_result`.
-- *Status:* The `StorageProvider` also provides functions to update the status of the job with `upload_status` and `get_status`.  `update_job_status_from_queue`.
+- *Status:* The `StorageProvider` also provides functions to update the status of the job with `upload_status` and `get_status`. 
 - *Keys:* The `StorageProvider` also provides functionality to sign and verify files through the functionality of the [security module](security_general.md).
 
 All of this is set up to be as flexible as possible and we have now implemented the `StorageProvider` for three different storage systems:
