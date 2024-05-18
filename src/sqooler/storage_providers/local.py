@@ -454,6 +454,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             None
         """
+
+        config_dict = self._verify_config(config_dict, display_name)
         # path of the configs
         config_path = os.path.join(self.base_path, self.configs_path)
         config_path = os.path.normpath(config_path)
@@ -502,7 +504,6 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             None
         """
-        # make sure that the display_name is as it should be
         config_dict = self._verify_config(config_dict, display_name)
 
         # path of the configs

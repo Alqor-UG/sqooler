@@ -309,6 +309,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             None
         """
 
+        config_dict = self._verify_config(config_dict, display_name)
         # check that the file exists
         config_path = self.configs_path + display_name
         old_config_jws = self.get(config_path, "config")

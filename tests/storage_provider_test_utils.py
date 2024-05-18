@@ -321,6 +321,9 @@ class StorageProviderTestUtils:
                 display_name=poor_backend_name,
                 private_jwk=private_jwk,
             )
+
+            obtained_config = storage_provider.get_config(poor_backend_name)
+            assert obtained_config.display_name == poor_backend_name
             storage_provider._delete_config(poor_backend_name)
 
         storage_provider.upload_config(
@@ -348,12 +351,13 @@ class StorageProviderTestUtils:
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
 
-        # and again
+        # and again also with a poor name in the config_info
         config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
-
-        storage_provider.update_config(
-            config_info, display_name=backend_name, private_jwk=private_jwk
-        )
+        config_info.display_name = "dummy"
+        with pytest.warns(UserWarning):
+            storage_provider.update_config(
+                config_info, display_name=backend_name, private_jwk=private_jwk
+            )
         if sign:
             # test that we cannot update the config with a wrong private key
             wrong_private_jwk, _ = create_jwk_pair(backend_name)

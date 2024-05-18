@@ -246,9 +246,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Get a list of all the backends that the provider offers.
         """
 
+        storage_splitted = self.configs_path.split("/")
         # get the database on which we work
-        database = self.client["backends"]
-        config_collection = database["configs"]
+        database = self.client[storage_splitted[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_splitted[1:])
+        config_collection = database[collection_name]
+
         # get all the documents in the collection configs and save the disply_name in a list
         backend_names: list[DisplayNameStr] = []
         for config_dict in config_collection.find():
@@ -326,13 +331,15 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             None
         """
 
-        config_dict.display_name = display_name
+        config_dict = self._verify_config(config_dict, display_name)
 
+        storage_splitted = self.configs_path.split("/")
         # get the database on which we work
-        database = self.client["backends"]
+        database = self.client[storage_splitted[0]]
 
         # get the collection on which we work
-        collection = database["configs"]
+        collection_name = ".".join(storage_splitted[1:])
+        collection = database[collection_name]
 
         # now make sure that we add the timezone as we open the file
         collection_with_tz = collection.with_options(
@@ -385,9 +392,13 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             The configuration of the backend in complete form.
         """
+        storage_splitted = self.configs_path.split("/")
         # get the database on which we work
-        database = self.client["backends"]
-        config_collection = database["configs"]
+        database = self.client[storage_splitted[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_splitted[1:])
+        config_collection = database[collection_name]
 
         # create the filter for the document with display_name that is equal to display_name
         document_to_find = {"display_name": display_name}
@@ -424,9 +435,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
 
         config_dict = self.get_config(display_name)
-        # needs to be changed to the correct path
-        database = self.client["backends"]
-        collection = database["configs"]
+
+        storage_splitted = self.configs_path.split("/")
+        # get the database on which we work
+        database = self.client[storage_splitted[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_splitted[1:])
+        collection = database[collection_name]
 
         if not config_dict.sign:
             document_to_find = {"display_name": display_name}
@@ -680,15 +696,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         if public_jwk.kid != config_dict.kid:
             raise ValueError("The key does not have the correct kid.")
 
-        # first we have to check if the device already exists in the database
-
-        document_to_find = {"kid": config_dict.kid}
-
         # get the database on which we work
         database = self.client["backends"]
 
         # get the collection on which we work
         collection = database["public_keys"]
+        # first we have to check if the device already exists in the database
+
+        document_to_find = {"kid": config_dict.kid}
 
         result_found = collection.find_one(document_to_find)
         if result_found:
