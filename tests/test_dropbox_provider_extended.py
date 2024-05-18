@@ -165,21 +165,9 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         """
         backend_name, _, _, storage_provider = self.job_tests(DB_NAME, sign=sign_it)
 
-        # remove the obsolete status from the storage folder on the dropbox
-        status_dir = "/Backend_files/Status/" + backend_name
-        storage_provider.delete_folder(status_dir)
-
-        # remove the obsolete config folder
-        config_path = "/Backend_files/Config/" + backend_name
-        storage_provider.delete_folder(config_path)
-
         # remove the obsolete stuff in the Queued_Jobs folder
         queued_path = "/Backend_files/Queued_Jobs/" + backend_name
         storage_provider.delete_folder(queued_path)
-
-        # remove the obsolete result from the storage folder on the dropbox
-        result_path = "/Backend_files/Result/" + backend_name
-        storage_provider.delete_folder(result_path)
 
     def test_upload_public_key(self) -> None:
         """

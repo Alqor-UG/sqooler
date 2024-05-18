@@ -20,6 +20,7 @@ from ..schemes import (
     DisplayNameStr,
     DropboxLoginInformation,
     NextJobSchema,
+    PathStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -273,9 +274,9 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         configs_path: The path to the folder where the configurations are stored
     """
 
-    configs_path = "/Backend_files/Config/"
+    configs_path: PathStr = "Backend_files/Config"
 
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+    def get_job(self, storage_path: str, job_id: str) -> dict:
         """
         Get the content of the job from the storage. This is a wrapper around get_file_content
         and and handles the different ways of identifiying the job.
@@ -311,7 +312,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
 
         config_dict = self._verify_config(config_dict, display_name)
         # check that the file exists
-        config_path = self.configs_path + display_name
+        config_path = f"{self.configs_path}/{display_name}"
         old_config_jws = self.get(config_path, "config")
 
         upload_dict = self._format_update_config(
@@ -343,7 +344,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         # make sure that the display_name is as it should be
         config_dict = self._verify_config(config_dict, display_name)
 
-        config_path = self.configs_path + display_name
+        config_path = f"{self.configs_path}/{display_name}"
         # check if the file already exists
         try:
             self.get(storage_path=config_path, job_id="config")
@@ -369,9 +370,10 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        config_path = self.configs_path + display_name
+        config_path = f"{self.configs_path}/{display_name}"
 
         self.delete(storage_path=config_path, job_id="config")
+        self.delete_folder(config_path)
         return True
 
     def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
@@ -550,6 +552,12 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
         Get a list of all the backends that the provider offers.
         """
+
+        # strip possible trailing and leading slashes from the path
+        config_path = self.configs_path.strip("/")
+
+        # and now add them nicely
+        full_config_path = f"/{config_path}/"
         with dropbox.Dropbox(
             app_key=self.app_key,
             app_secret=self.app_secret,
@@ -561,7 +569,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             except AuthError:
                 sys.exit("ERROR: Invalid access token.")
 
-            folders_results = dbx.files_list_folder(path=self.configs_path)
+            folders_results = dbx.files_list_folder(path=full_config_path)
             entries = folders_results.entries
             backend_names = []
             for entry in entries:
@@ -581,7 +589,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             The configuration of the backend in complete form.
         """
-        backend_json_path = self.configs_path + display_name
+        backend_json_path = f"{self.configs_path}/{display_name}"
         backend_config_dict = self.get(storage_path=backend_json_path, job_id="config")
         typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
@@ -710,6 +718,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         status_json_name = "status-" + job_id
 
         self.delete(storage_path=status_json_dir, job_id=status_json_name)
+        self.delete_folder(status_json_dir)
         return True
 
     def upload_result(
@@ -818,13 +827,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        extracted_username = job_id.split("-")[2]
-        result_json_dir = (
-            "Backend_files/Result/" + display_name + "/" + extracted_username
-        )
-        result_json_name = "result-" + job_id
-
-        self.delete(storage_path=result_json_dir, job_id=result_json_name)
+        result_device_dir = "/Backend_files/Result/" + display_name
+        self.delete_folder(result_device_dir)
         return True
 
     def get_next_job_in_queue(
