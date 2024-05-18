@@ -205,9 +205,9 @@ class StorageProvider(StorageCore):
         """
 
     @abstractmethod
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+    def get_job(self, storage_path: str, job_id: str) -> dict:
         """
-        Get the content of the job from the storage. This is a wrapper around get_file_content
+        Get the content of the job from the storage. This is a wrapper around get
         and and handles the different ways of identifiying the job.
 
         storage_path: the path towards the file, excluding the filename / id

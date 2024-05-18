@@ -241,16 +241,16 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
     results_path: PathStr = "results"
     pks_path: PathStr = "backends/public_keys"
 
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+    def get_job(self, storage_path: str, job_id: str) -> dict:
         """
-        Get the content of the job from the storage. This is a wrapper around get_file_content
+        Get the content of the job from the storage. This is a wrapper around get
         and and handles the different ways of identifiying the job.
 
         storage_path: the path towards the file, excluding the filename / id
         job_id: the id of the file we are about to look up
 
         Returns:
-
+            The content of the job
         """
         job_dict = self.get(storage_path=storage_path, job_id=job_id)
         job_dict.pop("_id", None)
