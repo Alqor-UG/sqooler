@@ -50,6 +50,15 @@ WireOrderStr = Annotated[
     ),
 ]
 
+# a string that is allowed for paths without leading and trailing slashes
+PathStr = Annotated[
+    str,
+    Field(
+        description="The path to the file without leading and trailing slashes.",
+        pattern=r"^[a-zA-Z0-9_\-\.]+$",
+    ),
+]
+
 
 class StatusMsgDict(BaseModel):
     """

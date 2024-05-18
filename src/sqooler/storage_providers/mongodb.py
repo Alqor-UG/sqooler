@@ -10,6 +10,8 @@ from typing import Optional
 from bson.codec_options import CodecOptions
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
+from pymongo.collection import Collection
+from pymongo.database import Database
 
 # necessary for the mongodb provider
 from pymongo.mongo_client import MongoClient
@@ -19,6 +21,7 @@ from ..schemes import (
     DisplayNameStr,
     MongodbLoginInformation,
     NextJobSchema,
+    PathStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -69,14 +72,8 @@ class MongodbCore(StorageCore):
         storage_path: the access path towards the mongodb collection
         job_id: the id of the file we are about to create
         """
-        storage_splitted = storage_path.split("/")
 
-        # get the database on which we work
-        database = self.client[storage_splitted[0]]
-
-        # get the collection on which we work
-        collection_name = ".".join(storage_splitted[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(storage_path)
 
         content_dict["_id"] = ObjectId(job_id)
         collection.insert_one(content_dict)
@@ -105,12 +102,7 @@ class MongodbCore(StorageCore):
 
         document_to_find = {"_id": ObjectId(job_id)}
 
-        # get the database on which we work
-        database = self.client[storage_path.split("/")[0]]
-
-        # get the collection on which we work
-        collection_name = ".".join(storage_path.split("/")[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(storage_path)
 
         result_found = collection.find_one(document_to_find)
 
@@ -140,12 +132,8 @@ class MongodbCore(StorageCore):
         Raises:
             FileNotFoundError: If the file is not found
         """
-        # get the database on which we work
-        database = self.client[storage_path.split("/")[0]]
 
-        # get the collection on which we work
-        collection_name = ".".join(storage_path.split("/")[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(storage_path)
 
         filter_dict = {"_id": ObjectId(job_id)}
         result = collection.replace_one(filter_dict, content_dict)
@@ -165,23 +153,18 @@ class MongodbCore(StorageCore):
         Returns:
             None
         """
-        # get the database on which we work
-        database = self.client[start_path.split("/")[0]]
 
-        # get the collection on which we work
-        collection_name = ".".join(start_path.split("/")[1:])
-        collection = database[collection_name]
+        # delete the old file
+        _, collection = self._get_database_and_collection(start_path)
 
         document_to_find = {"_id": ObjectId(job_id)}
         result_found = collection.find_one(document_to_find)
 
-        # delete the old file
         collection.delete_one(document_to_find)
 
         # add the document to the new collection
-        database = self.client[final_path.split("/")[0]]
-        collection_name = ".".join(final_path.split("/")[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(final_path)
+
         collection.insert_one(result_found)
 
     @validate_active
@@ -196,12 +179,8 @@ class MongodbCore(StorageCore):
         Returns:
             None
         """
-        # get the database on which we work
-        database = self.client[storage_path.split("/")[0]]
+        _, collection = self._get_database_and_collection(storage_path)
 
-        # get the collection on which we work
-        collection_name = ".".join(storage_path.split("/")[1:])
-        collection = database[collection_name]
         try:
             document_to_find = {"_id": ObjectId(job_id)}
         except InvalidId as err:
@@ -214,6 +193,29 @@ class MongodbCore(StorageCore):
                 f"Could not find a file under {storage_path} with the id {job_id}."
             )
 
+    def _get_database_and_collection(
+        self, storage_path: str
+    ) -> tuple[Database, Collection]:
+        """
+        Get the database and the collection on which we work.
+
+        Args:
+            storage_path: the path where the file is currently stored, but excluding the file name
+
+        Returns:
+            The database and the collection on which we work
+        """
+        # strip the path from leading and trailing slashes
+        storage_path = storage_path.strip("/")
+
+        # get the database on which we work
+        database = self.client[storage_path.split("/")[0]]
+
+        # get the collection on which we work
+        collection_name = ".".join(storage_path.split("/")[1:])
+        collection = database[collection_name]
+        return database, collection
+
 
 class MongodbProviderExtended(StorageProvider, MongodbCore):
     """
@@ -221,9 +223,23 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
     Attributes:
         configs_path: The path to the folder where the configurations are stored
+        queue_path: The path to the folder where the jobs are stored
+        running_path: The path to the folder where the running jobs are stored
+        finished_path: The path to the folder where the finished jobs are stored
+        deleted_path: The path to the folder where the deleted jobs are stored
+        status_path: The path to the folder where the status is stored
+        results_path: The path to the folder where the results are stored
+        pks_path: The path to the folder where the public keys are stored
     """
 
-    configs_path: str = "backends/configs"
+    configs_path: PathStr = "backends/configs"
+    queue_path: PathStr = "jobs/queued"
+    running_path: PathStr = "jobs/running"
+    finished_path: PathStr = "jobs/finished"
+    deleted_path: PathStr = "jobs/deleted"
+    status_path: PathStr = "status"
+    results_path: PathStr = "results"
+    pks_path: PathStr = "backends/public_keys"
 
     def get_job_content(self, storage_path: str, job_id: str) -> dict:
         """
@@ -246,13 +262,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Get a list of all the backends that the provider offers.
         """
 
-        storage_splitted = self.configs_path.split("/")
-        # get the database on which we work
-        database = self.client[storage_splitted[0]]
-
         # get the collection on which we work
-        collection_name = ".".join(storage_splitted[1:])
-        config_collection = database[collection_name]
+        _, config_collection = self._get_database_and_collection(self.configs_path)
 
         # get all the documents in the collection configs and save the disply_name in a list
         backend_names: list[DisplayNameStr] = []
@@ -288,11 +299,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         document_to_find = {"display_name": display_name}
 
-        # get the database on which we work
-        database = self.client["backends"]
-
         # get the collection on which we work
-        collection = database["configs"]
+        _, collection = self._get_database_and_collection(self.configs_path)
 
         document_to_find = {"display_name": display_name}
         result_found = collection.find_one(document_to_find)
@@ -333,13 +341,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         config_dict = self._verify_config(config_dict, display_name)
 
-        storage_splitted = self.configs_path.split("/")
-        # get the database on which we work
-        database = self.client[storage_splitted[0]]
-
-        # get the collection on which we work
-        collection_name = ".".join(storage_splitted[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(self.configs_path)
 
         # now make sure that we add the timezone as we open the file
         collection_with_tz = collection.with_options(
@@ -392,13 +394,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             The configuration of the backend in complete form.
         """
-        storage_splitted = self.configs_path.split("/")
-        # get the database on which we work
-        database = self.client[storage_splitted[0]]
-
         # get the collection on which we work
-        collection_name = ".".join(storage_splitted[1:])
-        config_collection = database[collection_name]
+        _, config_collection = self._get_database_and_collection(self.configs_path)
 
         # create the filter for the document with display_name that is equal to display_name
         document_to_find = {"display_name": display_name}
@@ -435,14 +432,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
 
         config_dict = self.get_config(display_name)
-
-        storage_splitted = self.configs_path.split("/")
-        # get the database on which we work
-        database = self.client[storage_splitted[0]]
-
-        # get the collection on which we work
-        collection_name = ".".join(storage_splitted[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(self.configs_path)
 
         if not config_dict.sign:
             document_to_find = {"display_name": display_name}
@@ -471,7 +461,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             The job id of the uploaded job.
         """
 
-        storage_path = "jobs/queued/" + display_name
+        storage_path = f"{self.queue_path}/{display_name}"
         job_id = (uuid.uuid4().hex)[:24]
 
         self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
@@ -496,7 +486,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             The status dict of the job
         """
-        storage_path = "status/" + display_name
+        storage_path = f"{self.status_path}/{display_name}"
         status_draft = {
             "job_id": job_id,
             "status": "INITIALIZING",
@@ -530,7 +520,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             The status dict of the job
         """
-        status_json_dir = "status/" + display_name
+        status_json_dir = f"{self.status_path}/{display_name}"
 
         try:
             status_dict = self.get(storage_path=status_json_dir, job_id=job_id)
@@ -562,7 +552,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             Success if the file was deleted successfully
         """
-        status_json_dir = "status/" + display_name
+        status_json_dir = f"{self.status_path}/{display_name}"
 
         self.delete(storage_path=status_json_dir, job_id=job_id)
         return True
@@ -586,7 +576,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             The success of the upload process
         """
-        result_json_dir = "results/" + display_name
+        result_json_dir = f"{self.results_path}/{display_name}"
 
         return self._common_upload_result(
             result_dict,
@@ -612,7 +602,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             The result dict of the job. If the information is not available, the result dict
             has a status of "ERROR".
         """
-        result_json_dir = "results/" + display_name
+        result_json_dir = f"{self.results_path}/{display_name}"
         try:
             result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
         except FileNotFoundError:
@@ -642,7 +632,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             If it was possible to verify the result dict positively.
         """
-        result_json_dir = "results/" + display_name
+        result_json_dir = f"{self.results_path}/{display_name}"
         result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
         public_jwk = self.get_public_key(display_name)
 
@@ -664,8 +654,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             Success if the file was deleted successfully
         """
-
-        result_json_dir = "results/" + display_name
+        result_json_dir = f"{self.results_path}/{display_name}"
 
         self.delete(storage_path=result_json_dir, job_id=job_id)
         return True
@@ -689,20 +678,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         if public_jwk.d is not None:
             raise ValueError("The key contains a private key")
 
-        pk_paths = "backends/public_keys"
-
         # make sure that the key has the correct kid
         config_dict = self.get_config(display_name)
         if public_jwk.kid != config_dict.kid:
             raise ValueError("The key does not have the correct kid.")
 
-        # get the database on which we work
-        database = self.client["backends"]
+        _, collection = self._get_database_and_collection(self.pks_path)
 
-        # get the collection on which we work
-        collection = database["public_keys"]
         # first we have to check if the device already exists in the database
-
         document_to_find = {"kid": config_dict.kid}
 
         result_found = collection.find_one(document_to_find)
@@ -710,14 +693,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             # update the file
             self.update(
                 content_dict=public_jwk.model_dump(),
-                storage_path=pk_paths,
+                storage_path=self.pks_path,
                 job_id=result_found["_id"],
             )
             return
 
         # if the device does not exist, we have to create it
         config_id = uuid.uuid4().hex[:24]
-        self.upload(public_jwk.model_dump(), pk_paths, config_id)
+        self.upload(public_jwk.model_dump(), self.pks_path, config_id)
 
     def get_public_key(self, display_name: DisplayNameStr) -> JWK:
         """
@@ -729,9 +712,9 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             JWk : The public JWK object
         """
+
         # get the database on which we work
-        database = self.client["backends"]
-        collection = database["public_keys"]
+        _, collection = self._get_database_and_collection(self.pks_path)
 
         # now get the appropiate kid
         config_dict = self.get_config(display_name)
@@ -761,15 +744,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             Success if the file was deleted successfully
         """
-        key_path = "backends/public_keys"
         document_to_find = {"kid": kid}
+        # get the database on which we work
+        _, collection = self._get_database_and_collection(self.pks_path)
 
-        database = self.client["backends"]
-        collection = database["public_keys"]
         result_found = collection.find_one(document_to_find)
         if result_found is None:
             raise FileNotFoundError(f"The public key with kid {kid} does not exist")
-        self.delete(key_path, str(result_found["_id"]))
+        self.delete(self.pks_path, str(result_found["_id"]))
         return True
 
     def update_in_database(
@@ -801,7 +783,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         """
 
-        job_json_start_dir = "jobs/running"
+        job_json_start_dir = self.running_path
         # check if the job is done or had an error
         if status_msg_dict.status == "DONE":
             # test if the result dict is None
@@ -816,18 +798,18 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
                 raise ValueError("The result was not uploaded successfully.")
 
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = "jobs/finished/" + display_name
+            job_finished_json_dir = f"{self.finished_path}/{display_name}"
             self.move(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            deleted_json_dir = "jobs/deleted"
+            deleted_json_dir = self.deleted_path
             self.move(job_json_start_dir, deleted_json_dir, job_id)
 
         # TODO: most likely we should raise an error if the status of the job is not DONE or ERROR
 
         # and create the status json file
-        status_json_dir = "status/" + display_name
+        status_json_dir = f"{self.status_path}/{display_name}"
         try:
             self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
         except FileNotFoundError:
@@ -849,15 +831,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             A list of files that was found.
         """
-        # strip trailing and leading slashes from the paths
-        storage_path = storage_path.strip("/")
 
-        # get the database on which we work
-        database = self.client[storage_path.split("/")[0]]
-
-        # get the collection on which we work
-        collection_name = ".".join(storage_path.split("/")[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(storage_path)
 
         # now get the id of all the documents in the collection
         results = collection.find({}, {"_id": 1})
@@ -882,7 +857,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             the job dict
         """
 
-        queue_dir = "jobs/queued/" + display_name
+        queue_dir = f"{self.queue_path}/{display_name}"
 
         job_dict = self._get_default_next_schema_dict()
         job_list = self.get_file_queue(queue_dir)
@@ -896,8 +871,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             job_dict["job_id"] = job_id
 
             # and move the file into the right directory
-            self.move(queue_dir, "jobs/running", job_id)
-            job_dict["job_json_path"] = "jobs/running"
+            self.move(queue_dir, self.running_path, job_id)
+            job_dict["job_json_path"] = self.running_path
         return NextJobSchema(**job_dict)
 
 
