@@ -718,6 +718,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         status_json_name = "status-" + job_id
 
         self.delete(storage_path=status_json_dir, job_id=status_json_name)
+        self.delete_folder(status_json_dir)
         return True
 
     def upload_result(
@@ -826,13 +827,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        extracted_username = job_id.split("-")[2]
-        result_json_dir = (
-            "Backend_files/Result/" + display_name + "/" + extracted_username
-        )
-        result_json_name = "result-" + job_id
-
-        self.delete(storage_path=result_json_dir, job_id=result_json_name)
+        result_device_dir = "/Backend_files/Result/" + display_name
+        self.delete_folder(result_device_dir)
         return True
 
     def get_next_job_in_queue(

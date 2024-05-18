@@ -589,7 +589,6 @@ class StorageProviderTestUtils:
 
         # remove the useless results
         storage_provider._delete_result(backend_name, job_id)
-        storage_provider._delete_result(backend_name, wrong_job_id)
 
     def status_tests(self, db_name: str, sign: bool = True) -> None:
         """
