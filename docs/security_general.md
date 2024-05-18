@@ -4,7 +4,7 @@ comments: true
 
 # Security and signing
 
-In this section we will discuss some of the cryptographic work that we started. All of the code in this regard can be found in the [security](security_api.md) module.  Before we go into more detail on the discussion, let us remind ourselves of the general architecture of the workflow:
+In this section we will discuss some of the cryptographic work that we started. All of the code in this regard can be found in the [security](api/security_api.md) module.  Before we go into more detail on the discussion, let us remind ourselves of the general architecture of the workflow:
 
 ``` mermaid
 flowchart LR

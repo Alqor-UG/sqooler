@@ -10,7 +10,7 @@ In this part, we will focus on a general description of the `Spooler` object as 
 
 1. Bob loves high performance numerical computing. So he will focus on every in part of the hardware and code to make it as fast as possible. But once again it is a bit unlikely that Bob is deeply focused on a connection to the outside world.
 
-In both cases, Bob will be able to use a `Spooler` that allows him to interact with others without too much of a hazzle. The `Spooler` object is actually provides Bob with a common interface to communicate with Alice. There he can define available gates and the configuration of the system. For the specific implementation of the `Spooler` object, see the [API documentation](spoolers_api.md). Here, we will simply describe the general idea of the `Spooler` object.
+In both cases, Bob will be able to use a `Spooler` that allows him to interact with others without too much of a hazzle. The `Spooler` object is actually provides Bob with a common interface to communicate with Alice. There he can define available gates and the configuration of the system. For the specific implementation of the `Spooler` object, see the [API documentation](api/spoolers_api.md). Here, we will simply describe the general idea of the `Spooler` object.
 
 ## General idea
 

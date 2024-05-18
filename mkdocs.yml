@@ -15,21 +15,22 @@ theme:
 nav:
   - Introduction: "index.md"
   - "General description": "description.md"
-  - "Bobs' perspective": "spooler_general.md"
+  - "The backend perspective": "spooler_general.md"
+  - "Intro to storage providers": "storage_general.md"
   - "Security": "security_general.md"
   - Contributing: contributing.md
   - Releases: releases.md
-  - "Modules":
-    - "Cli API": "cli_api.md"
-    - "Schemes": "schemes.md"
-    - "Spooler API": "spoolers_api.md"
-    - "Utils": "utils.md"
-    - "Security API": "security_api.md"
-  - "Storage Providers":
-    - "Basics": "storage_providers.md"
-    - "MongoDB": "mongodb.md"
-    - "Local storage": "local.md"
-    - "Dropbox": "dropbox.md"
+  - "API":
+    - "CLI": "api/cli_api.md"
+    - "Schemes": "api/schemes.md"
+    - "Security": "api/security_api.md"
+    - "Spooler": "api/spoolers_api.md"
+    - "Utils": "api/utils.md"
+  - "Storage API":
+    - "Basics": "storage_providers/storage_providers.md"
+    - "MongoDB": "storage_providers/mongodb.md"
+    - "Local storage": "storage_providers/local.md"
+    - "Dropbox": "storage_providers/dropbox.md"
   - "Ideas on Payments": "idea_payment.md"
 
 repo_url: https://github.com/alqor-ug/sqooler
