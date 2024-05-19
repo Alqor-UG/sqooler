@@ -79,6 +79,17 @@ class StorageCore(ABC):
             job_id: The id of the job
         """
 
+    def upload_file(
+        self, content_dict: Mapping, storage_path: str, job_id: str
+    ) -> None:
+        """
+        Depreceated function. Use `upload` instead.
+        """
+        warnings.warn(
+            "`upload_file` is depreceated. Use `upload` instead.", DeprecationWarning
+        )
+        self.upload(content_dict, storage_path, job_id)
+
     @abstractmethod
     def get(self, storage_path: str, job_id: str) -> dict:
         """
@@ -94,6 +105,15 @@ class StorageCore(ABC):
         Raises:
             FileNotFoundError: If the file is not found
         """
+
+    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Depreceated function. Use `get` instead.
+        """
+        warnings.warn(
+            "`get_file_content` is depreceated. Use `get` instead.", DeprecationWarning
+        )
+        return self.get(storage_path, job_id)
 
     @abstractmethod
     def update(self, content_dict: dict, storage_path: str, job_id: str) -> None:
@@ -112,11 +132,34 @@ class StorageCore(ABC):
             FileNotFoundError: If the file is not found
         """
 
+    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+        """
+        Depreceated function. Use `update` instead.
+        """
+        warnings.warn(
+            "`update_file` is depreceated. Use `update` instead.", DeprecationWarning
+        )
+        self.update(content_dict, storage_path, job_id)
+
     @abstractmethod
     def move(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from `start_path` to `final_path`
+
+        Args:
+            start_path: The orginal path to the file
+            final_path: The targe path for the file
+            job_id: The id of the job
         """
+
+    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+        """
+        Depreceated function. Use `move` instead.
+        """
+        warnings.warn(
+            "`move_file` is depreceated. Use `move` instead.", DeprecationWarning
+        )
+        self.move(start_path, final_path, job_id)
 
     @abstractmethod
     def delete(self, storage_path: str, job_id: str) -> None:
@@ -133,6 +176,15 @@ class StorageCore(ABC):
         Returns:
             None
         """
+
+    def delete_file(self, storage_path: str, job_id: str) -> None:
+        """
+        Depreceated function. Use `delete` instead.
+        """
+        warnings.warn(
+            "`delete_file` is depreceated. Use `delete` instead.", DeprecationWarning
+        )
+        self.delete(storage_path, job_id)
 
 
 class StorageProvider(StorageCore):
@@ -216,6 +268,16 @@ class StorageProvider(StorageCore):
         Returns:
             The content of the job
         """
+
+    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Depreceated function. Use `get_job` instead.
+        """
+        warnings.warn(
+            "`get_job_content` is depreceated. Use `get_job` instead.",
+            DeprecationWarning,
+        )
+        return self.get_job(storage_path, job_id)
 
     @abstractmethod
     def upload_status(

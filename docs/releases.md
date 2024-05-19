@@ -6,11 +6,38 @@ comments: true
 
 In this guide we will cover the key information about the different releases.
 
+## v0.8
+
+In this release we focused on a substantially more flexible `StorageProvider` and added the new `StorageCore`.
+
+### What's Changed
+
+- We introduced the `StorageCore` that only contains the essential file manipulations.
+- Simpler testing as `get_dummy config` is now part of the `utils` module.
+- Made the function in the `StorageCore` and `StorageProvider` more consistent.
+- Verify that the display name in the uploaded config dict is the same as the argument that was used
+- Made the path used in the `MongodbProvider` more transparent.
+- Add some documentation on the `StorageProvider`.
+
+### Migration Guide
+
+We have simplified the naming of a number of functions and depreceated them:
+
+- `update_file` is now `update`
+- `get_file_content` is now `get`
+- `upload_file` is now `upload`
+- `delete_file` is now `delete`
+- `move_file` is now `move`
+- `get_job_content` is now `get_job`
+
+This also likely the last release which allows the `operational` attribute in the `BackendConfigSchemaIn`.
+
 ## v0.7
 
 We focused on a simpler usage of the sqooler in this release and the stabilization of the code.
 
 ### What's Changed
+
 * Make the operational status depend on last checked
 * Fix the default if the `private_jwk` is missing 
 * Make the delay between runs in the main loop adjustable
@@ -25,8 +52,8 @@ We focused on a simpler usage of the sqooler in this release and the stabilizati
 
 ### Migration Guide
 
-- The operational status is now dependent on the last checked in time. This means that the operational status is now only `True` if the last checked in time is less than the `T_TIMEOUT`. It can be set as a config variable.
-- `T_WAIT_MAIN` set the relay between loops in the `main` function. It can be set as a config variable.
+* The operational status is now dependent on the last checked in time. This means that the operational status is now only `True` if the last checked in time is less than the `T_TIMEOUT`. It can be set as a config variable.
+* `T_WAIT_MAIN` set the relay between loops in the `main` function. It can be set as a config variable.
 
 ## v0.6
 

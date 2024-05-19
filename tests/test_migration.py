@@ -7,6 +7,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, Tuple
 
+import pytest
 from decouple import config
 from icecream import ic
 from pydantic import BaseModel, Field
@@ -124,4 +125,42 @@ def test_generate_sign_old_config() -> None:
     # clean up our mess
     storage_provider._delete_config(display_name)
 
+    shutil.rmtree("storage")
+
+
+def test_warning_storage() -> None:
+    """
+    Make sure that we have properly deprecated the relevent functions.
+    """
+
+    login_dict = LocalLoginInformation(base_path=config("BASE_PATH"))
+    storage_provider = LocalProviderExtended(login_dict=login_dict, name="test")
+
+    with pytest.warns(DeprecationWarning):
+        storage_provider.upload_file({"dummy": "dummy"}, "dummy", "dummy")
+        storage_provider.delete("dummy", "dummy")
+
+    with pytest.warns(DeprecationWarning):
+        storage_provider.upload({"dummy": "dummy"}, "dummy", "dummy")
+        storage_provider.move_file("dummy", "dummyfinal", "dummy")
+        storage_provider.delete("dummyfinal", "dummy")
+
+    with pytest.warns(DeprecationWarning):
+        storage_provider.upload({"dummy": "dummy"}, "dummy", "dummy")
+        storage_provider.update_file({"dummy": "dummy1"}, "dummy", "dummy")
+        storage_provider.delete("dummy", "dummy")
+
+    with pytest.warns(DeprecationWarning):
+        storage_provider.upload({"dummy": "dummy"}, "dummy", "dummy")
+        storage_provider.delete_file("dummy", "dummy")
+
+    with pytest.warns(DeprecationWarning):
+        storage_provider.upload({"dummy": "dummy"}, "dummy", "dummy")
+        storage_provider.get_file_content("dummy", "dummy")
+        storage_provider.delete("dummy", "dummy")
+
+    with pytest.warns(DeprecationWarning):
+        storage_provider.upload({"dummy": "dummy"}, "dummy", "dummy")
+        storage_provider.get_job_content("dummy", "dummy")
+        storage_provider.delete("dummy", "dummy")
     shutil.rmtree("storage")
