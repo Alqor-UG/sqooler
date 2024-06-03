@@ -272,9 +272,24 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
 
     Attributes:
         configs_path: The path to the folder where the configurations are stored
+        queue_path: The path to the folder where the jobs are stored
+        running_path: The path to the folder where the running jobs are stored
+        finished_path: The path to the folder where the finished jobs are stored
+        deleted_path: The path to the folder where the deleted jobs are stored
+        status_path: The path to the folder where the status is stored
+        results_path: The path to the folder where the results are stored
+        pks_path: The path to the folder where the public keys are stored
+
     """
 
     configs_path: PathStr = "Backend_files/Config"
+    queue_path: PathStr = "Backend_files/Queued_Jobs"
+    running_path: PathStr = "Backend_files/Running_Jobs"
+    finished_path: PathStr = "Backend_files/Finished_Jobs"
+    deleted_path: PathStr = "Backend_files/Deleted_Jobs"
+    status_path: PathStr = "Backend_files/Status"
+    results_path: PathStr = "Backend_files/Result"
+    pks_path: PathStr = "Backend_files/public_keys"
 
     def get_job(self, storage_path: str, job_id: str) -> dict:
         """
@@ -400,9 +415,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         if public_jwk.kid != config_dict.kid:
             raise ValueError("The key does not have the correct kid.")
 
-        pk_paths = "Backend_files/public_keys"
-
-        self.upload_string(public_jwk.model_dump_json(), pk_paths, config_dict.kid)
+        self.upload_string(public_jwk.model_dump_json(), self.pks_path, config_dict.kid)
 
     def get_public_key(self, display_name: DisplayNameStr) -> JWK:
         """
@@ -414,14 +427,13 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             JWk : The public JWK object
         """
-        pk_paths = "Backend_files/public_keys"
 
         # now get the appropiate kid
         config_dict = self.get_config(display_name)
         if config_dict.kid is None:
             raise ValueError("The kid is not set in the backend configuration.")
 
-        public_jwk_dict = self.get(storage_path=pk_paths, job_id=config_dict.kid)
+        public_jwk_dict = self.get(storage_path=self.pks_path, job_id=config_dict.kid)
         return JWK(**public_jwk_dict)
 
     def _delete_public_key(self, kid: str) -> bool:
@@ -437,8 +449,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        pk_paths = "Backend_files/public_keys"
-        self.delete(storage_path=pk_paths, job_id=kid)
+        self.delete(storage_path=self.pks_path, job_id=kid)
         return True
 
     def update_in_database(
@@ -465,13 +476,12 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         # this should become part of the json file instead of its name in the future
         extracted_username = job_id.split("-")[2]
 
-        status_json_dir = (
-            "/Backend_files/Status/" + display_name + "/" + extracted_username + "/"
-        )
+        status_json_dir = f"/{self.status_path}/{display_name}/{extracted_username}/"
+
         status_json_name = "status-" + job_id
 
         job_json_name = "job-" + job_id
-        job_json_start_dir = "Backend_files/Running_Jobs"
+        job_json_start_dir = self.running_path
 
         if status_msg_dict.status == "DONE":
             self.upload_result(
@@ -482,18 +492,14 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             )
             # now move the job out of the running jobs into the finished jobs
             job_finished_json_dir = (
-                "/Backend_files/Finished_Jobs/"
-                + display_name
-                + "/"
-                + extracted_username
-                + "/"
+                f"/{self.finished_path}/{display_name}/{extracted_username}/"
             )
+
             self.move(job_json_start_dir, job_finished_json_dir, job_json_name)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            deleted_json_dir = "Backend_files/Deleted_Jobs"
-            self.move(job_json_start_dir, deleted_json_dir, job_json_name)
+            self.move(job_json_start_dir, self.deleted_path, job_json_name)
 
         try:
             self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
@@ -619,7 +625,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         )
         # now we upload the job to the backend
         # this is currently very much backend specific
-        job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
+        job_json_dir = f"/{self.queue_path}/{display_name}/"
         job_json_name = "job-" + job_id
 
         self.upload(
@@ -646,7 +652,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             The status dict of the job
         """
-        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
+        status_json_dir = f"/{self.status_path}/{display_name}/{username}/"
+
         status_json_name = "status-" + job_id
         status_draft = {
             "job_id": job_id,
@@ -679,7 +686,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             The status dict of the job
         """
-        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
+
+        status_json_dir = f"/{self.status_path}/{display_name}/{username}/"
         status_json_name = "status-" + job_id
 
         try:
@@ -714,7 +722,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
+
+        status_json_dir = f"/{self.status_path}/{display_name}/{username}/"
         status_json_name = "status-" + job_id
 
         self.delete(storage_path=status_json_dir, job_id=status_json_name)
@@ -741,9 +750,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             The success of the upload process
         """
         extracted_username = job_id.split("-")[2]
-        result_json_dir = (
-            "/Backend_files/Result/" + display_name + "/" + extracted_username + "/"
-        )
+        result_json_dir = f"/{self.results_path}/{display_name}/{extracted_username}/"
         result_json_name = "result-" + job_id
 
         return self._common_upload_result(
@@ -770,7 +777,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             The result dict of the job. If the information is not available, the result dict
             has a status of "ERROR".
         """
-        result_json_dir = "Backend_files/Result/" + display_name + "/" + username
+        result_json_dir = f"/{self.results_path}/{display_name}/{username}/"
         result_json_name = "result-" + job_id
         try:
             result_dict = self.get(
@@ -827,7 +834,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        result_device_dir = "/Backend_files/Result/" + display_name
+        result_device_dir = f"/{self.results_path}/{display_name}"
         self.delete_folder(result_device_dir)
         return True
 
@@ -845,7 +852,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             the path towards the job
         """
-        job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
+        job_json_dir = f"/{self.queue_path}/{display_name}/"
         job_dict = self._get_default_next_schema_dict()
         job_list = self.get_file_queue(job_json_dir)
 
@@ -860,8 +867,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             # split the .json from the job_json_name
             job_json_name = job_json_name.split(".")[0]
             # and move the file into the right directory
-            self.move(job_json_dir, "Backend_files/Running_Jobs", job_json_name)
-            job_dict["job_json_path"] = "Backend_files/Running_Jobs"
+            self.move(job_json_dir, self.running_path, job_json_name)
+            job_dict["job_json_path"] = self.running_path
         return NextJobSchema(**job_dict)
 
 
