@@ -243,73 +243,32 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
         return job_id
 
-    def upload_status(
-        self,
-        display_name: DisplayNameStr,
-        username: str,
-        job_id: str,
-        private_jwk: Optional[JWK] = None,
-    ) -> StatusMsgDict:
+    def get_device_status_path(
+        self, display_name: DisplayNameStr, username: Optional[str] = None
+    ) -> str:
         """
-        This function uploads a status file to the backend and creates the status dict.
+        Get the path to the status of the device.
 
         Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
-            private_jwk: The private key of the backend
+            display_name: The name of the backend
+            username: The username of the user
 
         Returns:
-            The status dict of the job
+            The path to the status of the device.
         """
-        storage_path = f"{self.status_path}/{display_name}"
-        status_draft = {
-            "job_id": job_id,
-            "status": "INITIALIZING",
-            "detail": "Got your json.",
-            "error_message": "None",
-        }
+        return f"{self.status_path}/{display_name}"
 
-        # should we also upload the username into the dict ?
-        status_dict = StatusMsgDict(**status_draft)
-
-        self._format_status_dict(
-            status_dict,
-            storage_path,
-            display_name,
-            job_id,
-            private_jwk,
-        )
-        return status_dict
-
-    def get_status(
-        self, display_name: DisplayNameStr, username: str, job_id: str
-    ) -> StatusMsgDict:
+    def get_status_id(self, job_id: str) -> str:
         """
-        This function gets the status file from the backend and returns the status dict.
+        Get the name of the status json file.
 
         Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
+            job_id: The job_id of the job
 
         Returns:
-            The status dict of the job
+            The name of the status json file.
         """
-        status_json_dir = f"{self.status_path}/{display_name}"
-
-        try:
-            status_dict = self.get(storage_path=status_json_dir, job_id=job_id)
-        except FileNotFoundError:
-            # if the job_id is not valid, we return an error
-            return StatusMsgDict(
-                job_id=job_id,
-                status="ERROR",
-                detail="Cannot get status",
-                error_message=f"Could not find status for {display_name} with job_id {job_id}.",
-            )
-
-        return self._adapt_status_dict(status_dict)
+        return job_id
 
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
@@ -328,7 +287,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             Success if the file was deleted successfully
         """
-        status_json_dir = f"{self.status_path}/{display_name}"
+        status_json_dir = self.get_device_status_path(display_name)
 
         self.delete(storage_path=status_json_dir, job_id=job_id)
         return True
@@ -706,7 +665,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             self.move(job_json_start_dir, self.deleted_path, job_id)
 
         # and create the status json file
-        status_json_dir = f"{self.status_path}/{display_name}"
+        status_json_dir = self.get_device_status_path(display_name)
         try:
             self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
         except FileNotFoundError:

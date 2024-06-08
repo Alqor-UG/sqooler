@@ -280,6 +280,32 @@ class StorageProvider(StorageCore):
         return self.get_job(storage_path, job_id)
 
     @abstractmethod
+    def get_device_status_path(
+        self, display_name: DisplayNameStr, username: str
+    ) -> str:
+        """
+        Get the path to the status of the device.
+
+        Args:
+            display_name: The name of the backend
+            username: The username of the user that is uploading the job
+
+        Returns:
+            The path to the status of the device.
+        """
+
+    @abstractmethod
+    def get_status_id(self, job_id: str) -> str:
+        """
+        Get the id of the status json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the status json file.
+        """
+
     def upload_status(
         self,
         display_name: DisplayNameStr,
@@ -299,8 +325,25 @@ class StorageProvider(StorageCore):
         Returns:
             The status dict of the job
         """
+        status_json_dir = self.get_device_status_path(display_name, username)
+        status_id = self.get_status_id(job_id)
 
-    @abstractmethod
+        status_draft = {
+            "job_id": job_id,
+            "status": "INITIALIZING",
+            "detail": "Got your json.",
+            "error_message": "None",
+        }
+        status_dict = StatusMsgDict(**status_draft)
+        self._format_status_dict(
+            status_dict,
+            status_json_dir,
+            display_name,
+            status_id,
+            private_jwk=private_jwk,
+        )
+        return status_dict
+
     def get_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> StatusMsgDict:
@@ -315,6 +358,21 @@ class StorageProvider(StorageCore):
         Returns:
             The status dict of the job
         """
+        status_json_dir = self.get_device_status_path(display_name, username)
+        status_id = self.get_status_id(job_id)
+
+        try:
+            status_dict = self.get(storage_path=status_json_dir, job_id=status_id)
+        except FileNotFoundError:
+            status_draft = {
+                "job_id": job_id,
+                "status": "ERROR",
+                "detail": "Could not find the status file.",
+                "error_message": f"Missing status file for {job_id}.",
+            }
+            return StatusMsgDict(**status_draft)
+
+        return self._adapt_status_dict(status_dict)
 
     @abstractmethod
     def _delete_status(
@@ -668,9 +726,8 @@ class StorageProvider(StorageCore):
         status_dict: StatusMsgDict,
         storage_path: str,
         display_name: DisplayNameStr,
-        job_id: str,
+        status_id: str,
         private_jwk: Optional[JWK] = None,
-        status_json_name: Optional[str] = None,
     ) -> None:
         """
         Allows us to upload the appropiate status dict to the storage provider.
@@ -685,18 +742,11 @@ class StorageProvider(StorageCore):
             upload_dict = status_dict.model_dump()
 
         # now upload the status dict
-        if status_json_name is None:
-            self.upload(
-                content_dict=upload_dict,
-                storage_path=storage_path,
-                job_id=job_id,
-            )
-        else:
-            self.upload(
-                content_dict=upload_dict,
-                storage_path=storage_path,
-                job_id=status_json_name,
-            )
+        self.upload(
+            content_dict=upload_dict,
+            storage_path=storage_path,
+            job_id=status_id,
+        )
 
     def _format_update_config(
         self,

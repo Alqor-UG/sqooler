@@ -9,7 +9,7 @@ import logging
 import sys
 import uuid
 from datetime import timezone
-from typing import Mapping, Optional
+from typing import Mapping, Optional, Tuple
 
 import dropbox
 from dropbox.exceptions import ApiError, AuthError
@@ -476,7 +476,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         # this should become part of the json file instead of its name in the future
         extracted_username = job_id.split("-")[2]
 
-        status_json_dir = f"/{self.status_path}/{display_name}/{extracted_username}/"
+        status_json_dir = self.get_device_status_path(display_name, extracted_username)
 
         status_json_name = "status-" + job_id
 
@@ -633,44 +633,32 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         )
         return job_id
 
-    def upload_status(
-        self,
-        display_name: DisplayNameStr,
-        username: str,
-        job_id: str,
-        private_jwk: Optional[JWK] = None,
-    ) -> StatusMsgDict:
+    def get_device_status_path(
+        self, display_name: DisplayNameStr, username: str
+    ) -> str:
         """
-        This function uploads a status file to the backend and creates the status dict.
+        Get the path to the status of the device.
 
         Args:
-            display_name: The name of the backend to which we want to upload the job
+            display_name: The name of the backend
             username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
-            private_jwk: The private key of the backend
 
         Returns:
-            The status dict of the job
+            The path to the status of the device.
         """
-        status_json_dir = f"/{self.status_path}/{display_name}/{username}/"
+        return f"/{self.status_path}/{display_name}/{username}/"
 
-        status_json_name = "status-" + job_id
-        status_draft = {
-            "job_id": job_id,
-            "status": "INITIALIZING",
-            "detail": "Got your json.",
-            "error_message": "None",
-        }
-        status_dict = StatusMsgDict(**status_draft)
-        self._format_status_dict(
-            status_dict,
-            status_json_dir,
-            display_name,
-            job_id,
-            private_jwk,
-            status_json_name,
-        )
-        return status_dict
+    def get_status_id(self, job_id: str) -> str:
+        """
+        Get the name of the status json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the status json file.
+        """
+        return "status-" + job_id
 
     def get_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
@@ -687,8 +675,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             The status dict of the job
         """
 
-        status_json_dir = f"/{self.status_path}/{display_name}/{username}/"
-        status_json_name = "status-" + job_id
+        status_json_dir = self.get_device_status_path(display_name, username)
+        status_json_name = self.get_status_id(job_id)
 
         try:
             status_dict = self.get(
@@ -723,7 +711,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             Success if the file was deleted successfully
         """
 
-        status_json_dir = f"/{self.status_path}/{display_name}/{username}/"
+        status_json_dir = self.get_device_status_path(display_name, username)
         status_json_name = "status-" + job_id
 
         self.delete(storage_path=status_json_dir, job_id=status_json_name)
