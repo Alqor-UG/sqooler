@@ -660,39 +660,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
         return "status-" + job_id
 
-    def get_status(
-        self, display_name: DisplayNameStr, username: str, job_id: str
-    ) -> StatusMsgDict:
-        """
-        This function gets the status file from the backend and returns the status dict.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
-
-        Returns:
-            The status dict of the job
-        """
-
-        status_json_dir = self.get_device_status_path(display_name, username)
-        status_json_name = self.get_status_id(job_id)
-
-        try:
-            status_dict = self.get(
-                storage_path=status_json_dir, job_id=status_json_name
-            )
-        except FileNotFoundError:
-            status_draft = {
-                "job_id": job_id,
-                "status": "ERROR",
-                "detail": "Could not find the status file.",
-                "error_message": f"Missing status file for {job_id}.",
-            }
-            return StatusMsgDict(**status_draft)
-
-        return self._adapt_status_dict(status_dict)
-
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> bool:
