@@ -257,27 +257,16 @@ class StorageProvider(StorageCore):
         """
 
     @abstractmethod
-    def get_job(self, storage_path: str, job_id: str) -> dict:
+    def get_internal_job_id(self, job_id: str) -> str:
         """
-        Get the content of the job from the storage. This is a wrapper around get
-        and and handles the different ways of identifiying the job.
+        Get the internal job id from the job_id.
 
-        storage_path: the path towards the file, excluding the filename / id
-        job_id: the id of the file we are about to look up
+        Args:
+            job_id: The job_id of the job
 
         Returns:
-            The content of the job
+            The internal job id
         """
-
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
-        """
-        Depreceated function. Use `get_job` instead.
-        """
-        warnings.warn(
-            "`get_job_content` is depreceated. Use `get_job` instead.",
-            DeprecationWarning,
-        )
-        return self.get_job(storage_path, job_id)
 
     @abstractmethod
     def get_device_status_path(
@@ -305,6 +294,32 @@ class StorageProvider(StorageCore):
         Returns:
             The name of the status json file.
         """
+
+    def get_job(self, storage_path: str, job_id: str) -> dict:
+        """
+        Get the content of the job from the storage. This is a wrapper around get
+        and and handles the different ways of identifiying the job.
+
+        storage_path: the path towards the file, excluding the filename / id
+        job_id: the id of the file we are about to look up
+
+        Returns:
+            The content of the job
+        """
+        internal_job_id = self.get_internal_job_id(job_id)
+        job_dict = self.get(storage_path=storage_path, job_id=internal_job_id)
+        job_dict.pop("_id", None)
+        return job_dict
+
+    def get_job_content(self, storage_path: str, job_id: str) -> dict:
+        """
+        Depreceated function. Use `get_job` instead.
+        """
+        warnings.warn(
+            "`get_job_content` is depreceated. Use `get_job` instead.",
+            DeprecationWarning,
+        )
+        return self.get_job(storage_path, job_id)
 
     def upload_status(
         self,

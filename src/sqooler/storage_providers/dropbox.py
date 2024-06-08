@@ -291,18 +291,17 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
     results_path: PathStr = "Backend_files/Result"
     pks_path: PathStr = "Backend_files/public_keys"
 
-    def get_job(self, storage_path: str, job_id: str) -> dict:
+    def get_internal_job_id(self, job_id: str) -> str:
         """
-        Get the content of the job from the storage. This is a wrapper around get_file_content
-        and and handles the different ways of identifiying the job.
+        Get the internal job id from the job_id.
 
-        storage_path: the path towards the file, excluding the filename / id
-        job_id: the id of the file we are about to look up
+        Args:
+            job_id: The job_id of the job
 
         Returns:
-            The content of the job
+            The internal job id
         """
-        return self.get(storage_path=storage_path, job_id=f"job-{job_id}")
+        return job_id
 
     def update_config(
         self,
