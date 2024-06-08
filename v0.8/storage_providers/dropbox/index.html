@@ -2856,18 +2856,18 @@ job_id: the name of the file. Is a json file</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">868</span>
-<span class="normal">869</span>
-<span class="normal">870</span>
-<span class="normal">871</span>
-<span class="normal">872</span>
-<span class="normal">873</span>
-<span class="normal">874</span>
-<span class="normal">875</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">875</span>
 <span class="normal">876</span>
 <span class="normal">877</span>
 <span class="normal">878</span>
-<span class="normal">879</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProvider</span><span class="p">(</span><span class="n">DropboxProviderExtended</span><span class="p">):</span>
+<span class="normal">879</span>
+<span class="normal">880</span>
+<span class="normal">881</span>
+<span class="normal">882</span>
+<span class="normal">883</span>
+<span class="normal">884</span>
+<span class="normal">885</span>
+<span class="normal">886</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProvider</span><span class="p">(</span><span class="n">DropboxProviderExtended</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class that implements the dropbox storage provider.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2937,13 +2937,13 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">873</span>
-<span class="normal">874</span>
-<span class="normal">875</span>
-<span class="normal">876</span>
-<span class="normal">877</span>
-<span class="normal">878</span>
-<span class="normal">879</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">DropboxLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">880</span>
+<span class="normal">881</span>
+<span class="normal">882</span>
+<span class="normal">883</span>
+<span class="normal">884</span>
+<span class="normal">885</span>
+<span class="normal">886</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">DropboxLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Args:</span>
 <span class="sd">        login_dict: The dictionary that contains the login information</span>
@@ -3001,6 +3001,83 @@ job_id: the name of the file. Is a json file</p>
             <td>
               <div class="doc-md-description">
                 <p>The path to the folder where the configurations are stored</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.queue_path">queue_path</span></code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PathStr">PathStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the folder where the jobs are stored</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.running_path">running_path</span></code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PathStr">PathStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the folder where the running jobs are stored</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.finished_path">finished_path</span></code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PathStr">PathStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the folder where the finished jobs are stored</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.deleted_path">deleted_path</span></code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PathStr">PathStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the folder where the deleted jobs are stored</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.status_path">status_path</span></code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PathStr">PathStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the folder where the status is stored</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.results_path">results_path</span></code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PathStr">PathStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the folder where the results are stored</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.pks_path">pks_path</span></code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PathStr">PathStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the folder where the public keys are stored</p>
               </div>
             </td>
           </tr>
@@ -3605,15 +3682,37 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">862</span>
 <span class="normal">863</span>
 <span class="normal">864</span>
-<span class="normal">865</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">,</span> <span class="n">DropboxCore</span><span class="p">):</span>
+<span class="normal">865</span>
+<span class="normal">866</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
+<span class="normal">871</span>
+<span class="normal">872</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">,</span> <span class="n">DropboxCore</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class that implements the dropbox storage provider.</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        configs_path: The path to the folder where the configurations are stored</span>
+<span class="sd">        queue_path: The path to the folder where the jobs are stored</span>
+<span class="sd">        running_path: The path to the folder where the running jobs are stored</span>
+<span class="sd">        finished_path: The path to the folder where the finished jobs are stored</span>
+<span class="sd">        deleted_path: The path to the folder where the deleted jobs are stored</span>
+<span class="sd">        status_path: The path to the folder where the status is stored</span>
+<span class="sd">        results_path: The path to the folder where the results are stored</span>
+<span class="sd">        pks_path: The path to the folder where the public keys are stored</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">configs_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Config&quot;</span>
+    <span class="n">queue_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Queued_Jobs&quot;</span>
+    <span class="n">running_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Running_Jobs&quot;</span>
+    <span class="n">finished_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Finished_Jobs&quot;</span>
+    <span class="n">deleted_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Deleted_Jobs&quot;</span>
+    <span class="n">status_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Status&quot;</span>
+    <span class="n">results_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Result&quot;</span>
+    <span class="n">pks_path</span><span class="p">:</span> <span class="n">PathStr</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/public_keys&quot;</span>
 
     <span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -3739,9 +3838,7 @@ job_id: the name of the file. Is a json file</p>
         <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
 
-        <span class="n">pk_paths</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/public_keys&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">upload_string</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">pk_paths</span><span class="p">,</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_string</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -3753,14 +3850,13 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            JWk : The public JWK object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">pk_paths</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/public_keys&quot;</span>
 
         <span class="c1"># now get the appropiate kid</span>
         <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The kid is not set in the backend configuration.&quot;</span><span class="p">)</span>
 
-        <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">pk_paths</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+        <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">JWK</span><span class="p">(</span><span class="o">**</span><span class="n">public_jwk_dict</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_delete_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -3776,8 +3872,7 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Success if the file was deleted successfully</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">pk_paths</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/public_keys&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">pk_paths</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">kid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">kid</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
@@ -3804,13 +3899,12 @@ job_id: the name of the file. Is a json file</p>
         <span class="c1"># this should become part of the json file instead of its name in the future</span>
         <span class="n">extracted_username</span> <span class="o">=</span> <span class="n">job_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
 
-        <span class="n">status_json_dir</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;/Backend_files/Status/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">extracted_username</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
-        <span class="p">)</span>
+        <span class="n">status_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">extracted_username</span><span class="si">}</span><span class="s2">/&quot;</span>
+
         <span class="n">status_json_name</span> <span class="o">=</span> <span class="s2">&quot;status-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
         <span class="n">job_json_name</span> <span class="o">=</span> <span class="s2">&quot;job-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
-        <span class="n">job_json_start_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Running_Jobs&quot;</span>
+        <span class="n">job_json_start_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_path</span>
 
         <span class="k">if</span> <span class="n">status_msg_dict</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;DONE&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">upload_result</span><span class="p">(</span>
@@ -3821,18 +3915,14 @@ job_id: the name of the file. Is a json file</p>
             <span class="p">)</span>
             <span class="c1"># now move the job out of the running jobs into the finished jobs</span>
             <span class="n">job_finished_json_dir</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="s2">&quot;/Backend_files/Finished_Jobs/&quot;</span>
-                <span class="o">+</span> <span class="n">display_name</span>
-                <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
-                <span class="o">+</span> <span class="n">extracted_username</span>
-                <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">finished_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">extracted_username</span><span class="si">}</span><span class="s2">/&quot;</span>
             <span class="p">)</span>
+
             <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_start_dir</span><span class="p">,</span> <span class="n">job_finished_json_dir</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="n">status_msg_dict</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">:</span>
             <span class="c1"># because there was an error, we move the job to the deleted jobs</span>
-            <span class="n">deleted_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Deleted_Jobs&quot;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_start_dir</span><span class="p">,</span> <span class="n">deleted_json_dir</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_start_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted_path</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">status_msg_dict</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">status_json_dir</span><span class="p">,</span> <span class="n">status_json_name</span><span class="p">)</span>
@@ -3958,7 +4048,7 @@ job_id: the name of the file. Is a json file</p>
         <span class="p">)</span>
         <span class="c1"># now we upload the job to the backend</span>
         <span class="c1"># this is currently very much backend specific</span>
-        <span class="n">job_json_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Queued_Jobs/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="n">job_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="n">job_json_name</span> <span class="o">=</span> <span class="s2">&quot;job-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span>
@@ -3985,7 +4075,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            The status dict of the job</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">status_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Status/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">username</span>
+        <span class="n">status_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span>
+
         <span class="n">status_json_name</span> <span class="o">=</span> <span class="s2">&quot;status-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
         <span class="n">status_draft</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
@@ -4018,7 +4109,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            The status dict of the job</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">status_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Status/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">username</span>
+
+        <span class="n">status_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="n">status_json_name</span> <span class="o">=</span> <span class="s2">&quot;status-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -4053,7 +4145,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Success if the file was deleted successfully</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">status_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Status/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">username</span>
+
+        <span class="n">status_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="n">status_json_name</span> <span class="o">=</span> <span class="s2">&quot;status-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">status_json_dir</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">status_json_name</span><span class="p">)</span>
@@ -4080,9 +4173,7 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">            The success of the upload process</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">extracted_username</span> <span class="o">=</span> <span class="n">job_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">result_json_dir</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;/Backend_files/Result/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">extracted_username</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
-        <span class="p">)</span>
+        <span class="n">result_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">extracted_username</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="n">result_json_name</span> <span class="o">=</span> <span class="s2">&quot;result-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_common_upload_result</span><span class="p">(</span>
@@ -4109,7 +4200,7 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">            The result dict of the job. If the information is not available, the result dict</span>
 <span class="sd">            has a status of &quot;ERROR&quot;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">result_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Result/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">username</span>
+        <span class="n">result_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="n">result_json_name</span> <span class="o">=</span> <span class="s2">&quot;result-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -4166,7 +4257,7 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            Success if the file was deleted successfully</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">result_device_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Result/&quot;</span> <span class="o">+</span> <span class="n">display_name</span>
+        <span class="n">result_device_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">delete_folder</span><span class="p">(</span><span class="n">result_device_dir</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 
@@ -4184,7 +4275,7 @@ job_id: the name of the file. Is a json file</p>
 <span class="sd">        Returns:</span>
 <span class="sd">            the path towards the job</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">job_json_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Queued_Jobs/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="n">job_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="n">job_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_default_next_schema_dict</span><span class="p">()</span>
         <span class="n">job_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_queue</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">)</span>
 
@@ -4199,8 +4290,8 @@ job_id: the name of the file. Is a json file</p>
             <span class="c1"># split the .json from the job_json_name</span>
             <span class="n">job_json_name</span> <span class="o">=</span> <span class="n">job_json_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1"># and move the file into the right directory</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">,</span> <span class="s2">&quot;Backend_files/Running_Jobs&quot;</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
-            <span class="n">job_dict</span><span class="p">[</span><span class="s2">&quot;job_json_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Running_Jobs&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_path</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
+            <span class="n">job_dict</span><span class="p">[</span><span class="s2">&quot;job_json_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_path</span>
         <span class="k">return</span> <span class="n">NextJobSchema</span><span class="p">(</span><span class="o">**</span><span class="n">job_dict</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -4232,13 +4323,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">556</span>
 <span class="normal">557</span>
 <span class="normal">558</span>
 <span class="normal">559</span>
@@ -4259,7 +4344,13 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">574</span>
 <span class="normal">575</span>
 <span class="normal">576</span>
-<span class="normal">577</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">get_backends</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of all the backends that the provider offers.</span>
@@ -4382,13 +4473,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">585</span>
 <span class="normal">586</span>
 <span class="normal">587</span>
 <span class="normal">588</span>
@@ -4398,7 +4483,13 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">592</span>
 <span class="normal">593</span>
 <span class="normal">594</span>
-<span class="normal">595</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that downloads the spooler configuration to the storage.</span>
 
@@ -4488,13 +4579,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">515</span>
 <span class="normal">516</span>
 <span class="normal">517</span>
 <span class="normal">518</span>
@@ -4527,7 +4612,13 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">545</span>
 <span class="normal">546</span>
 <span class="normal">547</span>
-<span class="normal">548</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of files. Typically we are looking for the queued jobs of a backend here.</span>
 
@@ -4614,18 +4705,18 @@ job_id: the id of the file we are about to look up</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the content of the job from the storage. This is a wrapper around get_file_content</span>
 <span class="sd">    and and handles the different ways of identifiying the job.</span>
@@ -4724,14 +4815,7 @@ job_id: the id of the file we are about to look up</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">834</span>
-<span class="normal">835</span>
-<span class="normal">836</span>
-<span class="normal">837</span>
-<span class="normal">838</span>
-<span class="normal">839</span>
-<span class="normal">840</span>
-<span class="normal">841</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">841</span>
 <span class="normal">842</span>
 <span class="normal">843</span>
 <span class="normal">844</span>
@@ -4755,7 +4839,14 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">862</span>
 <span class="normal">863</span>
 <span class="normal">864</span>
-<span class="normal">865</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span>
+<span class="normal">865</span>
+<span class="normal">866</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
+<span class="normal">871</span>
+<span class="normal">872</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_next_job_in_queue</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">private_jwk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">JWK</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NextJobSchema</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4769,7 +4860,7 @@ job_id: the id of the file we are about to look up</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        the path towards the job</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">job_json_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Queued_Jobs/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+    <span class="n">job_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/&quot;</span>
     <span class="n">job_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_default_next_schema_dict</span><span class="p">()</span>
     <span class="n">job_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_queue</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">)</span>
 
@@ -4784,8 +4875,8 @@ job_id: the id of the file we are about to look up</p>
         <span class="c1"># split the .json from the job_json_name</span>
         <span class="n">job_json_name</span> <span class="o">=</span> <span class="n">job_json_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="c1"># and move the file into the right directory</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">,</span> <span class="s2">&quot;Backend_files/Running_Jobs&quot;</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
-        <span class="n">job_dict</span><span class="p">[</span><span class="s2">&quot;job_json_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Running_Jobs&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_path</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
+        <span class="n">job_dict</span><span class="p">[</span><span class="s2">&quot;job_json_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_path</span>
     <span class="k">return</span> <span class="n">NextJobSchema</span><span class="p">(</span><span class="o">**</span><span class="n">job_dict</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4859,25 +4950,24 @@ job_id: the id of the file we are about to look up</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
 <span class="normal">423</span>
 <span class="normal">424</span>
-<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that gets the spooler public JWK for the device.</span>
 
@@ -4887,14 +4977,13 @@ job_id: the id of the file we are about to look up</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        JWk : The public JWK object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pk_paths</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/public_keys&quot;</span>
 
     <span class="c1"># now get the appropiate kid</span>
     <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The kid is not set in the backend configuration.&quot;</span><span class="p">)</span>
 
-    <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">pk_paths</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+    <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">JWK</span><span class="p">(</span><span class="o">**</span><span class="n">public_jwk_dict</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5007,14 +5096,7 @@ job_id: the id of the file we are about to look up</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span>
-<span class="normal">763</span>
-<span class="normal">764</span>
-<span class="normal">765</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">765</span>
 <span class="normal">766</span>
 <span class="normal">767</span>
 <span class="normal">768</span>
@@ -5040,7 +5122,14 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">788</span>
 <span class="normal">789</span>
 <span class="normal">790</span>
-<span class="normal">791</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_result</span><span class="p">(</span>
+<span class="normal">791</span>
+<span class="normal">792</span>
+<span class="normal">793</span>
+<span class="normal">794</span>
+<span class="normal">795</span>
+<span class="normal">796</span>
+<span class="normal">797</span>
+<span class="normal">798</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_result</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResultDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -5055,7 +5144,7 @@ job_id: the id of the file we are about to look up</p>
 <span class="sd">        The result dict of the job. If the information is not available, the result dict</span>
 <span class="sd">        has a status of &quot;ERROR&quot;.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">result_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Result/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">username</span>
+    <span class="n">result_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span>
     <span class="n">result_json_name</span> <span class="o">=</span> <span class="s2">&quot;result-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">result_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -5175,14 +5264,7 @@ job_id: the id of the file we are about to look up</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">675</span>
 <span class="normal">676</span>
 <span class="normal">677</span>
 <span class="normal">678</span>
@@ -5205,7 +5287,15 @@ job_id: the id of the file we are about to look up</p>
 <span class="normal">695</span>
 <span class="normal">696</span>
 <span class="normal">697</span>
-<span class="normal">698</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StatusMsgDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -5219,7 +5309,8 @@ job_id: the id of the file we are about to look up</p>
 <span class="sd">    Returns:</span>
 <span class="sd">        The status dict of the job</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">status_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Status/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">username</span>
+
+    <span class="n">status_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span>
     <span class="n">status_json_name</span> <span class="o">=</span> <span class="s2">&quot;status-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -5338,22 +5429,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">307</span>
 <span class="normal">308</span>
 <span class="normal">309</span>
 <span class="normal">310</span>
@@ -5368,7 +5444,22 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">319</span>
 <span class="normal">320</span>
 <span class="normal">321</span>
-<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_config</span><span class="p">(</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">config_dict</span><span class="p">:</span> <span class="n">BackendConfigSchemaIn</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span>
@@ -5528,18 +5619,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">455</span>
 <span class="normal">456</span>
 <span class="normal">457</span>
 <span class="normal">458</span>
@@ -5591,7 +5671,13 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">504</span>
 <span class="normal">505</span>
 <span class="normal">506</span>
-<span class="normal">507</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result_dict</span><span class="p">:</span> <span class="n">ResultDict</span><span class="p">,</span>
     <span class="n">status_msg_dict</span><span class="p">:</span> <span class="n">StatusMsgDict</span><span class="p">,</span>
@@ -5615,13 +5701,12 @@ For each backend there is a separate folder in which the configuration is stored
     <span class="c1"># this should become part of the json file instead of its name in the future</span>
     <span class="n">extracted_username</span> <span class="o">=</span> <span class="n">job_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
 
-    <span class="n">status_json_dir</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;/Backend_files/Status/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">extracted_username</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
-    <span class="p">)</span>
+    <span class="n">status_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">extracted_username</span><span class="si">}</span><span class="s2">/&quot;</span>
+
     <span class="n">status_json_name</span> <span class="o">=</span> <span class="s2">&quot;status-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
     <span class="n">job_json_name</span> <span class="o">=</span> <span class="s2">&quot;job-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
-    <span class="n">job_json_start_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Running_Jobs&quot;</span>
+    <span class="n">job_json_start_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">running_path</span>
 
     <span class="k">if</span> <span class="n">status_msg_dict</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;DONE&quot;</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">upload_result</span><span class="p">(</span>
@@ -5632,18 +5717,14 @@ For each backend there is a separate folder in which the configuration is stored
         <span class="p">)</span>
         <span class="c1"># now move the job out of the running jobs into the finished jobs</span>
         <span class="n">job_finished_json_dir</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="s2">&quot;/Backend_files/Finished_Jobs/&quot;</span>
-            <span class="o">+</span> <span class="n">display_name</span>
-            <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
-            <span class="o">+</span> <span class="n">extracted_username</span>
-            <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">finished_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">extracted_username</span><span class="si">}</span><span class="s2">/&quot;</span>
         <span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_start_dir</span><span class="p">,</span> <span class="n">job_finished_json_dir</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">status_msg_dict</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;ERROR&quot;</span><span class="p">:</span>
         <span class="c1"># because there was an error, we move the job to the deleted jobs</span>
-        <span class="n">deleted_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Deleted_Jobs&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_start_dir</span><span class="p">,</span> <span class="n">deleted_json_dir</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">job_json_start_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted_path</span><span class="p">,</span> <span class="n">job_json_name</span><span class="p">)</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">status_msg_dict</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">status_json_dir</span><span class="p">,</span> <span class="n">status_json_name</span><span class="p">)</span>
@@ -5757,22 +5838,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">339</span>
 <span class="normal">340</span>
 <span class="normal">341</span>
 <span class="normal">342</span>
@@ -5791,7 +5857,22 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">355</span>
 <span class="normal">356</span>
 <span class="normal">357</span>
-<span class="normal">358</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">config_dict</span><span class="p">:</span> <span class="n">BackendConfigSchemaIn</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span>
@@ -5927,13 +6008,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">597</span>
-<span class="normal">598</span>
-<span class="normal">599</span>
-<span class="normal">600</span>
-<span class="normal">601</span>
-<span class="normal">602</span>
-<span class="normal">603</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">603</span>
 <span class="normal">604</span>
 <span class="normal">605</span>
 <span class="normal">606</span>
@@ -5958,7 +6033,13 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">625</span>
 <span class="normal">626</span>
 <span class="normal">627</span>
-<span class="normal">628</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_job</span><span class="p">(</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_job</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">job_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -5983,7 +6064,7 @@ For each backend there is a separate folder in which the configuration is stored
     <span class="p">)</span>
     <span class="c1"># now we upload the job to the backend</span>
     <span class="c1"># this is currently very much backend specific</span>
-    <span class="n">job_json_dir</span> <span class="o">=</span> <span class="s2">&quot;/Backend_files/Queued_Jobs/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+    <span class="n">job_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">queue_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/&quot;</span>
     <span class="n">job_json_name</span> <span class="o">=</span> <span class="s2">&quot;job-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span>
@@ -6076,22 +6157,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">394</span>
 <span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span>
@@ -6102,7 +6168,20 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">402</span>
 <span class="normal">403</span>
 <span class="normal">404</span>
-<span class="normal">405</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that uploads the spooler public JWK to the storage.</span>
 
@@ -6126,9 +6205,7 @@ For each backend there is a separate folder in which the configuration is stored
     <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
 
-    <span class="n">pk_paths</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/public_keys&quot;</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">upload_string</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">pk_paths</span><span class="p">,</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">upload_string</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -6244,16 +6321,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">724</span>
-<span class="normal">725</span>
-<span class="normal">726</span>
-<span class="normal">727</span>
-<span class="normal">728</span>
-<span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span>
-<span class="normal">732</span>
-<span class="normal">733</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">733</span>
 <span class="normal">734</span>
 <span class="normal">735</span>
 <span class="normal">736</span>
@@ -6276,7 +6344,14 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">753</span>
 <span class="normal">754</span>
 <span class="normal">755</span>
-<span class="normal">756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_result</span><span class="p">(</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_result</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result_dict</span><span class="p">:</span> <span class="n">ResultDict</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span>
@@ -6296,9 +6371,7 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="sd">        The success of the upload process</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">extracted_username</span> <span class="o">=</span> <span class="n">job_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">result_json_dir</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;/Backend_files/Result/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">extracted_username</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
-    <span class="p">)</span>
+    <span class="n">result_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">results_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">extracted_username</span><span class="si">}</span><span class="s2">/&quot;</span>
     <span class="n">result_json_name</span> <span class="o">=</span> <span class="s2">&quot;result-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_common_upload_result</span><span class="p">(</span>
@@ -6424,13 +6497,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span>
-<span class="normal">633</span>
-<span class="normal">634</span>
-<span class="normal">635</span>
-<span class="normal">636</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">636</span>
 <span class="normal">637</span>
 <span class="normal">638</span>
 <span class="normal">639</span>
@@ -6460,7 +6527,14 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">663</span>
 <span class="normal">664</span>
 <span class="normal">665</span>
-<span class="normal">666</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_status</span><span class="p">(</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_status</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span>
     <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -6479,7 +6553,8 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="sd">    Returns:</span>
 <span class="sd">        The status dict of the job</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">status_json_dir</span> <span class="o">=</span> <span class="s2">&quot;Backend_files/Status/&quot;</span> <span class="o">+</span> <span class="n">display_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">username</span>
+    <span class="n">status_json_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">status_path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">display_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span>
+
     <span class="n">status_json_name</span> <span class="o">=</span> <span class="s2">&quot;status-&quot;</span> <span class="o">+</span> <span class="n">job_id</span>
     <span class="n">status_draft</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
@@ -6585,14 +6660,7 @@ result, we will reutrn <code>False</code> by default, given that we were not abl
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">793</span>
-<span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">800</span>
 <span class="normal">801</span>
 <span class="normal">802</span>
 <span class="normal">803</span>
@@ -6605,7 +6673,14 @@ result, we will reutrn <code>False</code> by default, given that we were not abl
 <span class="normal">810</span>
 <span class="normal">811</span>
 <span class="normal">812</span>
-<span class="normal">813</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">verify_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">verify_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function verifies the result and returns the success. If the backend does not sign the</span>
 <span class="sd">    result, we will reutrn `False` by default, given that we were not able to establish ownership.</span>
