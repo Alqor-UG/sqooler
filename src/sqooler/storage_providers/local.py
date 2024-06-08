@@ -16,6 +16,7 @@ from ..schemes import (
     DisplayNameStr,
     LocalLoginInformation,
     NextJobSchema,
+    PathStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -168,9 +169,23 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
     Attributes:
         configs_path: The path to the folder where the configurations are stored
+        queue_path: The path to the folder where the jobs are stored
+        running_path: The path to the folder where the running jobs are stored
+        finished_path: The path to the folder where the finished jobs are stored
+        deleted_path: The path to the folder where the deleted jobs are stored
+        status_path: The path to the folder where the status is stored
+        results_path: The path to the folder where the results are stored
+        pks_path: The path to the folder where the public keys are stored
     """
 
-    configs_path: str = "backends/configs"
+    configs_path: PathStr = "backends/configs"
+    queue_path: PathStr = "jobs/queued"
+    running_path: PathStr = "jobs/running"
+    finished_path: PathStr = "jobs/finished"
+    deleted_path: PathStr = "jobs/deleted"
+    status_path: PathStr = "status"
+    results_path: PathStr = "results"
+    pks_path: PathStr = "backends/public_keys"
 
     def get_job(self, storage_path: str, job_id: str) -> dict:
         """
@@ -222,7 +237,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             The job id of the uploaded job.
         """
 
-        storage_path = "jobs/queued/" + display_name
+        storage_path = f"{self.queue_path}/{display_name}"
         job_id = (uuid.uuid4().hex)[:24]
 
         self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
@@ -247,7 +262,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             The status dict of the job
         """
-        storage_path = "status/" + display_name
+        storage_path = f"{self.status_path}/{display_name}"
         status_draft = {
             "job_id": job_id,
             "status": "INITIALIZING",
@@ -281,11 +296,10 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             The status dict of the job
         """
-        status_json_dir = "status/" + display_name
+        status_json_dir = f"{self.status_path}/{display_name}"
 
         try:
             status_dict = self.get(storage_path=status_json_dir, job_id=job_id)
-            # return StatusMsgDict(**status_dict)
         except FileNotFoundError:
             # if the job_id is not valid, we return an error
             return StatusMsgDict(
@@ -314,7 +328,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             Success if the file was deleted successfully
         """
-        status_json_dir = "status/" + display_name
+        status_json_dir = f"{self.status_path}/{display_name}"
 
         self.delete(storage_path=status_json_dir, job_id=job_id)
         return True
@@ -338,7 +352,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             The success of the upload process
         """
-        result_json_dir = "results/" + display_name
+        result_json_dir = f"{self.results_path}/{display_name}"
 
         return self._common_upload_result(
             result_dict,
@@ -380,7 +394,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 results=[],
             )
 
-        result_json_dir = "results/" + display_name
+        result_json_dir = f"{self.results_path}/{display_name}"
         try:
             result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
         except FileNotFoundError:
@@ -409,7 +423,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             If it was possible to verify the result dict positively.
         """
-        result_json_dir = "results/" + display_name
+
+        result_json_dir = f"{self.results_path}/{display_name}"
         result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
         public_jwk = self.get_public_key(display_name)
 
@@ -432,8 +447,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             Success if the file was deleted successfully
         """
 
-        result_json_dir = "results/" + display_name
-
+        result_json_dir = f"{self.results_path}/{display_name}"
         self.delete(storage_path=result_json_dir, job_id=job_id)
         return True
 
@@ -591,7 +605,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             raise ValueError("The key does not have the correct kid.")
 
         # path of the public keys
-        key_path = os.path.join(self.base_path, "backends/public_keys")
+        key_path = os.path.join(self.base_path, self.pks_path)
         key_path = os.path.normpath(key_path)
         # test if the config path already exists. If it does not, create it
         if not os.path.exists(key_path):
@@ -619,7 +633,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         config_info = self.get_config(display_name)
 
         # path of the configs
-        key_path = os.path.join(self.base_path, "backends/public_keys")
+        key_path = os.path.join(self.base_path, self.pks_path)
         file_name = f"{config_info.kid}.json"
         full_json_path = os.path.join(key_path, file_name)
         secure_path = os.path.normpath(full_json_path)
@@ -644,9 +658,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             Success if the file was deleted successfully
         """
-        key_path = "backends/public_keys"
-
-        self.delete(storage_path=key_path, job_id=kid)
+        self.delete(storage_path=self.pks_path, job_id=kid)
         return True
 
     def update_in_database(
@@ -670,7 +682,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             None
         """
-        job_json_start_dir = "jobs/running"
+        job_json_start_dir = self.running_path
         # check if the job is done or had an error
         if status_msg_dict.status == "DONE":
             # test if the result dict is None
@@ -685,17 +697,16 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 raise ValueError("The result was not uploaded successfully.")
 
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = "jobs/finished/" + display_name
+            job_finished_json_dir = f"{self.finished_path}/{display_name}"
 
             self.move(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            deleted_json_dir = "jobs/deleted"
-            self.move(job_json_start_dir, deleted_json_dir, job_id)
+            self.move(job_json_start_dir, self.deleted_path, job_id)
 
         # and create the status json file
-        status_json_dir = "status/" + display_name
+        status_json_dir = f"{self.status_path}/{display_name}"
         try:
             self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
         except FileNotFoundError:
@@ -737,7 +748,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             the dict of the next job
         """
-        queue_dir = "jobs/queued/" + display_name
+        queue_dir = f"{self.queue_path}/{display_name}"
+
         job_dict = self._get_default_next_schema_dict()
         job_list = self.get_file_queue(queue_dir)
 
@@ -751,8 +763,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             job_dict["job_id"] = job_id
 
             # and move the file into the right directory
-            self.move(queue_dir, "jobs/running", job_id)
-            job_dict["job_json_path"] = "jobs/running"
+            self.move(queue_dir, self.running_path, job_id)
+            job_dict["job_json_path"] = self.running_path
         return NextJobSchema(**job_dict)
 
 
