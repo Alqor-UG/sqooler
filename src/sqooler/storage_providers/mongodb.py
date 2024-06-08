@@ -491,18 +491,6 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
         return job_id
 
-    def get_internal_job_id(self, job_id: str) -> str:
-        """
-        Get the internal job id from the job_id.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The internal job id
-        """
-        return job_id
-
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> bool:

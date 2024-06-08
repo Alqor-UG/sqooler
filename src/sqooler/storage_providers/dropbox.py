@@ -9,7 +9,7 @@ import logging
 import sys
 import uuid
 from datetime import timezone
-from typing import Mapping, Optional, Tuple
+from typing import Mapping, Optional
 
 import dropbox
 from dropbox.exceptions import ApiError, AuthError
