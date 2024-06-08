@@ -23,7 +23,7 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
 )
-from ..security import JWK, sign_payload
+from ..security import JWK, JWSDict, sign_payload
 
 
 def validate_active(func: Callable) -> Callable:
@@ -295,6 +295,31 @@ class StorageProvider(StorageCore):
             The name of the status json file.
         """
 
+    @abstractmethod
+    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            job_id: The job_id of the job
+
+        Returns:
+            The path to the results of the device.
+        """
+
+    @abstractmethod
+    def get_result_id(self, job_id: str) -> str:
+        """
+        Get the name of the result json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the result json file.
+        """
+
     def get_job(self, storage_path: str, job_id: str) -> dict:
         """
         Get the content of the job from the storage. This is a wrapper around get
@@ -408,7 +433,6 @@ class StorageProvider(StorageCore):
             Success if the file was deleted successfully
         """
 
-    @abstractmethod
     def upload_result(
         self,
         result_dict: ResultDict,
@@ -428,6 +452,17 @@ class StorageProvider(StorageCore):
         Returns:
             The success of the upload process
         """
+        result_json_dir = self.get_device_results_path(display_name, job_id)
+        result_json_name = self.get_result_id(job_id)
+
+        return self._common_upload_result(
+            result_dict,
+            display_name,
+            job_id,
+            result_json_dir,
+            result_json_name=result_json_name,
+            private_jwk=private_jwk,
+        )
 
     @abstractmethod
     def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
@@ -446,7 +481,6 @@ class StorageProvider(StorageCore):
             Success if the file was deleted successfully
         """
 
-    @abstractmethod
     def get_result(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> ResultDict:
@@ -462,8 +496,26 @@ class StorageProvider(StorageCore):
             The result dict of the job. If the information is not available, the result dict
             has a status of "ERROR".
         """
+        result_json_dir = self.get_device_results_path(display_name, job_id)
+        result_json_name = self.get_result_id(job_id)
+        try:
+            result_dict = self.get(
+                storage_path=result_json_dir, job_id=result_json_name
+            )
+        except FileNotFoundError:
+            return ResultDict(
+                display_name=display_name,
+                backend_version="",
+                job_id=job_id,
+                qobj_id=None,
+                success=False,
+                status="ERROR",
+                header={},
+                results=[],
+            )
+        backend_config_info = self.get_backend_dict(display_name)
+        return self._adapt_result_dict(result_dict, backend_config_info)
 
-    @abstractmethod
     def verify_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
         """
         This function verifies the result and returns the success. If the backend does not sign the
@@ -476,6 +528,14 @@ class StorageProvider(StorageCore):
         Returns:
             If it was possible to verify the result dict positively.
         """
+        result_json_dir = self.get_device_results_path(display_name, job_id)
+        result_json_name = self.get_result_id(job_id)
+
+        result_dict = self.get(storage_path=result_json_dir, job_id=result_json_name)
+        public_jwk = self.get_public_key(display_name)
+
+        result_jws = JWSDict(**result_dict)
+        return result_jws.verify_signature(public_jwk)
 
     @abstractmethod
     def upload_config(

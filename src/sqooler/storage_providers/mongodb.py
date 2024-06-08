@@ -491,6 +491,31 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
         return job_id
 
+    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            job_id: The job_id of the job
+
+        Returns:
+            The path to the results of the device.
+        """
+        return f"{self.results_path}/{display_name}"
+
+    def get_result_id(self, job_id: str) -> str:
+        """
+        Get the name of the result json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the result json file.
+        """
+        return job_id
+
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> bool:
@@ -513,88 +538,6 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         self.delete(storage_path=status_json_dir, job_id=job_id)
         return True
 
-    def upload_result(
-        self,
-        result_dict: ResultDict,
-        display_name: DisplayNameStr,
-        job_id: str,
-        private_jwk: Optional[JWK] = None,
-    ) -> bool:
-        """
-        This function allows us to upload the result file .
-
-        Args:
-            result_dict: The result dictionary
-            display_name: The name of the backend to which we want to upload the job
-            job_id: The job_id of the job that we want to upload the status for
-            private_jwk: The private key of the backend
-
-        Returns:
-            The success of the upload process
-        """
-        result_json_dir = f"{self.results_path}/{display_name}"
-
-        return self._common_upload_result(
-            result_dict,
-            display_name,
-            job_id,
-            result_json_dir,
-            result_json_name=job_id,
-            private_jwk=private_jwk,
-        )
-
-    def get_result(
-        self, display_name: DisplayNameStr, username: str, job_id: str
-    ) -> ResultDict:
-        """
-        This function gets the result file from the backend and returns the result dict.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
-
-        Returns:
-            The result dict of the job. If the information is not available, the result dict
-            has a status of "ERROR".
-        """
-        result_json_dir = f"{self.results_path}/{display_name}"
-        try:
-            result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
-        except FileNotFoundError:
-            # if the job_id is not valid, we return an error
-            return ResultDict(
-                display_name=display_name,
-                backend_version="",
-                job_id=job_id,
-                qobj_id=None,
-                success=False,
-                status="ERROR",
-                header={},
-                results=[],
-            )
-        backend_config_info = self.get_backend_dict(display_name)
-        return self._adapt_result_dict(result_dict, backend_config_info)
-
-    def verify_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
-        """
-        This function verifies the result and returns the success. If the backend does not sign the
-        result, we will reutrn `False` by default, given that we were not able to establish ownership.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            job_id: The job_id of the job that we want to upload the status for
-
-        Returns:
-            If it was possible to verify the result dict positively.
-        """
-        result_json_dir = f"{self.results_path}/{display_name}"
-        result_dict = self.get(storage_path=result_json_dir, job_id=job_id)
-        public_jwk = self.get_public_key(display_name)
-
-        result_jws = JWSDict(**result_dict)
-        return result_jws.verify_signature(public_jwk)
-
     def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
         """
         Delete a result from the storage. This is only intended for test purposes.
@@ -610,7 +553,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             Success if the file was deleted successfully
         """
-        result_json_dir = f"{self.results_path}/{display_name}"
+        result_json_dir = self.get_device_results_path(display_name, job_id)
 
         self.delete(storage_path=result_json_dir, job_id=job_id)
         return True

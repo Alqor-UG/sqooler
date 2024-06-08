@@ -647,6 +647,21 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
         return f"/{self.status_path}/{display_name}/{username}/"
 
+    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            job_id: The job_id of the job
+
+        Returns:
+            The path to the results of the device."""
+
+        extracted_username = job_id.split("-")[2]
+        result_json_dir = f"/{self.results_path}/{display_name}/{extracted_username}/"
+        return result_json_dir
+
     def get_status_id(self, job_id: str) -> str:
         """
         Get the name of the status json file.
@@ -658,6 +673,18 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             The name of the status json file.
         """
         return "status-" + job_id
+
+    def get_result_id(self, job_id: str) -> str:
+        """
+        Get the name of the result json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the result json file.
+        """
+        return "result-" + job_id
 
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
@@ -678,100 +705,12 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
 
         status_json_dir = self.get_device_status_path(display_name, username)
-        status_json_name = "status-" + job_id
+
+        status_json_name = self.get_status_id(job_id)
 
         self.delete(storage_path=status_json_dir, job_id=status_json_name)
         self.delete_folder(status_json_dir)
         return True
-
-    def upload_result(
-        self,
-        result_dict: ResultDict,
-        display_name: DisplayNameStr,
-        job_id: str,
-        private_jwk: Optional[JWK] = None,
-    ) -> bool:
-        """
-        This function allows us to upload the result file .
-
-        Args:
-            result_dict: The result dictionary
-            display_name: The name of the backend to which we want to upload the job
-            job_id: The job_id of the job that we want to upload the status for
-            private_jwk: The private key of the backend
-
-        Returns:
-            The success of the upload process
-        """
-        extracted_username = job_id.split("-")[2]
-        result_json_dir = f"/{self.results_path}/{display_name}/{extracted_username}/"
-        result_json_name = "result-" + job_id
-
-        return self._common_upload_result(
-            result_dict,
-            display_name,
-            job_id,
-            result_json_dir,
-            result_json_name=result_json_name,
-            private_jwk=private_jwk,
-        )
-
-    def get_result(
-        self, display_name: DisplayNameStr, username: str, job_id: str
-    ) -> ResultDict:
-        """
-        This function gets the result file from the backend and returns the result dict.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
-
-        Returns:
-            The result dict of the job. If the information is not available, the result dict
-            has a status of "ERROR".
-        """
-        result_json_dir = f"/{self.results_path}/{display_name}/{username}/"
-        result_json_name = "result-" + job_id
-        try:
-            result_dict = self.get(
-                storage_path=result_json_dir, job_id=result_json_name
-            )
-        except FileNotFoundError:
-            return ResultDict(
-                display_name=display_name,
-                backend_version="",
-                job_id=job_id,
-                qobj_id=None,
-                success=False,
-                status="ERROR",
-                header={},
-                results=[],
-            )
-        backend_config_info = self.get_backend_dict(display_name)
-        return self._adapt_result_dict(result_dict, backend_config_info)
-
-    def verify_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
-        """
-        This function verifies the result and returns the success. If the backend does not sign the
-        result, we will reutrn `False` by default, given that we were not able to establish ownership.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            job_id: The job_id of the job that we want to upload the status for
-
-        Returns:
-            If it was possible to verify the result dict positively.
-        """
-        username = job_id.split("-")[2]
-        result_json_dir = "Backend_files/Result/" + display_name + "/" + username
-        result_json_name = "result-" + job_id
-
-        result_dict = self.get(storage_path=result_json_dir, job_id=result_json_name)
-        public_jwk = self.get_public_key(display_name)
-
-        result_jws = JWSDict(**result_dict)
-        return result_jws.verify_signature(public_jwk)
 
     def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
         """
@@ -788,7 +727,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        result_device_dir = f"/{self.results_path}/{display_name}"
+        result_device_dir = self.get_device_results_path(display_name, job_id)
         self.delete_folder(result_device_dir)
         return True
 
