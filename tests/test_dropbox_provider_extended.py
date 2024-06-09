@@ -152,6 +152,12 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         """
         self.backend_status_tests(DB_NAME, sign=sign_it, caplog=caplog)
 
+    def test_file_queue(self) -> None:
+        """
+        Test that we can queue a file.
+        """
+        self.file_queue_test(DB_NAME)
+
     def test_sign_and_verify_result(self) -> None:
         """
         Test that it is possible a result a verify it properly.

@@ -6,6 +6,7 @@ The module that contains all the necessary logic for communication with the Drop
 import datetime
 import json
 import logging
+import os
 import sys
 import uuid
 from datetime import timezone
@@ -528,7 +529,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         storage_path = "/" + storage_path.strip("/") + "/"
 
         # Create an instance of a Dropbox class, which can make requests to the API.
-        file_list = []
+        names: list[str] = []
         with dropbox.Dropbox(
             app_key=self.app_key,
             app_secret=self.app_secret,
@@ -546,11 +547,16 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                 response = dbx.files_list_folder(path=storage_path)
                 file_list = response.entries
                 file_list = [item.name for item in file_list]
+                json_files = [item for item in file_list if item.endswith(".json")]
+
+                # Get the backend names
+                names = [file_name.split(".")[0] for file_name in json_files]
+
             except ApiError:
                 print(f"Could not obtain job queue for {storage_path}")
             except Exception as err:
                 print(err)
-        return file_list
+        return names
 
     @validate_active
     def get_backends(self) -> list[str]:
@@ -816,10 +822,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         # if there is a job, we should move it
         if job_list:
             job_json_name = job_list[0]
-            job_dict["job_id"] = job_json_name[4:-5]
+            job_dict["job_id"] = job_json_name[4:]
 
-            # split the .json from the job_json_name
-            job_json_name = job_json_name.split(".")[0]
             # and move the file into the right directory
             self.move(job_json_dir, self.running_path, job_json_name)
             job_dict["job_json_path"] = self.running_path
