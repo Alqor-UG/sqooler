@@ -16,7 +16,7 @@ pydantic = "^2.3.0"
 dropbox = "^11.36.2"
 setuptools = "^69.0.3"
 pymongo = "^4.3.3"
-regex = "^2023.6.3"
+regex = ">=2023.6.3,<2025.0.0"
 cryptography = "^42.0.5"
 click = "^8.1.7"
 
