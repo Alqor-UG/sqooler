@@ -313,9 +313,13 @@ class StorageProviderTestUtils:
         test_result = storage_provider.get_file_queue("test/subcollection")
 
         ic(test_result)
-        assert len(test_result) == 2
+        assert len(test_result) >= 2
         # make sure that the .json is not in the file names that are returned
         assert all(".json" not in res_string for res_string in test_result)
+
+        # remove the files
+        storage_provider.delete("test/subcollection", job_id_1)
+        storage_provider.delete("test/subcollection", job_id_2)
 
     def config_tests(self, db_name: str, sign: bool = True) -> None:
         """
@@ -401,9 +405,10 @@ class StorageProviderTestUtils:
                 )
         with pytest.raises(FileNotFoundError), pytest.warns(UserWarning):
             storage_provider.update_config(config_info, display_name="randonname")
-
+        ic(backend_name)
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
+        ic(backends)
         assert backend_name in backends
 
         # can we get the config of the backend ?

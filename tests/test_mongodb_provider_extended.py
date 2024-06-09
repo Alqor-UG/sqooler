@@ -183,3 +183,9 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         database = storage_provider.client["results"]
         collection = database[backend_name]
         collection.drop()
+
+    def test_file_queue(self) -> None:
+        """
+        Test that we can queue a file.
+        """
+        self.file_queue_test(DB_NAME)
