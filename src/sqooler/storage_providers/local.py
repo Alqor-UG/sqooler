@@ -187,6 +187,58 @@ class LocalProviderExtended(StorageProvider, LocalCore):
     results_path: PathStr = "results"
     pks_path: PathStr = "backends/public_keys"
 
+    def get_device_status_path(
+        self, display_name: DisplayNameStr, username: Optional[str] = None
+    ) -> str:
+        """
+        Get the path to the status of the device.
+
+        Args:
+            display_name: The name of the backend
+            username: The username of the user
+
+        Returns:
+            The path to the status of the device.
+        """
+        return f"{self.status_path}/{display_name}"
+
+    def get_status_id(self, job_id: str) -> str:
+        """
+        Get the name of the status json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the status json file.
+        """
+        return job_id
+
+    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            job_id: The job_id of the job
+
+        Returns:
+            The path to the results of the device.
+        """
+        return f"{self.results_path}/{display_name}"
+
+    def get_result_id(self, job_id: str) -> str:
+        """
+        Get the name of the result json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the result json file.
+        """
+        return job_id
+
     def get_internal_job_id(self, job_id: str) -> str:
         """
         Get the internal job id from the job_id.
@@ -239,58 +291,6 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         job_id = (uuid.uuid4().hex)[:24]
 
         self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
-        return job_id
-
-    def get_device_status_path(
-        self, display_name: DisplayNameStr, username: Optional[str] = None
-    ) -> str:
-        """
-        Get the path to the status of the device.
-
-        Args:
-            display_name: The name of the backend
-            username: The username of the user
-
-        Returns:
-            The path to the status of the device.
-        """
-        return f"{self.status_path}/{display_name}"
-
-    def get_status_id(self, job_id: str) -> str:
-        """
-        Get the name of the status json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the status json file.
-        """
-        return job_id
-
-    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
-        """
-        Get the path to the results of the device.
-
-        Args:
-            display_name: The name of the backend
-            job_id: The job_id of the job
-
-        Returns:
-            The path to the results of the device.
-        """
-        return f"{self.results_path}/{display_name}"
-
-    def get_result_id(self, job_id: str) -> str:
-        """
-        Get the name of the result json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the result json file.
-        """
         return job_id
 
     def _delete_status(
