@@ -6,7 +6,6 @@ The module that contains all the necessary logic for communication with the Drop
 import datetime
 import json
 import logging
-import os
 import sys
 import uuid
 from datetime import timezone
