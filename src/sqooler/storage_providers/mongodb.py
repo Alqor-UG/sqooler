@@ -25,7 +25,7 @@ from ..schemes import (
     ResultDict,
     StatusMsgDict,
 )
-from ..security import JWK, JWSDict
+from ..security import JWK
 from .base import StorageCore, StorageProvider, validate_active
 
 

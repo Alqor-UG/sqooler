@@ -482,7 +482,10 @@ class StorageProvider(StorageCore):
         """
 
     def get_result(
-        self, display_name: DisplayNameStr, username: str, job_id: str
+        self,
+        display_name: DisplayNameStr,
+        username: str,  # pylint: disable=unused-argument
+        job_id: str,
     ) -> ResultDict:
         """
         This function gets the result file from the backend and returns the result dict.
