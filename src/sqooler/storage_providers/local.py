@@ -203,22 +203,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         Get a list of all the backends that the provider offers.
         """
-        # path of the configs
-        config_path = self.base_path + "/" + self.configs_path
-        backend_names: list[DisplayNameStr] = []
-
-        # If the folder does not exist, return an empty list
-        if not os.path.exists(config_path):
-            return backend_names
-
-        # Get a list of all items in the folder
-        all_items = os.listdir(config_path)
-        # Filter out only the JSON files
-        json_files = [item for item in all_items if item.endswith(".json")]
-
-        # Get the backend names
-        backend_names = [os.path.splitext(file_name)[0] for file_name in json_files]
-        return backend_names
+        return self.get_file_queue(self.configs_path)
 
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str
@@ -677,7 +662,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
-        Get a list of files
+        Get a list of files. Only json files are considered. And the ending of
+        the file is removed.
 
         Args:
             storage_path: Where are we looking for the files.
@@ -690,7 +676,15 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         # test if the path exists. Otherwise simply return an empty list
         if not os.path.exists(full_path):
             return []
-        return os.listdir(full_path)
+
+        all_items = os.listdir(full_path)
+        # Filter out only the JSON files
+        json_files = [item for item in all_items if item.endswith(".json")]
+
+        # Get the backend names
+        names = [os.path.splitext(file_name)[0] for file_name in json_files]
+
+        return names
 
     def get_next_job_in_queue(
         self, display_name: str, private_jwk: Optional[JWK] = None
@@ -715,8 +709,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
         # if there is a job, we should move it
         if job_list:
-            job_json_name = job_list[0]
-            job_id = job_json_name[:-5]
+            job_id = job_list[0]
             job_dict["job_id"] = job_id
 
             # and move the file into the right directory
