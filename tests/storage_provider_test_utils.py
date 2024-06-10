@@ -180,6 +180,10 @@ class StorageCoreTestUtils:
 
         assert test_content == test_result
 
+        # make sure that we get a warning if we are trying to upload a file that already exists
+        with pytest.raises(FileExistsError):
+            storage_provider.upload(test_content, second_path, job_id)
+
         # test that we can update the file properly
         new_content = {"experiment_0": "What happened here."}
         storage_provider.update(new_content, second_path, job_id)
