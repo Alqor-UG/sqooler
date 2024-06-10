@@ -89,10 +89,17 @@ class DropboxCore(StorageCore):
             job_id: the name of the file without the .json extension
         """
 
-        # create the appropriate string for the dropbox API
-        dump_str = json.dumps(content_dict, default=datetime_handler)
-
-        self.upload_string(dump_str, storage_path, job_id)
+        # let us first see if the file already exists by using the get function
+        # it would be much nicer to use an exists function, but we do not have that
+        try:
+            self.get(storage_path, job_id)
+            raise FileExistsError(
+                f"The file {job_id} in {storage_path} already exists and should not be overwritten."
+            )
+        except FileNotFoundError:
+            # create the appropriate string for the dropbox API
+            dump_str = json.dumps(content_dict, default=datetime_handler)
+            self.upload_string(dump_str, storage_path, job_id)
 
     @validate_active
     def get(self, storage_path: str, job_id: str) -> dict:
@@ -141,7 +148,7 @@ class DropboxCore(StorageCore):
             None
         """
         # create the appropriate string for the dropbox API
-        dump_str = json.dumps(content_dict)
+        dump_str = json.dumps(content_dict, default=datetime_handler)
 
         # strip trailing and leading slashes from the storage_path
         storage_path = storage_path.strip("/")
@@ -332,8 +339,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         upload_dict = self._format_update_config(
             old_config_jws, config_dict, private_jwk
         )
-        # maybe this should rather become the update_file function
-        self.upload(upload_dict, config_path, "config")
+
+        self.update(upload_dict, config_path, "config")
 
     def upload_config(
         self,

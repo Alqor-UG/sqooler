@@ -5,8 +5,6 @@ The module that contains all the necessary logic for communication with the loca
 import json
 import logging
 import os
-
-# necessary for the local provider
 import shutil
 import uuid
 from typing import Mapping, Optional
@@ -69,6 +67,11 @@ class LocalCore(StorageCore):
         file_name = job_id + ".json"
         full_json_path = os.path.join(folder_path, file_name)
         secure_path = os.path.normpath(full_json_path)
+        # test if the file already exists and raise a warning if it does
+        if os.path.exists(secure_path):
+            raise FileExistsError(
+                f"The file {secure_path} already exists and should not be overwritten."
+            )
 
         with open(secure_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file, default=datetime_handler)
@@ -125,7 +128,7 @@ class LocalCore(StorageCore):
                 f"The file {secure_path} does not exist and cannot be updated."
             )
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json.dump(content_dict, json_file)
+            json.dump(content_dict, json_file, default=datetime_handler)
 
     @validate_active
     def move(self, start_path: str, final_path: str, job_id: str) -> None:
@@ -364,7 +367,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             old_config_jws, config_dict, private_jwk
         )
         # maybe this should rather become the update method
-        self.upload(
+        self.update(
             content_dict=upload_dict,
             storage_path=self.configs_path,
             job_id=display_name,

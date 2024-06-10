@@ -12,6 +12,7 @@ from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from pymongo.collection import Collection
 from pymongo.database import Database
+from pymongo.errors import DuplicateKeyError
 
 # necessary for the mongodb provider
 from pymongo.mongo_client import MongoClient
@@ -76,8 +77,13 @@ class MongodbCore(StorageCore):
         _, collection = self._get_database_and_collection(storage_path)
 
         content_dict["_id"] = ObjectId(job_id)
-        collection.insert_one(content_dict)
 
+        try:
+            collection.insert_one(content_dict)
+        except DuplicateKeyError as err:
+            raise FileExistsError(
+                f"The file with the id {job_id} already exists in the collection {storage_path}."
+            ) from err
         # remove the id from the content dict for further use
         content_dict.pop("_id", None)
 
