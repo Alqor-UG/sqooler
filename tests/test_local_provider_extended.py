@@ -134,6 +134,12 @@ class TestLocalProviderExtended(StorageProviderTestUtils):
         """
         self.missing_status_tests(DB_NAME, sign=sign_it, caplog=caplog)
 
+    def test_file_queue(self) -> None:
+        """
+        Test that we can queue a file.
+        """
+        self.file_queue_test(DB_NAME)
+
     def test_upload_public_key(self) -> None:
         """
         Test that it is possible to upload the public key.

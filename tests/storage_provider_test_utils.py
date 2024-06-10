@@ -285,6 +285,42 @@ class StorageProviderTestUtils:
                 self.get_login(), "Whatever%/iswrong"
             )
 
+    def file_queue_test(self, db_name: str) -> None:
+        """
+        Test the file queue and that it gives back reproducable results.
+        """
+
+        # first upload two files to the same folder
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        test_content = {"experiment_1": "Nothing happened here."}
+        storage_path = "test/subcollection"
+
+        job_id_1 = uuid.uuid4().hex[:24]
+        storage_provider.upload(test_content, storage_path, job_id_1)
+
+        test_content = {"experiment_2": "Nothing happened here."}
+        storage_path = "test/subcollection"
+
+        job_id_2 = uuid.uuid4().hex[:24]
+        storage_provider.upload(test_content, storage_path, job_id_2)
+
+        # now make sure that we can get the files back
+        test_result = storage_provider.get_file_queue("test/subcollection")
+
+        ic(test_result)
+        assert len(test_result) >= 2
+        # make sure that the .json is not in the file names that are returned
+        assert all(".json" not in res_string for res_string in test_result)
+
+        # remove the files
+        storage_provider.delete("test/subcollection", job_id_1)
+        storage_provider.delete("test/subcollection", job_id_2)
+
     def config_tests(self, db_name: str, sign: bool = True) -> None:
         """
         Test that we can create a config and update it.
@@ -367,11 +403,12 @@ class StorageProviderTestUtils:
                     display_name=backend_name,
                     private_jwk=wrong_private_jwk,
                 )
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(FileNotFoundError), pytest.warns(UserWarning):
             storage_provider.update_config(config_info, display_name="randonname")
-
+        ic(backend_name)
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
+        ic(backends)
         assert backend_name in backends
 
         # can we get the config of the backend ?
