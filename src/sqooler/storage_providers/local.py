@@ -202,18 +202,6 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         return f"{self.status_path}/{display_name}"
 
-    def get_status_id(self, job_id: str) -> str:
-        """
-        Get the name of the status json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the status json file.
-        """
-        return job_id
-
     def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
         """
         Get the path to the results of the device.
@@ -226,6 +214,33 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             The path to the results of the device.
         """
         return f"{self.results_path}/{display_name}"
+
+    def get_configs_path(
+        self,
+        display_name: DisplayNameStr,
+    ) -> str:
+        """
+        Get the path to the configs of the device.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The path to the configs of the device.
+        """
+        return self.configs_path
+
+    def get_status_id(self, job_id: str) -> str:
+        """
+        Get the name of the status json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the status json file.
+        """
+        return job_id
 
     def get_result_id(self, job_id: str) -> str:
         """
@@ -256,15 +271,9 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Get a list of all the backends that the provider offers.
         """
         # path of the configs
-        config_path = self.base_path + "/" + self.configs_path
         backend_names: list[DisplayNameStr] = []
+        all_items = self.get_file_queue(self.configs_path)
 
-        # If the folder does not exist, return an empty list
-        if not os.path.exists(config_path):
-            return backend_names
-
-        # Get a list of all items in the folder
-        all_items = os.listdir(config_path)
         # Filter out only the JSON files
         json_files = [item for item in all_items if item.endswith(".json")]
 
