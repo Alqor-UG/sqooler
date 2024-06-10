@@ -284,15 +284,15 @@ class StorageProvider(StorageCore):
         """
 
     @abstractmethod
-    def get_status_id(self, job_id: str) -> str:
+    def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
         """
-        Get the id of the status json file.
+        Get the path to the configs.
 
         Args:
-            job_id: The job_id of the job
+            display_name: The name of the backend
 
         Returns:
-            The name of the status json file.
+            The path to the configs.
         """
 
     @abstractmethod
@@ -309,6 +309,18 @@ class StorageProvider(StorageCore):
         """
 
     @abstractmethod
+    def get_config_id(self, display_name: DisplayNameStr) -> str:
+        """
+        Get the name of the config json file.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The name of the config json file.
+        """
+
+    @abstractmethod
     def get_result_id(self, job_id: str) -> str:
         """
         Get the name of the result json file.
@@ -318,6 +330,18 @@ class StorageProvider(StorageCore):
 
         Returns:
             The name of the result json file.
+        """
+
+    @abstractmethod
+    def get_status_id(self, job_id: str) -> str:
+        """
+        Get the id of the status json file.
+
+        Args:
+            job_id: The job_id of the job
+
+        Returns:
+            The name of the status json file.
         """
 
     def get_job(self, storage_path: str, job_id: str) -> dict:
@@ -540,27 +564,33 @@ class StorageProvider(StorageCore):
         result_jws = JWSDict(**result_dict)
         return result_jws.verify_signature(public_jwk)
 
-    @abstractmethod
     def upload_config(
         self,
         config_dict: BackendConfigSchemaIn,
         display_name: DisplayNameStr,
-        private_jwk: Optional[JWK],
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
         Args:
-            config_dict: The model containing the configuration
+            config_dict: The dictionary containing the configuration
             display_name : The name of the backend
-            private_jwk: The private JWK to sign the result with
-
-        Raises:
-            ValueError: If the configuration already exists
+            private_jwk: The private key of the backend
 
         Returns:
             None
         """
+        config_dict = self._verify_config(config_dict, display_name)
+        config_path = self.get_configs_path()
+        config_id = self.get_config_id(display_name)
+
+        upload_dict = self._format_config_dict(config_dict, private_jwk)
+        self.upload(
+            content_dict=upload_dict,
+            storage_path=config_path,
+            job_id=config_id,
+        )
 
     @abstractmethod
     def update_config(

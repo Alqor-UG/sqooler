@@ -310,6 +310,30 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
         return job_id
 
+    def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
+        """
+        Get the path to the configs.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The path to the configs.
+        """
+        return f"{self.configs_path}/{display_name}"
+
+    def get_config_id(self, display_name: DisplayNameStr) -> str:
+        """
+        Get the name of the config json file.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The name of the config json file.
+        """
+        return "config"
+
     def update_config(
         self,
         config_dict: BackendConfigSchemaIn,
@@ -333,7 +357,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
 
         config_dict = self._verify_config(config_dict, display_name)
         # check that the file exists
-        config_path = f"{self.configs_path}/{display_name}"
+        config_path = self.get_configs_path(display_name)
         old_config_jws = self.get(config_path, "config")
 
         upload_dict = self._format_update_config(
@@ -341,42 +365,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         )
 
         self.update(upload_dict, config_path, "config")
-
-    def upload_config(
-        self,
-        config_dict: BackendConfigSchemaIn,
-        display_name: DisplayNameStr,
-        private_jwk: Optional[JWK] = None,
-    ) -> None:
-        """
-        The function that uploads the spooler configuration to the storage.
-
-        All the configurations are stored in the Backend_files/Config folder.
-        For each backend there is a separate folder in which the configuration is stored as a json file.
-
-        Args:
-            config_dict: The dictionary containing the configuration
-            display_name : The name of the backend
-            private_jwk: The private JWK to sign the configuration with
-
-        Returns:
-            None
-        """
-        # make sure that the display_name is as it should be
-        config_dict = self._verify_config(config_dict, display_name)
-
-        config_path = f"{self.configs_path}/{display_name}"
-        # check if the file already exists
-        try:
-            self.get(storage_path=config_path, job_id="config")
-            raise FileExistsError(
-                f"The configuration for {display_name} already exists and should not be overwritten."
-            )
-        except FileNotFoundError:
-            pass
-
-        upload_dict = self._format_config_dict(config_dict, private_jwk)
-        self.upload(upload_dict, config_path, "config")
 
     def _delete_config(self, display_name: DisplayNameStr) -> bool:
         """
