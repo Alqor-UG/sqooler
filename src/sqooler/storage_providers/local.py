@@ -215,21 +215,6 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         return f"{self.results_path}/{display_name}"
 
-    def get_configs_path(
-        self,
-        display_name: DisplayNameStr,
-    ) -> str:
-        """
-        Get the path to the configs of the device.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The path to the configs of the device.
-        """
-        return self.configs_path
-
     def get_status_id(self, job_id: str) -> str:
         """
         Get the name of the status json file.
