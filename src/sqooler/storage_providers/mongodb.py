@@ -247,6 +247,18 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
     results_path: PathStr = "results"
     pks_path: PathStr = "backends/public_keys"
 
+    def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
+        """
+        Get the path to the configs.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The path to the configs.
+        """
+        return self.configs_path
+
     def get_internal_job_id(self, job_id: str) -> str:
         """
         Get the internal job id from the job_id.
@@ -258,6 +270,18 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             The internal job id
         """
         return job_id
+
+    def get_config_id(self, display_name: DisplayNameStr) -> str:
+        """
+        Get the name of the config json file.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The name of the config json file.
+        """
+        raise NotImplementedError("This function is not implemented.")
 
     @validate_active
     def get_backends(self) -> list[DisplayNameStr]:

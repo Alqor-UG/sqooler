@@ -390,7 +390,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         upload_dict = self._format_update_config(
             old_config_jws, config_dict, private_jwk
         )
-        # maybe this should rather become the update method
+
         self.update(
             content_dict=upload_dict,
             storage_path=self.configs_path,
