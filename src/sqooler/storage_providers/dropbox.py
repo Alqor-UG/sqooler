@@ -320,6 +320,9 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             The path to the configs.
         """
+        # here we really need to have the display_name
+        if display_name is None:
+            raise ValueError("The display_name must be set.")
         return f"{self.configs_path}/{display_name}"
 
     def get_config_id(self, display_name: DisplayNameStr) -> str:

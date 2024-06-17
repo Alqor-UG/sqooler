@@ -582,9 +582,8 @@ class StorageProvider(StorageCore):
             None
         """
         config_dict = self._verify_config(config_dict, display_name)
-        config_path = self.get_configs_path()
+        config_path = self.get_configs_path(display_name=display_name)
         config_id = self.get_config_id(display_name)
-
         upload_dict = self._format_config_dict(config_dict, private_jwk)
         self.upload(
             content_dict=upload_dict,
