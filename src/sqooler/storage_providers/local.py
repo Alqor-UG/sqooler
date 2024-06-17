@@ -218,6 +218,18 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         return f"{self.results_path}/{display_name}"
 
+    def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
+        """
+        Get the path to the configs.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The path to the configs.
+        """
+        return self.configs_path
+
     def get_status_id(self, job_id: str) -> str:
         """
         Get the name of the status json file.
@@ -241,6 +253,18 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             The name of the result json file.
         """
         return job_id
+
+    def get_config_id(self, display_name: DisplayNameStr) -> str:
+        """
+        Get the name of the config json file.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The name of the config json file.
+        """
+        return display_name
 
     def get_internal_job_id(self, job_id: str) -> str:
         """
@@ -366,51 +390,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         upload_dict = self._format_update_config(
             old_config_jws, config_dict, private_jwk
         )
-        # maybe this should rather become the update method
+
         self.update(
-            content_dict=upload_dict,
-            storage_path=self.configs_path,
-            job_id=display_name,
-        )
-
-    def upload_config(
-        self,
-        config_dict: BackendConfigSchemaIn,
-        display_name: DisplayNameStr,
-        private_jwk: Optional[JWK] = None,
-    ) -> None:
-        """
-        The function that uploads the spooler configuration to the storage.
-
-        Args:
-            config_dict: The dictionary containing the configuration
-            display_name : The name of the backend
-            private_jwk: The private key of the backend
-
-        Returns:
-            None
-        """
-        config_dict = self._verify_config(config_dict, display_name)
-
-        # path of the configs
-        config_path = os.path.join(self.base_path, self.configs_path)
-        config_path = os.path.normpath(config_path)
-        # test if the config path already exists. If it does not, create it
-        if not os.path.exists(config_path):
-            os.makedirs(config_path)
-
-        file_name = display_name + ".json"
-        full_json_path = os.path.join(config_path, file_name)
-        secure_path = os.path.normpath(full_json_path)
-
-        # check if the file already exists
-        if os.path.exists(secure_path):
-            raise FileExistsError(
-                f"The file {secure_path} already exists and should not be overwritten."
-            )
-
-        upload_dict = self._format_config_dict(config_dict, private_jwk)
-        self.upload(
             content_dict=upload_dict,
             storage_path=self.configs_path,
             job_id=display_name,

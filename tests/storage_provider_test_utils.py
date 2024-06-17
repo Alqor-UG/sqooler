@@ -355,6 +355,7 @@ class StorageProviderTestUtils:
         with pytest.warns(UserWarning):
             poor_backend_name, poor_config_info = get_dummy_config(sign)
             ic(poor_config_info.display_name)
+            ic(poor_backend_name)
             poor_config_info.display_name = "dummynone"
             storage_provider.upload_config(
                 poor_config_info,
