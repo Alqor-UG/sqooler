@@ -230,6 +230,18 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         return self.configs_path
 
+    def get_queue_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
+        """
+        Get the path to the queue.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The path to the queue.
+        """
+        return f"{self.queue_path}/{display_name}"
+
     def get_status_id(self, job_id: str) -> str:
         """
         Get the name of the status json file.
@@ -284,26 +296,14 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         return self.get_file_queue(self.configs_path)
 
-    def upload_job(
-        self, job_dict: dict, display_name: DisplayNameStr, username: str
-    ) -> str:
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
         """
-        Upload the job to the storage provider.
-
-        Args:
-            job_dict: the full job dict
-            display_name: the name of the backend
-            username: the name of the user that submitted the job
+        Create a job id for the job.
 
         Returns:
-            The job id of the uploaded job.
+            The job id
         """
-
-        storage_path = f"{self.queue_path}/{display_name}"
-        job_id = (uuid.uuid4().hex)[:24]
-
-        self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
-        return job_id
+        return (uuid.uuid4().hex)[:24]
 
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str

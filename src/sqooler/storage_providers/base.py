@@ -241,20 +241,55 @@ class StorageProvider(StorageCore):
         return qiskit_backend_dict
 
     @abstractmethod
+    def get_queue_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
+        """
+        Get the path to the queue.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The path to the queue.
+        """
+
+    @abstractmethod
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
+        """
+        Create a job id for the job.
+
+        Args:
+            display_name: The name of the backend
+            username: The username of the user that is uploading the job
+
+        Returns:
+            The job id
+        """
+
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str
     ) -> str:
         """
-        Upload the job to the storage provider.
+        This function uploads a job to the backend and creates the job_id.
 
         Args:
-            job_dict: the full job dict
-            display_name: the name of the backend
-            username: the name of the user that submitted the job
+            job_dict: The job dictionary that should be uploaded
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
 
         Returns:
-            The job id of the uploaded job.
+            The job_id of the uploaded job
         """
+        job_id = self.create_job_id(display_name, username)
+
+        # now we upload the job to the backend
+
+        job_json_dir = self.get_queue_path(display_name)
+        job_json_name = self.get_internal_job_id(job_id)
+
+        self.upload(
+            content_dict=job_dict, storage_path=job_json_dir, job_id=job_json_name
+        )
+        return job_id
 
     @abstractmethod
     def get_internal_job_id(self, job_id: str) -> str:

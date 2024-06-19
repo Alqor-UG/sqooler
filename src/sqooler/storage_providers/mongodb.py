@@ -259,6 +259,18 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
         return self.configs_path
 
+    def get_queue_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
+        """
+        Get the path to the queue.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The path to the queue.
+        """
+        return f"{self.queue_path}/{display_name}"
+
     def get_internal_job_id(self, job_id: str) -> str:
         """
         Get the internal job id from the job_id.
@@ -473,26 +485,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         return True
 
-    def upload_job(
-        self, job_dict: dict, display_name: DisplayNameStr, username: str
-    ) -> str:
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
         """
-        Upload the job to the storage provider.
-
-        Args:
-            job_dict: the full job dict
-            display_name: the name of the backend
-            username: the name of the user that submitted the job
+        Create a job id for the job.
 
         Returns:
-            The job id of the uploaded job.
+            The job id
         """
-
-        storage_path = f"{self.queue_path}/{display_name}"
-        job_id = (uuid.uuid4().hex)[:24]
-
-        self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
-        return job_id
+        return (uuid.uuid4().hex)[:24]
 
     def get_device_status_path(
         self, display_name: DisplayNameStr, username: Optional[str] = None
@@ -787,7 +787,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             the job dict
         """
 
-        queue_dir = f"{self.queue_path}/{display_name}"
+        queue_dir = self.get_queue_path(display_name)
 
         job_dict = self._get_default_next_schema_dict()
         job_list = self.get_file_queue(queue_dir)

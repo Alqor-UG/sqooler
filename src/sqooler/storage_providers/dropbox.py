@@ -308,7 +308,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             The internal job id
         """
-        return job_id
+        return f"job-{job_id}"
 
     def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
         """
@@ -324,6 +324,18 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         if display_name is None:
             raise ValueError("The display_name must be set.")
         return f"{self.configs_path}/{display_name}"
+
+    def get_queue_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
+        """
+        Get the path to the queue.
+
+        Args:
+            display_name: The name of the backend
+
+        Returns:
+            The path to the queue.
+        """
+        return f"/{self.queue_path}/{display_name}/"
 
     def get_config_id(self, display_name: DisplayNameStr) -> str:
         """
@@ -602,19 +614,16 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
 
-    def upload_job(
-        self, job_dict: dict, display_name: DisplayNameStr, username: str
-    ) -> str:
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
         """
-        This function uploads a job to the backend and creates the job_id.
+        Create a job id for the job.
 
         Args:
-            job_dict: The job dictionary that should be uploaded
-            display_name: The name of the backend to which we want to upload the job
+            display_name: The name of the backend
             username: The username of the user that is uploading the job
 
         Returns:
-            The job_id of the uploaded job
+            The job id
         """
         job_id = (
             (datetime.datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
@@ -624,14 +633,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             + username
             + "-"
             + (uuid.uuid4().hex)[:5]
-        )
-        # now we upload the job to the backend
-        # this is currently very much backend specific
-        job_json_dir = f"/{self.queue_path}/{display_name}/"
-        job_json_name = "job-" + job_id
-
-        self.upload(
-            content_dict=job_dict, storage_path=job_json_dir, job_id=job_json_name
         )
         return job_id
 
