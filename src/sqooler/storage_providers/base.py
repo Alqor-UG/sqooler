@@ -782,11 +782,15 @@ class StorageProvider(StorageCore):
 
         # time stamp when we last looked for a job
         self.timestamp_queue(display_name, private_jwk)
-
         # if there is a job, we should move it
         if job_list:
             job_json_name = job_list[0]
-            job_dict["job_id"] = job_json_name[4:]
+
+            # we have to do this hack as things are slightly different for the Dropbox
+            if not job_json_name.startswith("job-"):
+                job_dict["job_id"] = job_json_name
+            else:
+                job_dict["job_id"] = job_json_name[4:]
 
             # and move the file into the right directory
             self.move(job_json_dir, self.get_attribute_path("running"), job_json_name)
