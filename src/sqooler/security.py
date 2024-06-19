@@ -3,18 +3,17 @@ In this module we define important classes for signing, encryption etc.
 Please be aware that this module has not yet undergone a security audit and is still in an early version.
 Any suggestions for improvements will be very welcome."""
 
-import json
 import base64
-from typing import Literal, Optional, Any
-
 import datetime
+import json
+from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
 )
+from pydantic import BaseModel, Field
 
 
 class JWSHeader(BaseModel):
