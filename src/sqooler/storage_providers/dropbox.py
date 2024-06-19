@@ -19,7 +19,6 @@ from ..schemes import (
     BackendConfigSchemaIn,
     DisplayNameStr,
     DropboxLoginInformation,
-    NextJobSchema,
     PathStr,
     ResultDict,
     StatusMsgDict,
@@ -308,7 +307,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             The internal job id
         """
-        return job_id
+        return f"job-{job_id}"
 
     def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
         """
@@ -324,6 +323,33 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         if display_name is None:
             raise ValueError("The display_name must be set.")
         return f"{self.configs_path}/{display_name}"
+
+    def get_attribute_path(
+        self,
+        attribute_name: str,
+        display_name: Optional[DisplayNameStr] = None,
+        job_id: Optional[str] = None,
+    ) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
+
+        Returns:
+            The path to the results of the device.
+        """
+
+        match attribute_name:
+            case "running":
+                path = self.running_path
+            case "queue":
+                path = f"/{self.queue_path}/{display_name}/"
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return path
 
     def get_config_id(self, display_name: DisplayNameStr) -> str:
         """
@@ -602,19 +628,16 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         typed_config = self._adapt_get_config(backend_config_dict)
         return typed_config
 
-    def upload_job(
-        self, job_dict: dict, display_name: DisplayNameStr, username: str
-    ) -> str:
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
         """
-        This function uploads a job to the backend and creates the job_id.
+        Create a job id for the job.
 
         Args:
-            job_dict: The job dictionary that should be uploaded
-            display_name: The name of the backend to which we want to upload the job
+            display_name: The name of the backend
             username: The username of the user that is uploading the job
 
         Returns:
-            The job_id of the uploaded job
+            The job id
         """
         job_id = (
             (datetime.datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
@@ -624,14 +647,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             + username
             + "-"
             + (uuid.uuid4().hex)[:5]
-        )
-        # now we upload the job to the backend
-        # this is currently very much backend specific
-        job_json_dir = f"/{self.queue_path}/{display_name}/"
-        job_json_name = "job-" + job_id
-
-        self.upload(
-            content_dict=job_dict, storage_path=job_json_dir, job_id=job_json_name
         )
         return job_id
 
@@ -733,37 +748,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         result_device_dir = self.get_device_results_path(display_name, job_id)
         self.delete_folder(result_device_dir)
         return True
-
-    def get_next_job_in_queue(
-        self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
-    ) -> NextJobSchema:
-        """
-        A function that obtains the next job in the queue.
-
-        Args:
-            display_name: The name of the backend
-            private_jwk: The private JWK to sign the job with
-
-
-        Returns:
-            the path towards the job
-        """
-        job_json_dir = f"/{self.queue_path}/{display_name}/"
-        job_dict = self._get_default_next_schema_dict()
-        job_list = self.get_file_queue(job_json_dir)
-
-        # time stamp when we last looked for a job
-        self.timestamp_queue(display_name, private_jwk)
-
-        # if there is a job, we should move it
-        if job_list:
-            job_json_name = job_list[0]
-            job_dict["job_id"] = job_json_name[4:]
-
-            # and move the file into the right directory
-            self.move(job_json_dir, self.running_path, job_json_name)
-            job_dict["job_json_path"] = self.running_path
-        return NextJobSchema(**job_dict)
 
 
 class DropboxProvider(DropboxProviderExtended):

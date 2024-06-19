@@ -21,7 +21,6 @@ from ..schemes import (
     BackendConfigSchemaIn,
     DisplayNameStr,
     MongodbLoginInformation,
-    NextJobSchema,
     PathStr,
     ResultDict,
     StatusMsgDict,
@@ -259,6 +258,33 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
         return self.configs_path
 
+    def get_attribute_path(
+        self,
+        attribute_name: str,
+        display_name: Optional[DisplayNameStr] = None,
+        job_id: Optional[str] = None,
+    ) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
+
+        Returns:
+            The path to the results of the device.
+        """
+
+        match attribute_name:
+            case "running":
+                path = self.running_path
+            case "queue":
+                path = f"{self.queue_path}/{display_name}"
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return path
+
     def get_internal_job_id(self, job_id: str) -> str:
         """
         Get the internal job id from the job_id.
@@ -473,26 +499,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         return True
 
-    def upload_job(
-        self, job_dict: dict, display_name: DisplayNameStr, username: str
-    ) -> str:
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
         """
-        Upload the job to the storage provider.
-
-        Args:
-            job_dict: the full job dict
-            display_name: the name of the backend
-            username: the name of the user that submitted the job
+        Create a job id for the job.
 
         Returns:
-            The job id of the uploaded job.
+            The job id
         """
-
-        storage_path = f"{self.queue_path}/{display_name}"
-        job_id = (uuid.uuid4().hex)[:24]
-
-        self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
-        return job_id
+        return (uuid.uuid4().hex)[:24]
 
     def get_device_status_path(
         self, display_name: DisplayNameStr, username: Optional[str] = None
@@ -770,40 +784,6 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         for result in results:
             file_list.append(str(result["_id"]))
         return file_list
-
-    def get_next_job_in_queue(
-        self, display_name: str, private_jwk: Optional[JWK] = None
-    ) -> NextJobSchema:
-        """
-        A function that obtains the next job in the queue. If there is no job, it returns an empty
-        dict. If there is a job, it moves the job from the queue to the running folder.
-        It also update the time stamp for when the system last looked into the file queue.
-
-        Args:
-            display_name: The name of the backend
-            private_jwk: The private JWK to sign the result with
-
-        Returns:
-            the job dict
-        """
-
-        queue_dir = f"{self.queue_path}/{display_name}"
-
-        job_dict = self._get_default_next_schema_dict()
-        job_list = self.get_file_queue(queue_dir)
-
-        # update the time stamp of the last job
-        self.timestamp_queue(display_name, private_jwk)
-
-        # if there is a job, we should move it
-        if job_list:
-            job_id = job_list[0]
-            job_dict["job_id"] = job_id
-
-            # and move the file into the right directory
-            self.move(queue_dir, self.running_path, job_id)
-            job_dict["job_json_path"] = self.running_path
-        return NextJobSchema(**job_dict)
 
 
 class MongodbProvider(MongodbProviderExtended):

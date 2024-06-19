@@ -241,20 +241,45 @@ class StorageProvider(StorageCore):
         return qiskit_backend_dict
 
     @abstractmethod
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
+        """
+        Create a job id for the job.
+
+        Args:
+            display_name: The name of the backend
+            username: The username of the user that is uploading the job
+
+        Returns:
+            The job id
+        """
+
     def upload_job(
         self, job_dict: dict, display_name: DisplayNameStr, username: str
     ) -> str:
         """
-        Upload the job to the storage provider.
+        This function uploads a job to the backend and creates the job_id.
 
         Args:
-            job_dict: the full job dict
-            display_name: the name of the backend
-            username: the name of the user that submitted the job
+            job_dict: The job dictionary that should be uploaded
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
 
         Returns:
-            The job id of the uploaded job.
+            The job_id of the uploaded job
         """
+        job_id = self.create_job_id(display_name, username)
+
+        # now we upload the job to the backend
+
+        job_json_dir = self.get_attribute_path(
+            attribute_name="queue", display_name=display_name
+        )
+        job_json_name = self.get_internal_job_id(job_id)
+
+        self.upload(
+            content_dict=job_dict, storage_path=job_json_dir, job_id=job_json_name
+        )
+        return job_id
 
     @abstractmethod
     def get_internal_job_id(self, job_id: str) -> str:
@@ -302,6 +327,25 @@ class StorageProvider(StorageCore):
 
         Args:
             display_name: The name of the backend
+            job_id: The job_id of the job
+
+        Returns:
+            The path to the results of the device.
+        """
+
+    @abstractmethod
+    def get_attribute_path(
+        self,
+        attribute_name: str,
+        display_name: Optional[DisplayNameStr] = None,
+        job_id: Optional[str] = None,
+    ) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            attribute_name: The name of the attribute
             job_id: The job_id of the job
 
         Returns:
@@ -715,22 +759,43 @@ class StorageProvider(StorageCore):
             A list of files that was found.
         """
 
-    @abstractmethod
     def get_next_job_in_queue(
         self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
     ) -> NextJobSchema:
         """
-        A function that obtains the next job in the queue. If there is no job, it returns an empty
-        dict. If there is a job, it moves the job from the queue to the running folder.
-        It also update the time stamp for when the system last looked into the file queue.
+        A function that obtains the next job in the queue.
 
         Args:
             display_name: The name of the backend
-            private_jwk: The private JWK to sign the result with
+            private_jwk: The private JWK to sign the job with
+
 
         Returns:
-            the job dict
+            the path towards the job
         """
+
+        job_json_dir = self.get_attribute_path(
+            attribute_name="queue", display_name=display_name
+        )
+        job_dict = self._get_default_next_schema_dict()
+        job_list = self.get_file_queue(job_json_dir)
+
+        # time stamp when we last looked for a job
+        self.timestamp_queue(display_name, private_jwk)
+        # if there is a job, we should move it
+        if job_list:
+            job_json_name = job_list[0]
+
+            # we have to do this hack as things are slightly different for the Dropbox
+            if not job_json_name.startswith("job-"):
+                job_dict["job_id"] = job_json_name
+            else:
+                job_dict["job_id"] = job_json_name[4:]
+
+            # and move the file into the right directory
+            self.move(job_json_dir, self.get_attribute_path("running"), job_json_name)
+            job_dict["job_json_path"] = self.get_attribute_path("running")
+        return NextJobSchema(**job_dict)
 
     def _common_upload_result(
         self,
