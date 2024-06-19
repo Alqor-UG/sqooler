@@ -241,18 +241,6 @@ class StorageProvider(StorageCore):
         return qiskit_backend_dict
 
     @abstractmethod
-    def get_queue_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
-        """
-        Get the path to the queue.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The path to the queue.
-        """
-
-    @abstractmethod
     def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
         """
         Create a job id for the job.
@@ -283,7 +271,9 @@ class StorageProvider(StorageCore):
 
         # now we upload the job to the backend
 
-        job_json_dir = self.get_queue_path(display_name)
+        job_json_dir = self.get_attribute_path(
+            attribute_name="queue", display_name=display_name
+        )
         job_json_name = self.get_internal_job_id(job_id)
 
         self.upload(
@@ -337,6 +327,25 @@ class StorageProvider(StorageCore):
 
         Args:
             display_name: The name of the backend
+            job_id: The job_id of the job
+
+        Returns:
+            The path to the results of the device.
+        """
+
+    @abstractmethod
+    def get_attribute_path(
+        self,
+        attribute_name: str,
+        display_name: Optional[DisplayNameStr] = None,
+        job_id: Optional[str] = None,
+    ) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            attribute_name: The name of the attribute
             job_id: The job_id of the job
 
         Returns:
@@ -750,22 +759,39 @@ class StorageProvider(StorageCore):
             A list of files that was found.
         """
 
-    @abstractmethod
     def get_next_job_in_queue(
         self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None
     ) -> NextJobSchema:
         """
-        A function that obtains the next job in the queue. If there is no job, it returns an empty
-        dict. If there is a job, it moves the job from the queue to the running folder.
-        It also update the time stamp for when the system last looked into the file queue.
+        A function that obtains the next job in the queue.
 
         Args:
             display_name: The name of the backend
-            private_jwk: The private JWK to sign the result with
+            private_jwk: The private JWK to sign the job with
+
 
         Returns:
-            the job dict
+            the path towards the job
         """
+
+        job_json_dir = self.get_attribute_path(
+            attribute_name="queue", display_name=display_name
+        )
+        job_dict = self._get_default_next_schema_dict()
+        job_list = self.get_file_queue(job_json_dir)
+
+        # time stamp when we last looked for a job
+        self.timestamp_queue(display_name, private_jwk)
+
+        # if there is a job, we should move it
+        if job_list:
+            job_json_name = job_list[0]
+            job_dict["job_id"] = job_json_name[4:]
+
+            # and move the file into the right directory
+            self.move(job_json_dir, self.get_attribute_path("running"), job_json_name)
+            job_dict["job_json_path"] = self.get_attribute_path("running")
+        return NextJobSchema(**job_dict)
 
     def _common_upload_result(
         self,
