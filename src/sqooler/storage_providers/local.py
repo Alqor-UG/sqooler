@@ -229,7 +229,6 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
         return self.configs_path
 
-
     def get_attribute_path(
         self,
         attribute_name: str,
