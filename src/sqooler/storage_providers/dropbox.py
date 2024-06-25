@@ -329,6 +329,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         attribute_name: str,
         display_name: Optional[DisplayNameStr] = None,
         job_id: Optional[str] = None,
+        username: Optional[str] = None,
     ) -> str:
         """
         Get the path to the results of the device.
@@ -337,6 +338,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             display_name: The name of the backend
             attribute_name: The name of the attribute
             job_id: The job_id of the job
+            username: The username of the user that is uploading the job
 
         Returns:
             The path to the results of the device.
@@ -349,6 +351,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                 path = f"/{self.queue_path}/{display_name}/"
             case "deleted":
                 path = self.deleted_path
+            case "finished":
+                path = f"/{self.finished_path}/{display_name}/{username}/"
             case _:
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
@@ -503,10 +507,10 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
 
         status_json_dir = self.get_device_status_path(display_name, extracted_username)
 
-        status_json_name = "status-" + job_id
+        status_json_name = self.get_status_id(job_id=job_id)
 
-        job_json_name = "job-" + job_id
-        job_json_start_dir = self.running_path
+        job_json_name = self.get_internal_job_id(job_id)
+        job_json_start_dir = self.get_attribute_path("running")
 
         if status_msg_dict.status == "DONE":
             self.upload_result(
@@ -516,8 +520,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                 private_jwk,
             )
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = (
-                f"/{self.finished_path}/{display_name}/{extracted_username}/"
+            job_finished_json_dir = self.get_attribute_path(
+                "finished", display_name=display_name, username=extracted_username
             )
 
             self.move(job_json_start_dir, job_finished_json_dir, job_json_name)

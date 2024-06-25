@@ -339,6 +339,7 @@ class StorageProvider(StorageCore):
         attribute_name: str,
         display_name: Optional[DisplayNameStr] = None,
         job_id: Optional[str] = None,
+        username: Optional[str] = None,
     ) -> str:
         """
         Get the path to the results of the device.
@@ -347,6 +348,7 @@ class StorageProvider(StorageCore):
             display_name: The name of the backend
             attribute_name: The name of the attribute
             job_id: The job_id of the job
+            username: The username of the user that is uploading the job
 
         Returns:
             The path to the results of the device.
