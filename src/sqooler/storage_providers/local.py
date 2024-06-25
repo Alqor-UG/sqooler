@@ -234,6 +234,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         attribute_name: str,
         display_name: Optional[DisplayNameStr] = None,
         job_id: Optional[str] = None,
+        username: Optional[str] = None,
     ) -> str:
         """
         Get the path to the results of the device.
@@ -242,6 +243,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             display_name: The name of the backend
             attribute_name: The name of the attribute
             job_id: The job_id of the job
+            username: The username of the user
 
         Returns:
             The path to the results of the device.
@@ -252,6 +254,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 path = self.running_path
             case "queue":
                 path = f"{self.queue_path}/{display_name}"
+            case "finished":
+                path = f"{self.finished_path}/{display_name}"
             case _:
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
@@ -549,7 +553,19 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             None
         """
-        job_json_start_dir = self.running_path
+
+        # this is an ugly hack to get the username
+        if job_id.startswith("job-"):
+            extracted_username = job_id.split("-")[2]
+        else:
+            extracted_username = None
+
+        status_json_dir = self.get_device_status_path(display_name, extracted_username)
+        job_json_start_dir = self.get_attribute_path("running")
+
+        status_json_name = self.get_status_id(job_id=job_id)
+        job_json_name = self.get_internal_job_id(job_id)
+
         # check if the job is done or had an error
         if status_msg_dict.status == "DONE":
             # test if the result dict is None
@@ -564,26 +580,27 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 raise ValueError("The result was not uploaded successfully.")
 
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = f"{self.finished_path}/{display_name}"
+            job_finished_json_dir = self.get_attribute_path(
+                "finished", display_name=display_name
+            )
 
             self.move(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            self.move(job_json_start_dir, self.deleted_path, job_id)
+            self.move(job_json_start_dir, self.deleted_path, job_json_name)
 
         # and create the status json file
-        status_json_dir = self.get_device_status_path(display_name)
         try:
-            self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
+            self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
         except FileNotFoundError:
             logging.warning(
                 "The status file was missing for %s with job_id %s was missing.",
                 display_name,
                 job_id,
             )
-            self.upload_status(display_name, "", job_id)
-            self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
+            self.upload_status(display_name, "", status_json_name)
+            self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
