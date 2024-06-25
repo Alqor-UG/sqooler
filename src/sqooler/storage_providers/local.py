@@ -584,7 +584,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 "finished", display_name=display_name
             )
 
-            self.move(job_json_start_dir, job_finished_json_dir, job_id)
+            self.move(job_json_start_dir, job_finished_json_dir, job_json_name)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
