@@ -252,6 +252,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 path = self.running_path
             case "queue":
                 path = f"{self.queue_path}/{display_name}"
+            case "deleted":
+                path = self.deleted_path
             case _:
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
@@ -570,7 +572,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            self.move(job_json_start_dir, self.deleted_path, job_id)
+            deleted_json_dir = self.get_attribute_path("deleted", display_name)
+            self.move(job_json_start_dir, deleted_json_dir, job_id)
 
         # and create the status json file
         status_json_dir = self.get_device_status_path(display_name)

@@ -281,6 +281,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
                 path = self.running_path
             case "queue":
                 path = f"{self.queue_path}/{display_name}"
+            case "deleted":
+                path = self.deleted_path
             case _:
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
@@ -746,7 +748,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            deleted_json_dir = self.deleted_path
+            deleted_json_dir = self.get_attribute_path("deleted")
             self.move(job_json_start_dir, deleted_json_dir, job_id)
 
         # TODO: most likely we should raise an error if the status of the job is not DONE or ERROR
