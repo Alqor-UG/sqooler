@@ -263,6 +263,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         attribute_name: str,
         display_name: Optional[DisplayNameStr] = None,
         job_id: Optional[str] = None,
+        username: Optional[str] = None,
     ) -> str:
         """
         Get the path to the results of the device.
@@ -271,6 +272,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             display_name: The name of the backend
             attribute_name: The name of the attribute
             job_id: The job_id of the job
+            username: The username of the user
 
         Returns:
             The path to the results of the device.
@@ -281,6 +283,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
                 path = self.running_path
             case "queue":
                 path = f"{self.queue_path}/{display_name}"
+            case "finished":
+                path = f"{self.finished_path}/{display_name}"
             case _:
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
@@ -726,7 +730,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
         """
 
-        job_json_start_dir = self.running_path
+        job_json_start_dir = self.get_attribute_path("running")
         # check if the job is done or had an error
         if status_msg_dict.status == "DONE":
             # test if the result dict is None
@@ -741,7 +745,9 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
                 raise ValueError("The result was not uploaded successfully.")
 
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = f"{self.finished_path}/{display_name}"
+            job_finished_json_dir = self.get_attribute_path(
+                "finished", display_name=display_name
+            )
             self.move(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
