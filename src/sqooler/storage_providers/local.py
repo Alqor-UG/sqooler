@@ -254,6 +254,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 path = self.running_path
             case "queue":
                 path = f"{self.queue_path}/{display_name}"
+            case "deleted":
+                path = self.deleted_path
             case "finished":
                 path = f"{self.finished_path}/{display_name}"
             case _:
@@ -588,7 +590,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            self.move(job_json_start_dir, self.deleted_path, job_json_name)
+            deleted_json_dir = self.get_attribute_path("deleted", display_name)
+            self.move(job_json_start_dir, deleted_json_dir, job_json_name)
 
         # and create the status json file
         try:

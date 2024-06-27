@@ -349,6 +349,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                 path = self.running_path
             case "queue":
                 path = f"/{self.queue_path}/{display_name}/"
+            case "deleted":
+                path = self.deleted_path
             case "finished":
                 path = f"/{self.finished_path}/{display_name}/{username}/"
             case _:
@@ -526,7 +528,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            self.move(job_json_start_dir, self.deleted_path, job_json_name)
+            deleted_json_dir = self.get_attribute_path("deleted", display_name)
+            self.move(job_json_start_dir, deleted_json_dir, job_json_name)
 
         try:
             self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
