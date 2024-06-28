@@ -287,6 +287,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
                 path = self.deleted_path
             case "finished":
                 path = f"{self.finished_path}/{display_name}"
+            case "pks":
+                path = self.pks_path
             case _:
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
@@ -632,7 +634,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         if public_jwk.kid != config_dict.kid:
             raise ValueError("The key does not have the correct kid.")
 
-        _, collection = self._get_database_and_collection(self.pks_path)
+        pks_path = self.get_attribute_path("pks")
+        _, collection = self._get_database_and_collection(pks_path)
 
         # first we have to check if the device already exists in the database
         document_to_find = {"kid": config_dict.kid}
@@ -642,14 +645,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             # update the file
             self.update(
                 content_dict=public_jwk.model_dump(),
-                storage_path=self.pks_path,
+                storage_path=pks_path,
                 job_id=result_found["_id"],
             )
             return
 
         # if the device does not exist, we have to create it
         config_id = uuid.uuid4().hex[:24]
-        self.upload(public_jwk.model_dump(), self.pks_path, config_id)
+        self.upload(public_jwk.model_dump(), pks_path, config_id)
 
     def get_public_key(self, display_name: DisplayNameStr) -> JWK:
         """
@@ -663,7 +666,8 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
 
         # get the database on which we work
-        _, collection = self._get_database_and_collection(self.pks_path)
+        pks_path = self.get_attribute_path("pks")
+        _, collection = self._get_database_and_collection(pks_path)
 
         # now get the appropiate kid
         config_dict = self.get_config(display_name)
@@ -695,12 +699,13 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
         document_to_find = {"kid": kid}
         # get the database on which we work
-        _, collection = self._get_database_and_collection(self.pks_path)
+        pks_path = self.get_attribute_path("pks")
+        _, collection = self._get_database_and_collection(pks_path)
 
         result_found = collection.find_one(document_to_find)
         if result_found is None:
             raise FileNotFoundError(f"The public key with kid {kid} does not exist")
-        self.delete(self.pks_path, str(result_found["_id"]))
+        self.delete(pks_path, str(result_found["_id"]))
         return True
 
     def update_in_database(

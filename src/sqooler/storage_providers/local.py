@@ -258,6 +258,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 path = self.deleted_path
             case "finished":
                 path = f"{self.finished_path}/{display_name}"
+            case "pks":
+                path = self.pks_path
             case _:
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
@@ -478,7 +480,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             raise ValueError("The key does not have the correct kid.")
 
         # path of the public keys
-        key_path = os.path.join(self.base_path, self.pks_path)
+        pks_path = self.get_attribute_path("pks")
+        key_path = os.path.join(self.base_path, pks_path)
         key_path = os.path.normpath(key_path)
         # test if the config path already exists. If it does not, create it
         if not os.path.exists(key_path):
@@ -506,7 +509,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         config_info = self.get_config(display_name)
 
         # path of the configs
-        key_path = os.path.join(self.base_path, self.pks_path)
+        pks_path = self.get_attribute_path("pks")
+        key_path = os.path.join(self.base_path, pks_path)
         file_name = f"{config_info.kid}.json"
         full_json_path = os.path.join(key_path, file_name)
         secure_path = os.path.normpath(full_json_path)
@@ -531,7 +535,8 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             Success if the file was deleted successfully
         """
-        self.delete(storage_path=self.pks_path, job_id=kid)
+        pks_path = self.get_attribute_path("pks")
+        self.delete(storage_path=pks_path, job_id=kid)
         return True
 
     def update_in_database(
