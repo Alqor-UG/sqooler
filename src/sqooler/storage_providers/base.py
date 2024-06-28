@@ -294,46 +294,6 @@ class StorageProvider(StorageCore):
         """
 
     @abstractmethod
-    def get_device_status_path(
-        self, display_name: DisplayNameStr, username: str
-    ) -> str:
-        """
-        Get the path to the status of the device.
-
-        Args:
-            display_name: The name of the backend
-            username: The username of the user that is uploading the job
-
-        Returns:
-            The path to the status of the device.
-        """
-
-    @abstractmethod
-    def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
-        """
-        Get the path to the configs.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The path to the configs.
-        """
-
-    @abstractmethod
-    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
-        """
-        Get the path to the results of the device.
-
-        Args:
-            display_name: The name of the backend
-            job_id: The job_id of the job
-
-        Returns:
-            The path to the results of the device.
-        """
-
-    @abstractmethod
     def get_attribute_path(
         self,
         attribute_name: str,
@@ -435,7 +395,7 @@ class StorageProvider(StorageCore):
         Returns:
             The status dict of the job
         """
-        status_json_dir = self.get_device_status_path(display_name, username)
+        status_json_dir = self.get_attribute_path("status", display_name, username)
         status_id = self.get_status_id(job_id)
 
         status_draft = {
@@ -468,7 +428,7 @@ class StorageProvider(StorageCore):
         Returns:
             The status dict of the job
         """
-        status_json_dir = self.get_device_status_path(display_name, username)
+        status_json_dir = self.get_attribute_path("status", display_name, username)
         status_id = self.get_status_id(job_id)
 
         try:
@@ -522,7 +482,7 @@ class StorageProvider(StorageCore):
         Returns:
             The success of the upload process
         """
-        result_json_dir = self.get_device_results_path(display_name, job_id)
+        result_json_dir = self.get_attribute_path("results", display_name, job_id)
         result_json_name = self.get_result_id(job_id)
 
         return self._common_upload_result(
@@ -569,7 +529,7 @@ class StorageProvider(StorageCore):
             The result dict of the job. If the information is not available, the result dict
             has a status of "ERROR".
         """
-        result_json_dir = self.get_device_results_path(display_name, job_id)
+        result_json_dir = self.get_attribute_path("results", display_name, job_id)
         result_json_name = self.get_result_id(job_id)
         try:
             result_dict = self.get(
@@ -601,7 +561,7 @@ class StorageProvider(StorageCore):
         Returns:
             If it was possible to verify the result dict positively.
         """
-        result_json_dir = self.get_device_results_path(display_name, job_id)
+        result_json_dir = self.get_attribute_path("results", display_name, job_id)
         result_json_name = self.get_result_id(job_id)
 
         result_dict = self.get(storage_path=result_json_dir, job_id=result_json_name)
@@ -628,7 +588,7 @@ class StorageProvider(StorageCore):
             None
         """
         config_dict = self._verify_config(config_dict, display_name)
-        config_path = self.get_configs_path(display_name=display_name)
+        config_path = self.get_attribute_path("configs", display_name=display_name)
         config_id = self.get_config_id(display_name)
         upload_dict = self._format_config_dict(config_dict, private_jwk)
         self.upload(

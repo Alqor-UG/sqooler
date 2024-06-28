@@ -189,46 +189,6 @@ class LocalProviderExtended(StorageProvider, LocalCore):
     results_path: PathStr = "results"
     pks_path: PathStr = "backends/public_keys"
 
-    def get_device_status_path(
-        self, display_name: DisplayNameStr, username: Optional[str] = None
-    ) -> str:
-        """
-        Get the path to the status of the device.
-
-        Args:
-            display_name: The name of the backend
-            username: The username of the user
-
-        Returns:
-            The path to the status of the device.
-        """
-        return f"{self.status_path}/{display_name}"
-
-    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
-        """
-        Get the path to the results of the device.
-
-        Args:
-            display_name: The name of the backend
-            job_id: The job_id of the job
-
-        Returns:
-            The path to the results of the device.
-        """
-        return f"{self.results_path}/{display_name}"
-
-    def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
-        """
-        Get the path to the configs.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The path to the configs.
-        """
-        return self.configs_path
-
     def get_attribute_path(
         self,
         attribute_name: str,
@@ -250,8 +210,14 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         """
 
         match attribute_name:
+            case "configs":
+                path = self.configs_path
+            case "results":
+                path = f"{self.results_path}/{display_name}"
             case "running":
                 path = self.running_path
+            case "status":
+                path = f"{self.status_path}/{display_name}"
             case "queue":
                 path = f"{self.queue_path}/{display_name}"
             case "deleted":
@@ -342,7 +308,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Returns:
             Success if the file was deleted successfully
         """
-        status_json_dir = self.get_device_status_path(display_name)
+        status_json_dir = self.get_attribute_path("status", display_name)
 
         self.delete(storage_path=status_json_dir, job_id=job_id)
         return True
@@ -363,7 +329,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             Success if the file was deleted successfully
         """
 
-        result_json_dir = self.get_device_results_path(display_name, job_id)
+        result_json_dir = self.get_attribute_path("results", display_name, job_id)
         self.delete(storage_path=result_json_dir, job_id=job_id)
         return True
 
@@ -562,7 +528,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         else:
             extracted_username = None
 
-        status_json_dir = self.get_device_status_path(display_name, extracted_username)
+        status_json_dir = self.get_attribute_path("status", display_name, extracted_username)
         job_json_start_dir = self.get_attribute_path("running")
 
         status_json_name = self.get_status_id(job_id=job_id)

@@ -309,21 +309,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
         return f"job-{job_id}"
 
-    def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
-        """
-        Get the path to the configs.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The path to the configs.
-        """
-        # here we really need to have the display_name
-        if display_name is None:
-            raise ValueError("The display_name must be set.")
-        return f"{self.configs_path}/{display_name}"
-
     def get_attribute_path(
         self,
         attribute_name: str,
@@ -345,8 +330,17 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         """
 
         match attribute_name:
+            case "configs":
+                if display_name is None:
+                    raise ValueError("The display_name must be set for configs_path.")
+                path = f"{self.configs_path}/{display_name}"
+            case "results":
+                extracted_username = job_id.split("-")[2]
+                path = f"/{self.results_path}/{display_name}/{extracted_username}/"
             case "running":
                 path = self.running_path
+            case "status":
+                path = f"/{self.status_path}/{display_name}/{username}/"
             case "queue":
                 path = f"/{self.queue_path}/{display_name}/"
             case "deleted":
@@ -392,7 +386,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
 
         config_dict = self._verify_config(config_dict, display_name)
         # check that the file exists
-        config_path = self.get_configs_path(display_name)
+        config_path = self.get_attribute_path("configs", display_name=display_name)
         old_config_jws = self.get(config_path, "config")
 
         upload_dict = self._format_update_config(
@@ -505,7 +499,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         # this should become part of the json file instead of its name in the future
         extracted_username = job_id.split("-")[2]
 
-        status_json_dir = self.get_device_status_path(display_name, extracted_username)
+        status_json_dir = self.get_attribute_path("status", display_name, extracted_username)
 
         status_json_name = self.get_status_id(job_id=job_id)
 
@@ -657,36 +651,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         )
         return job_id
 
-    def get_device_status_path(
-        self, display_name: DisplayNameStr, username: str
-    ) -> str:
-        """
-        Get the path to the status of the device.
-
-        Args:
-            display_name: The name of the backend
-            username: The username of the user that is uploading the job
-
-        Returns:
-            The path to the status of the device.
-        """
-        return f"/{self.status_path}/{display_name}/{username}/"
-
-    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
-        """
-        Get the path to the results of the device.
-
-        Args:
-            display_name: The name of the backend
-            job_id: The job_id of the job
-
-        Returns:
-            The path to the results of the device."""
-
-        extracted_username = job_id.split("-")[2]
-        result_json_dir = f"/{self.results_path}/{display_name}/{extracted_username}/"
-        return result_json_dir
-
     def get_status_id(self, job_id: str) -> str:
         """
         Get the name of the status json file.
@@ -729,7 +693,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             Success if the file was deleted successfully
         """
 
-        status_json_dir = self.get_device_status_path(display_name, username)
+        status_json_dir = self.get_attribute_path("status", display_name, username)
 
         status_json_name = self.get_status_id(job_id)
 
@@ -752,7 +716,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        result_device_dir = self.get_device_results_path(display_name, job_id)
+        result_device_dir = self.get_attribute_path("results", display_name, job_id)
         self.delete_folder(result_device_dir)
         return True
 
