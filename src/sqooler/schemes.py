@@ -8,6 +8,23 @@ from typing import Annotated, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+# String that is allowed for the attribute id
+AttributeIdStr = Literal["configs", "job", "results", "status"]
+
+# String that is allowed for the attribute path
+AttributePathStr = Literal[
+    "configs",
+    "job",
+    "results",
+    "status",
+    "running",
+    "queue",
+    "deleted",
+    "finished",
+    "pks",
+]
+
+
 # the strings that are allowed for the status
 StatusStr = Annotated[
     Literal["INITIALIZING", "QUEUED", "DONE", "ERROR"],

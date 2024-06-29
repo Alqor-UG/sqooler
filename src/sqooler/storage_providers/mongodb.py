@@ -18,6 +18,8 @@ from pymongo.errors import DuplicateKeyError
 from pymongo.mongo_client import MongoClient
 
 from ..schemes import (
+    AttributeIdStr,
+    AttributePathStr,
     BackendConfigSchemaIn,
     DisplayNameStr,
     MongodbLoginInformation,
@@ -246,21 +248,9 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
     results_path: PathStr = "results"
     pks_path: PathStr = "backends/public_keys"
 
-    def get_configs_path(self, display_name: Optional[DisplayNameStr] = None) -> str:
-        """
-        Get the path to the configs.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The path to the configs.
-        """
-        return self.configs_path
-
     def get_attribute_path(
         self,
-        attribute_name: str,
+        attribute_name: AttributePathStr,
         display_name: Optional[DisplayNameStr] = None,
         job_id: Optional[str] = None,
         username: Optional[str] = None,
@@ -279,8 +269,14 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
 
         match attribute_name:
+            case "configs":
+                path = self.configs_path
+            case "results":
+                path = f"{self.results_path}/{display_name}"
             case "running":
                 path = self.running_path
+            case "status":
+                path = f"{self.status_path}/{display_name}"
             case "queue":
                 path = f"{self.queue_path}/{display_name}"
             case "deleted":
@@ -293,29 +289,36 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
 
-    def get_internal_job_id(self, job_id: str) -> str:
+    def get_attribute_id(
+        self,
+        attribute_name: AttributeIdStr,
+        job_id: str,
+        display_name: Optional[DisplayNameStr] = None,
+    ) -> str:
         """
-        Get the internal job id from the job_id.
+        Get the path to the id of the device.
 
         Args:
+            attribute_name: The name of the attribute
             job_id: The job_id of the job
-
-        Returns:
-            The internal job id
-        """
-        return job_id
-
-    def get_config_id(self, display_name: DisplayNameStr) -> str:
-        """
-        Get the name of the config json file.
-
-        Args:
             display_name: The name of the backend
 
         Returns:
-            The name of the config json file.
+            The path to the results of the device.
         """
-        raise NotImplementedError("This function is not implemented.")
+
+        match attribute_name:
+            case "configs":
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+            case "job":
+                _id = job_id
+            case "results":
+                _id = job_id
+            case "status":
+                _id = job_id
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return _id
 
     @validate_active
     def get_backends(self) -> list[DisplayNameStr]:
@@ -516,58 +519,6 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         """
         return (uuid.uuid4().hex)[:24]
 
-    def get_device_status_path(
-        self, display_name: DisplayNameStr, username: Optional[str] = None
-    ) -> str:
-        """
-        Get the path to the status of the device.
-
-        Args:
-            display_name: The name of the backend
-            username: The username of the user
-
-        Returns:
-            The path to the status of the device.
-        """
-        return f"{self.status_path}/{display_name}"
-
-    def get_status_id(self, job_id: str) -> str:
-        """
-        Get the name of the status json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the status json file.
-        """
-        return job_id
-
-    def get_device_results_path(self, display_name: DisplayNameStr, job_id: str) -> str:
-        """
-        Get the path to the results of the device.
-
-        Args:
-            display_name: The name of the backend
-            job_id: The job_id of the job
-
-        Returns:
-            The path to the results of the device.
-        """
-        return f"{self.results_path}/{display_name}"
-
-    def get_result_id(self, job_id: str) -> str:
-        """
-        Get the name of the result json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the result json file.
-        """
-        return job_id
-
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> bool:
@@ -585,7 +536,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             Success if the file was deleted successfully
         """
-        status_json_dir = self.get_device_status_path(display_name)
+        status_json_dir = self.get_attribute_path("status", display_name)
 
         self.delete(storage_path=status_json_dir, job_id=job_id)
         return True
@@ -605,7 +556,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Returns:
             Success if the file was deleted successfully
         """
-        result_json_dir = self.get_device_results_path(display_name, job_id)
+        result_json_dir = self.get_attribute_path("results", display_name, job_id)
 
         self.delete(storage_path=result_json_dir, job_id=job_id)
         return True
@@ -765,7 +716,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         # TODO: most likely we should raise an error if the status of the job is not DONE or ERROR
 
         # and create the status json file
-        status_json_dir = self.get_device_status_path(display_name)
+        status_json_dir = self.get_attribute_path("status", display_name)
 
         try:
             self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
