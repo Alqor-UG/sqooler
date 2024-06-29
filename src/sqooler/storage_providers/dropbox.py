@@ -339,6 +339,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                 path = self.deleted_path
             case "finished":
                 path = f"/{self.finished_path}/{display_name}/{username}/"
+            case "pks":
+                path = self.pks_path
             case _:
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
@@ -448,8 +450,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         config_dict = self.get_config(display_name)
         if public_jwk.kid != config_dict.kid:
             raise ValueError("The key does not have the correct kid.")
-
-        self.upload_string(public_jwk.model_dump_json(), self.pks_path, config_dict.kid)
+        pks_path = self.get_attribute_path("pks")
+        self.upload_string(public_jwk.model_dump_json(), pks_path, config_dict.kid)
 
     def get_public_key(self, display_name: DisplayNameStr) -> JWK:
         """
@@ -466,8 +468,9 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         config_dict = self.get_config(display_name)
         if config_dict.kid is None:
             raise ValueError("The kid is not set in the backend configuration.")
+        pks_path = self.get_attribute_path("pks")
 
-        public_jwk_dict = self.get(storage_path=self.pks_path, job_id=config_dict.kid)
+        public_jwk_dict = self.get(storage_path=pks_path, job_id=config_dict.kid)
         return JWK(**public_jwk_dict)
 
     def _delete_public_key(self, kid: str) -> bool:
@@ -483,7 +486,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         Returns:
             Success if the file was deleted successfully
         """
-        self.delete(storage_path=self.pks_path, job_id=kid)
+        pks_path = self.get_attribute_path("pks")
+        self.delete(storage_path=pks_path, job_id=kid)
         return True
 
     def update_in_database(
