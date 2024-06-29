@@ -562,7 +562,9 @@ class StorageProvider(StorageCore):
         """
         config_dict = self._verify_config(config_dict, display_name)
         config_path = self.get_attribute_path("configs", display_name=display_name)
-        config_id = self.get_attribute_id("configs", display_name)
+        config_id = self.get_attribute_id(
+            "configs", job_id="", display_name=display_name
+        )
         upload_dict = self._format_config_dict(config_dict, private_jwk)
         self.upload(
             content_dict=upload_dict,
