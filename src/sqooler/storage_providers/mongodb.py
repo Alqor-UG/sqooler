@@ -18,6 +18,8 @@ from pymongo.errors import DuplicateKeyError
 from pymongo.mongo_client import MongoClient
 
 from ..schemes import (
+    AttributeIdStr,
+    AttributePathStr,
     BackendConfigSchemaIn,
     DisplayNameStr,
     MongodbLoginInformation,
@@ -248,7 +250,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
 
     def get_attribute_path(
         self,
-        attribute_name: str,
+        attribute_name: AttributePathStr,
         display_name: Optional[DisplayNameStr] = None,
         job_id: Optional[str] = None,
         username: Optional[str] = None,
@@ -285,29 +287,36 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
 
-    def get_internal_job_id(self, job_id: str) -> str:
+    def get_attribute_id(
+        self,
+        attribute_name: AttributeIdStr,
+        job_id: str,
+        display_name: Optional[DisplayNameStr] = None,
+    ) -> str:
         """
-        Get the internal job id from the job_id.
+        Get the path to the id of the device.
 
         Args:
+            attribute_name: The name of the attribute
             job_id: The job_id of the job
-
-        Returns:
-            The internal job id
-        """
-        return job_id
-
-    def get_config_id(self, display_name: DisplayNameStr) -> str:
-        """
-        Get the name of the config json file.
-
-        Args:
             display_name: The name of the backend
 
         Returns:
-            The name of the config json file.
+            The path to the results of the device.
         """
-        raise NotImplementedError("This function is not implemented.")
+
+        match attribute_name:
+            case "configs":
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+            case "job":
+                _id = job_id
+            case "results":
+                _id = job_id
+            case "status":
+                _id = job_id
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return _id
 
     @validate_active
     def get_backends(self) -> list[DisplayNameStr]:
@@ -507,30 +516,6 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             The job id
         """
         return (uuid.uuid4().hex)[:24]
-
-    def get_status_id(self, job_id: str) -> str:
-        """
-        Get the name of the status json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the status json file.
-        """
-        return job_id
-
-    def get_result_id(self, job_id: str) -> str:
-        """
-        Get the name of the result json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the result json file.
-        """
-        return job_id
 
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str

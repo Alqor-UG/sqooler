@@ -16,6 +16,8 @@ from dropbox.exceptions import ApiError, AuthError
 from dropbox.files import WriteMode
 
 from ..schemes import (
+    AttributeIdStr,
+    AttributePathStr,
     BackendConfigSchemaIn,
     DisplayNameStr,
     DropboxLoginInformation,
@@ -297,21 +299,9 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
     results_path: PathStr = "Backend_files/Result"
     pks_path: PathStr = "Backend_files/public_keys"
 
-    def get_internal_job_id(self, job_id: str) -> str:
-        """
-        Get the internal job id from the job_id.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The internal job id
-        """
-        return f"job-{job_id}"
-
     def get_attribute_path(
         self,
-        attribute_name: str,
+        attribute_name: AttributePathStr,
         display_name: Optional[DisplayNameStr] = None,
         job_id: Optional[str] = None,
         username: Optional[str] = None,
@@ -335,6 +325,8 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                     raise ValueError("The display_name must be set for configs_path.")
                 path = f"{self.configs_path}/{display_name}"
             case "results":
+                if job_id is None:
+                    raise ValueError("The job_id must be set for results path.")
                 extracted_username = job_id.split("-")[2]
                 path = f"/{self.results_path}/{display_name}/{extracted_username}/"
             case "running":
@@ -351,17 +343,36 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
 
-    def get_config_id(self, display_name: DisplayNameStr) -> str:
+    def get_attribute_id(
+        self,
+        attribute_name: AttributeIdStr,
+        job_id: str,
+        display_name: Optional[DisplayNameStr] = None,
+    ) -> str:
         """
-        Get the name of the config json file.
+        Get the path to the id of the device.
 
         Args:
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
             display_name: The name of the backend
 
         Returns:
-            The name of the config json file.
+            The path to the results of the device.
         """
-        return "config"
+
+        match attribute_name:
+            case "configs":
+                _id = "config"
+            case "job":
+                _id = f"job-{job_id}"
+            case "results":
+                _id = "result-" + job_id
+            case "status":
+                _id = "status-" + job_id
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return _id
 
     def update_config(
         self,
@@ -499,11 +510,13 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         # this should become part of the json file instead of its name in the future
         extracted_username = job_id.split("-")[2]
 
-        status_json_dir = self.get_attribute_path("status", display_name, extracted_username)
+        status_json_dir = self.get_attribute_path(
+            "status", display_name, extracted_username
+        )
 
-        status_json_name = self.get_status_id(job_id=job_id)
+        status_json_name = self.get_attribute_id("status", job_id=job_id)
 
-        job_json_name = self.get_internal_job_id(job_id)
+        job_json_name = self.get_attribute_id("job", job_id)
         job_json_start_dir = self.get_attribute_path("running")
 
         if status_msg_dict.status == "DONE":
@@ -651,30 +664,6 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         )
         return job_id
 
-    def get_status_id(self, job_id: str) -> str:
-        """
-        Get the name of the status json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the status json file.
-        """
-        return "status-" + job_id
-
-    def get_result_id(self, job_id: str) -> str:
-        """
-        Get the name of the result json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the result json file.
-        """
-        return "result-" + job_id
-
     def _delete_status(
         self, display_name: DisplayNameStr, username: str, job_id: str
     ) -> bool:
@@ -695,7 +684,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
 
         status_json_dir = self.get_attribute_path("status", display_name, username)
 
-        status_json_name = self.get_status_id(job_id)
+        status_json_name = self.get_attribute_id("status", job_id)
 
         self.delete(storage_path=status_json_dir, job_id=status_json_name)
         self.delete_folder(status_json_dir)

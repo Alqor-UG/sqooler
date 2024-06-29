@@ -10,6 +10,8 @@ import uuid
 from typing import Mapping, Optional
 
 from ..schemes import (
+    AttributeIdStr,
+    AttributePathStr,
     BackendConfigSchemaIn,
     DisplayNameStr,
     LocalLoginInformation,
@@ -191,13 +193,13 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
     def get_attribute_path(
         self,
-        attribute_name: str,
+        attribute_name: AttributePathStr,
         display_name: Optional[DisplayNameStr] = None,
         job_id: Optional[str] = None,
         username: Optional[str] = None,
     ) -> str:
         """
-        Get the path to the results of the device.
+        Get the path to the attribute of the device.
 
         Args:
             display_name: The name of the backend
@@ -228,53 +230,37 @@ class LocalProviderExtended(StorageProvider, LocalCore):
                 raise ValueError(f"The attribute name {attribute_name} is not valid.")
         return path
 
-    def get_status_id(self, job_id: str) -> str:
+    def get_attribute_id(
+        self,
+        attribute_name: AttributeIdStr,
+        job_id: str,
+        display_name: Optional[DisplayNameStr] = None,
+    ) -> str:
         """
-        Get the name of the status json file.
+        Get the path to the id of the device.
 
         Args:
+            attribute_name: The name of the attribute
             job_id: The job_id of the job
-
-        Returns:
-            The name of the status json file.
-        """
-        return job_id
-
-    def get_result_id(self, job_id: str) -> str:
-        """
-        Get the name of the result json file.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The name of the result json file.
-        """
-        return job_id
-
-    def get_config_id(self, display_name: DisplayNameStr) -> str:
-        """
-        Get the name of the config json file.
-
-        Args:
             display_name: The name of the backend
 
         Returns:
-            The name of the config json file.
+            The path to the results of the device.
         """
-        return display_name
-
-    def get_internal_job_id(self, job_id: str) -> str:
-        """
-        Get the internal job id from the job_id.
-
-        Args:
-            job_id: The job_id of the job
-
-        Returns:
-            The internal job id
-        """
-        return job_id
+        match attribute_name:
+            case "configs":
+                if display_name is None:
+                    raise ValueError("The display_name is missing")
+                _id = display_name
+            case "job":
+                _id = job_id
+            case "results":
+                _id = job_id
+            case "status":
+                _id = job_id
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return _id
 
     def get_backends(self) -> list[DisplayNameStr]:
         """
@@ -528,11 +514,13 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         else:
             extracted_username = None
 
-        status_json_dir = self.get_attribute_path("status", display_name, extracted_username)
+        status_json_dir = self.get_attribute_path(
+            "status", display_name, extracted_username
+        )
         job_json_start_dir = self.get_attribute_path("running")
 
-        status_json_name = self.get_status_id(job_id=job_id)
-        job_json_name = self.get_internal_job_id(job_id)
+        status_json_name = self.get_attribute_id("status", job_id=job_id)
+        job_json_name = self.get_attribute_id("job", job_id)
 
         # check if the job is done or had an error
         if status_msg_dict.status == "DONE":
