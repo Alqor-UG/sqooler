@@ -118,13 +118,9 @@ def test_config_in_out() -> None:
         sign=True,
     )
 
-    # the following is important for compatibility with the old version
-    with pytest.warns(DeprecationWarning):
-        assert backend_info.operational is True
-
     # now test the model dump
     backend_dict = backend_info.model_dump()
-    assert backend_dict["operational"] is True
+    assert "operational" not in backend_dict
 
 
 def test_get_init_status() -> None:

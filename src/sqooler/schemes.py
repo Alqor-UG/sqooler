@@ -186,58 +186,6 @@ class BackendConfigSchemaIn(BaseModel, validate_assignment=True):
         default=None,
         description="The identifier for the public and private key of the backend.",
     )
-    operational: Optional[bool] = Field(
-        default=True, description="True if the backend is operational", deprecated=True
-    )
-
-
-class BackendConfigSchemaOld(BaseModel, validate_assignment=True):
-    """
-    The schema send in to detail the configuration of the backend.
-    This is uploaded to the storage provider.
-    """
-
-    description: str = Field(description="A description for the backend")
-    version: str = Field(description="The backend version in the form X.Y.Z")
-    display_name: Optional[DisplayNameStr]
-    cold_atom_type: ColdAtomStr
-    gates: list = Field(
-        description="The list of GateConfig objects for the basis gates of the backend"
-    )
-    max_experiments: int = Field(
-        description="The maximum number of experiments per job"
-    )
-    max_shots: int = Field(
-        description="The maximum number of shots allowed on the backend"
-    )
-    simulator: bool = Field(description="True if the backend is a simulator")
-    supported_instructions: list[str] = Field(
-        description="Instructions supported by the backend."
-    )
-    num_wires: int = Field(description="The number of qubits / wires for the backend")
-    wire_order: WireOrderStr
-    num_species: int = Field(description="The number of species in the system.")
-
-    pending_jobs: Optional[int] = Field(
-        default=None, description="The number of pending jobs on the backend"
-    )
-    status_msg: Optional[str] = Field(
-        default=None, description="The status message for the backend"
-    )
-    last_queue_check: Optional[datetime] = Field(
-        default=None, description="The last time the queue was checked."
-    )
-    sign: bool = Field(
-        default=False,
-        description="True if the results are signed by the backend provider.",
-    )
-    kid: Optional[str] = Field(
-        default=None,
-        description="The identifier for the public and private key of the backend.",
-    )
-    operational: Optional[bool] = Field(
-        default=True, description="True if the backend is operational", deprecated=True
-    )
 
 
 class BackendConfigSchemaOut(BaseModel, validate_assignment=True):
