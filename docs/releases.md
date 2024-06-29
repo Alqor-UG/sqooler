@@ -6,6 +6,20 @@ comments: true
 
 In this guide we will cover the key information about the different releases.
 
+## v0.9
+
+In this release we made the `StorageProvider` more flexible and especially the paths.
+
+### What's Changed
+
+- The `StorageProvider` now has a `get_attribute_path` and `get_attribute_id`.
+- This should massively simplify path directions and make the specific paths fairly obsolete in the future.
+- We also updated the migration to get rid of old depreceated code.
+
+### Migration Guide
+
+For the `StorageProvider`the different paths like `pks_path` are not call explicitly anymore but only through the `get_attribute_path`. For future versions it is possible that we remove them completely and we advise you to migrate towards the `get_attribute_path`.
+
 ## v0.8
 
 In this release we focused on a substantially more flexible `StorageProvider` and added the new `StorageCore`.
