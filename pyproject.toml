@@ -13,7 +13,7 @@ keywords = ["pydantic", "quantum-hardware","sdk-python"]
 [tool.poetry.dependencies]
 python = "^3.10"
 pydantic = "^2.3.0"
-dropbox = "^11.36.2"
+dropbox = ">=11.36.2,<13.0.0"
 setuptools = "^70.0.0"
 pymongo = "^4.3.3"
 regex = "^2024.5.15"
