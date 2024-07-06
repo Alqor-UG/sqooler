@@ -2,9 +2,10 @@
 comments: true
 ---
 
-# API documentation of storage providers
 
-::: src.sqooler.storage_providers
+# API documentation of security
+
+::: src.sqooler.security
     handler: python 
     options:
       show_source: true

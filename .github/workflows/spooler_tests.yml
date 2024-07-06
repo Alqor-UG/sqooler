@@ -16,9 +16,12 @@ jobs:
       MONGODB_USERNAME: ${{secrets.MONGODB_USERNAME}}
       MONGODB_PASSWORD: ${{secrets.MONGODB_PASSWORD}}
       MONGODB_DATABASE_URL: ${{secrets.MONGODB_DATABASE_URL}}
+      BASE_PATH: ${{secrets.BASE_PATH}}
+      TEST_USERNAME: ${{secrets.TEST_USERNAME}}
+      PRIVATE_JWK_STR: ${{secrets.PRIVATE_JWK_STR}}
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
+      max-parallel: 1
       matrix:
         python-version: ['3.10', '3.12']
         os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
@@ -30,9 +33,9 @@ jobs:
           echo -e "\033[31;1;4mConcurrency Group\033[0m"
           echo -e "$CONCURRENCY_GROUP\n"
         shell: bash
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Dependencies
@@ -41,15 +44,15 @@ jobs:
           poetry install
       - name: Run Tests
         run: |
-          python - m pytest
+          poetry run pytest --cov-report term-missing --cov=src tests
   lint:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up Python 3.10
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
     - name: Install Dependencies

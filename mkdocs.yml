@@ -8,18 +8,30 @@ theme:
     - navigation.expand
     - navigation.footer
     - toc.follow
+    - content.code.copy
 
   custom_dir: docs/overrides
 
 nav:
   - Introduction: "index.md"
+  - "General description": "description.md"
+  - "The backend perspective": "spooler_general.md"
+  - "Intro to storage providers": "storage_general.md"
+  - "Security": "security_general.md"
   - Contributing: contributing.md
   - Releases: releases.md
-  - "Modules":
-    - "Schemes": "schemes.md"
-    - "Utils": "utils.md"
-    - "Storage providers": "storage_providers.md"
-    - "Spoolers": "spoolers.md"
+  - "API":
+    - "CLI": "api/cli_api.md"
+    - "Schemes": "api/schemes.md"
+    - "Security": "api/security_api.md"
+    - "Spooler": "api/spoolers_api.md"
+    - "Utils": "api/utils.md"
+  - "Storage API":
+    - "Basics": "storage_providers/storage_providers.md"
+    - "MongoDB": "storage_providers/mongodb.md"
+    - "Local storage": "storage_providers/local.md"
+    - "Dropbox": "storage_providers/dropbox.md"
+  - "Ideas on Payments": "idea_payment.md"
 
 repo_url: https://github.com/alqor-ug/sqooler
 edit_uri: edit/main/docs/
@@ -37,7 +49,12 @@ markdown_extensions:
   - attr_list
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+

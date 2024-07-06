@@ -4,10 +4,12 @@ This is the test schemes module.
 
 import pytest
 from pydantic import ValidationError
+
 from sqooler.schemes import (
+    BackendConfigSchemaIn,
     ResultDict,
-    get_init_status,
     get_init_results,
+    get_init_status,
 )
 
 
@@ -36,6 +38,89 @@ def test_backend_name() -> None:
             job_id="1",
             status="INITIALIZING",
         )
+
+
+def test_config_in_out() -> None:
+    """
+    Test that the backend name is correct.
+    """
+    # test what happens if the name contains contains underscores
+
+    BackendConfigSchemaIn(
+        description="Whatever",
+        version="1.0.0",
+        display_name="nicename",
+        cold_atom_type="fermion",
+        gates=[],
+        max_experiments=1,
+        max_shots=1,
+        simulator=True,
+        supported_instructions=[],
+        num_wires=1,
+        wire_order="interleaved",
+        num_species=1,
+        pending_jobs=1,
+        status_msg="test",
+    )
+
+    with pytest.raises(ValidationError):
+        BackendConfigSchemaIn(
+            description="Whatever",
+            version="1.0.0",
+            display_name="nicename_23&",
+            cold_atom_type="fermion",
+            gates=[],
+            max_experiments=1,
+            max_shots=1,
+            simulator=True,
+            supported_instructions=[],
+            num_wires=1,
+            wire_order="interleaved",
+            num_species=1,
+            pending_jobs=1,
+            status_msg="test",
+        )
+
+    with pytest.raises(ValidationError):
+        BackendConfigSchemaIn(
+            description="Whatever",
+            version="1.0.0",
+            display_name="nice_name",
+            cold_atom_type="fermion",
+            gates=[],
+            max_experiments=1,
+            max_shots=1,
+            simulator=True,
+            supported_instructions=[],
+            num_wires=1,
+            wire_order="interleaved",
+            num_species=1,
+            pending_jobs=1,
+            status_msg="test",
+        )
+
+    # test that we can append a public key
+    backend_info = BackendConfigSchemaIn(
+        description="Whatever",
+        version="1.0.0",
+        display_name="nicename",
+        cold_atom_type="fermion",
+        gates=[],
+        max_experiments=1,
+        max_shots=1,
+        simulator=True,
+        supported_instructions=[],
+        num_wires=1,
+        wire_order="interleaved",
+        num_species=1,
+        pending_jobs=1,
+        status_msg="test",
+        sign=True,
+    )
+
+    # now test the model dump
+    backend_dict = backend_info.model_dump()
+    assert "operational" not in backend_dict
 
 
 def test_get_init_status() -> None:

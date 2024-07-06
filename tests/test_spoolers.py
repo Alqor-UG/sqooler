@@ -2,26 +2,25 @@
 Here we test the spooler class and its functions.
 """
 
+import logging
 import os
 import shutil
+from typing import Callable, Iterator, Literal, Optional
 
-from typing import Literal, Optional, Iterator, Callable
-from pydantic import ValidationError, BaseModel, Field
-
-from typing_extensions import Annotated
 import pytest
-from sqooler.schemes import (
-    ExperimentDict,
-    LabscriptParams,
-    get_init_status,
+from pydantic import BaseModel, Field, ValidationError
+from pytest import LogCaptureFixture
+from typing_extensions import Annotated
+
+from sqooler.schemes import LabscriptParams
+from sqooler.spoolers import (
+    LabscriptSpooler,
+    Spooler,
+    create_memory_data,
+    gate_dict_from_list,
 )
 
-from sqooler.spoolers import (
-    Spooler,
-    gate_dict_from_list,
-    create_memory_data,
-    LabscriptSpooler,
-)
+from .sqooler_test_utils import DummyInstruction, dummy_gen_circuit
 
 
 class DummyExperiment(BaseModel):
@@ -30,10 +29,6 @@ class DummyExperiment(BaseModel):
     """
 
     wire_order: Literal["interleaved", "sequential"] = "sequential"
-
-    # mypy keeps throwing errors here because it does not understand the type.
-    # not sure how to fix it, so we leave it as is for the moment
-    # HINT: Annotated does not work
     shots: Annotated[int, Field(gt=0, le=5)]
     num_wires: Annotated[int, Field(ge=1, le=5)]
     instructions: list[list]
@@ -111,71 +106,85 @@ class DummyRun:
         return 5
 
 
-class DummyInstruction(BaseModel):
-    """
-    The test instruction for testing the whole system.
-
-    Attributes:
-        name: The string to identify the instruction
-        wires: The wire on which the instruction should be applied
-            so the indices should be between 0 and N_MAX_WIRES-1
-        params: has to be empty
-    """
-
-    name: Literal["test"]
-    wires: Annotated[
-        list[Annotated[int, Field(ge=0, le=0)]], Field(min_length=0, max_length=1)
-    ]
-    params: Annotated[
-        list[Annotated[int, Field(ge=1, le=10)]],
-        Field(min_length=1, max_length=1),
-    ]
-
-
-def dummy_gen_circuit(
-    experiment: dict,  # pylint: disable=unused-argument
-    job_id: Optional[str] = None,  # pylint: disable=unused-argument
-) -> ExperimentDict:
-    """
-    A dummy function to generate a circuit from the experiment dict.
-    """
-    return ExperimentDict(header={}, shots=0, success=True, data={})
-
-
-def test_spooler_config() -> None:
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_spooler_config(sign_it: bool) -> None:
     """
     Test that it is possible to get the config of the spooler.
     """
-    test_spooler = Spooler(ins_schema_dict={}, device_config=DummyExperiment, n_wires=2)
-
-    spooler_config = test_spooler.get_configuration()
-    assert spooler_config.num_wires == 2
-    assert spooler_config.operational
-
-
-def test_spooler_operational() -> None:
-    """
-    Test that it is possible to set the operational status of the spooler.
-    """
     test_spooler = Spooler(
-        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=sign_it
     )
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
-    assert not spooler_config.operational
+
+    # and that the signing is properly done
+    assert spooler_config.sign == sign_it
 
 
-def test_spooler_add_job_fail() -> None:
+def test_spooler_jwk() -> None:
+    """
+    Test that we can easily get the private jwk.
+    """
+    test_spooler = Spooler(
+        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, sign=True
+    )
+
+    test_spooler.get_private_jwk()
+
+    # old value
+    old_private_jwk = os.environ.get("PRIVATE_JWK_STR")
+    if old_private_jwk is None:
+        raise ValueError("No private key set.")
+    # now test what happens if we do not have a private key
+    with pytest.raises(ValueError):
+        os.environ["PRIVATE_JWK_STR"] = ""
+        test_spooler.get_private_jwk()
+
+    # now test what happens if we do not have an appropiate private key
+    with pytest.raises(ValueError):
+        os.environ["PRIVATE_JWK_STR"] = "sdlkfgjsof"
+        test_spooler.get_private_jwk()
+
+    # change back to the old value
+    os.environ["PRIVATE_JWK_STR"] = old_private_jwk
+
+
+def test_spooler_cold_atom() -> None:
+    """
+    Test that we cannot set the spooler with the wrong cold atom type.
+    """
+
+    test_spooler = Spooler(
+        ins_schema_dict={},
+        device_config=DummyExperiment,
+        n_wires=2,
+        cold_atom_type="fermion",
+    )
+
+    spooler_config = test_spooler.get_configuration()
+    assert spooler_config.num_wires == 2
+
+    with pytest.raises(ValidationError):
+        test_spooler = Spooler(
+            ins_schema_dict={},
+            device_config=DummyExperiment,
+            n_wires=2,
+            cold_atom_type="something",
+        )
+        spooler_config = test_spooler.get_configuration()
+
+
+def test_spooler_add_job_fail(
+    caplog: LogCaptureFixture,
+) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
 
-    test_spooler = Spooler(
-        ins_schema_dict={}, device_config=DummyExperiment, n_wires=2, operational=False
-    )
-    status_msg_dict = get_init_status()
-    status_msg_dict.job_id = "Test_ID"
+    caplog.set_level(logging.INFO)
+    test_spooler = Spooler(ins_schema_dict={}, device_config=DummyExperiment, n_wires=2)
+    job_id = "Test_ID"
 
     job_payload = {
         "experiment_0": {
@@ -185,25 +194,27 @@ def test_spooler_add_job_fail() -> None:
             "wire_order": "interleaved",
         },
     }
-    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert result_dict is not None
+    assert "Error in json compatibility test." in caplog.text
 
 
-def test_spooler_add_job() -> None:
+def test_spooler_add_job(
+    caplog: LogCaptureFixture,
+) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
 
+    caplog.set_level(logging.INFO)
     test_spooler = Spooler(
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
     )
 
-    status_msg_dict = get_init_status()
-    status_msg_dict.job_id = "Test_ID"
+    job_id = "Test_ID"
 
     job_payload = {
         "experiment_0": {
@@ -214,13 +225,43 @@ def test_spooler_add_job() -> None:
         },
     }
     # should fail gracefully as no  gen_circuit function is defined
-    _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job failed"
     assert status_msg_dict.error_message == "None; gen_circuit must be set"
 
+    assert "gen_circuit must be set" in caplog.text
     test_spooler.gen_circuit = dummy_gen_circuit
-    _, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "DONE", "Job failed"
+    assert "Experiment experiment_0 done." in caplog.text
+
+    # now also with a seed
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+            "seed": 12345,
+        },
+    }
+    _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
+    assert status_msg_dict.status == "DONE", "Job failed"
+
+    # and with a poor seed
+
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+            "seed": "asbcd",
+        },
+    }
+    _, status_msg_dict = test_spooler.add_job(job_payload, job_id)
+    assert status_msg_dict.status == "ERROR", "Job should have failed"
+    assert "Error in json compatibility test" in caplog.text
 
 
 def test_gate_dict() -> None:
@@ -250,7 +291,6 @@ def test_spooler_check_json() -> None:
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
     )
 
     job_payload = {
@@ -263,8 +303,21 @@ def test_spooler_check_json() -> None:
     }
     # test that it works if the instructions are not valid as the key is not known
 
-    _, exp_ok = test_spooler.check_json_dict(job_payload)
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
     assert exp_ok is True
+
+    # test that it works if the wires are not in the coupling map
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0, 1], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is not True
 
     # test that it works if the instructions are not valid
     job_payload = {
@@ -277,7 +330,7 @@ def test_spooler_check_json() -> None:
     }
     # test that it works if the instructions are not valid as the key is not known
 
-    _, exp_ok = test_spooler.check_json_dict(job_payload)
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
     assert exp_ok is not True
 
 
@@ -289,7 +342,6 @@ def test_spooler_instructions() -> None:
         ins_schema_dict={},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
     )
 
     # test that it works if the instructions are not valid as the key is not known
@@ -310,7 +362,6 @@ def test_spooler_instructions() -> None:
         ins_schema_dict={"test": DummyInstruction},
         device_config=DummyExperiment,
         n_wires=2,
-        operational=False,
     )
 
     inst_list = [["test", [0], [1]]]
@@ -322,6 +373,77 @@ def test_spooler_instructions() -> None:
     inst_list = [["test", [0], [1]]]
     err_code, exp_ok = test_spooler.check_instructions(inst_list)
     assert exp_ok is True
+
+
+def test_wire_orders() -> None:
+    """
+    Make sure that the wire order is properly tested for.
+    """
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        wire_order="interleaved",
+    )
+
+    # test that it works if the instructions are valid
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "interleaved",
+        },
+    }
+
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is True
+
+    # test that it works if the instructions are not valid
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "linear",
+        },
+    }
+    # test that it works if the instructions are not valid as the key is not known
+
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is False
+
+    # and set up a spooler with a different wire order
+    test_spooler = Spooler(
+        ins_schema_dict={"test": DummyInstruction},
+        device_config=DummyExperiment,
+        n_wires=2,
+        wire_order="sequential",
+    )
+
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "sequential",
+        },
+    }
+
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is True
+
+    # and with the wrong payload
+    job_payload = {
+        "experiment_0": {
+            "instructions": [["test", [0], [2]]],
+            "num_wires": 2,
+            "shots": 4,
+            "wire_order": "linear",
+        },
+    }
+    _, exp_ok, _ = test_spooler.check_json_dict(job_payload)
+    assert exp_ok is False
 
 
 ## Test the labscript spooler
@@ -341,7 +463,8 @@ def ls_storage_setup_td() -> Iterator[None]:
     shutil.rmtree("test", ignore_errors=True)
 
 
-def test_labscript_spooler_config(ls_storage_setup_td: Callable) -> None:
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_labscript_spooler_config(sign_it: bool, ls_storage_setup_td: Callable) -> None:
     """
     Test that it is possible to get the config of the spooler.
     """
@@ -353,31 +476,11 @@ def test_labscript_spooler_config(ls_storage_setup_td: Callable) -> None:
         run=DummyRun,
         n_wires=2,
         labscript_params=labscript_params,
+        sign=sign_it,
     )
 
     spooler_config = test_spooler.get_configuration()
     assert spooler_config.num_wires == 2
-    assert spooler_config.operational
-
-
-def test_labscript_spooler_op(ls_storage_setup_td: Callable) -> None:
-    """
-    Test that it is possible to set the operational status of the spooler.
-    """
-    labscript_params = LabscriptParams(exp_script_folder="test", t_wait=2)
-    test_spooler = LabscriptSpooler(
-        ins_schema_dict={},
-        device_config=DummyExperiment,
-        remote_client=DummyRemoteClient(),
-        run=DummyRun,
-        n_wires=2,
-        operational=False,
-        labscript_params=labscript_params,
-    )
-
-    spooler_config = test_spooler.get_configuration()
-    assert spooler_config.num_wires == 2
-    assert not spooler_config.operational
 
 
 def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
@@ -391,7 +494,6 @@ def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
         remote_client=DummyRemoteClient(),
         run=DummyRun,
         n_wires=2,
-        operational=False,
         labscript_params=labsript_params,
     )
     new_dir = "test_dir"
@@ -400,7 +502,10 @@ def test_labscript_spooler_modify(ls_storage_setup_td: Callable) -> None:
     assert modified_path == "test/test_dir"
 
 
-def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
+@pytest.mark.parametrize("sign_it", [True, False])
+def test_labscript_spooler_add_job(
+    sign_it: bool, ls_storage_setup_td: Callable
+) -> None:
     """
     Test that it is possible to add a job to the spooler.
     """
@@ -411,13 +516,11 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         remote_client=DummyRemoteClient(),
         run=DummyRun,
         n_wires=2,
-        operational=False,
         labscript_params=labsript_params,
+        sign=sign_it,
     )
 
-    status_msg_dict = get_init_status()
-    status_msg_dict.job_id = "Test_ID"
-
+    job_id = "Test_ID"
     n_shots = 4
     job_payload = {
         "experiment_0": {
@@ -428,7 +531,7 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         },
     }
 
-    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
     assert status_msg_dict.status == "ERROR", "Job should have failed"
     assert result_dict is not None
     # now add the header at the right position by copying
@@ -458,8 +561,8 @@ def test_labscript_spooler_add_job(ls_storage_setup_td: Callable) -> None:
         file_path = f"{file_queue_path}/test_{ii}.py"
         with open(file_path, "w", encoding="UTF-8") as file:
             file.write("test")
-    result_dict, status_msg_dict = test_spooler.add_job(job_payload, status_msg_dict)
-    assert status_msg_dict.status == "DONE", "Job should have failed"
+    result_dict, status_msg_dict = test_spooler.add_job(job_payload, job_id)
+    assert status_msg_dict.status == "DONE", "Job should not have failed"
 
 
 def test_create_memory_data() -> None:
@@ -471,3 +574,15 @@ def test_create_memory_data() -> None:
     n_shots = 3
     exp_dict = create_memory_data(shots_array, exp_name, n_shots)
     assert exp_dict.success is True
+
+    # test with measured wires
+    instr = ["test", [0], [1.0]]
+    instr_list = [gate_dict_from_list(instr)]
+    exp_dict = create_memory_data(shots_array, exp_name, n_shots, instr_list)
+    assert exp_dict.success is True
+
+    # test with mixed input
+    instr = ["test", [0, "a"], [1.0]]
+    with pytest.raises(ValidationError):
+        instr_list = [gate_dict_from_list(instr)]
+        exp_dict = create_memory_data(shots_array, exp_name, n_shots, instr_list)

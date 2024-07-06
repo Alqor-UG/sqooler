@@ -2,29 +2,38 @@
 The module that contains all the necessary logic for communication with the MongoDb storage providers.
 """
 
+import logging
 import uuid
+from datetime import timezone
+from typing import Optional
 
+from bson.codec_options import CodecOptions
+from bson.errors import InvalidId
+from bson.objectid import ObjectId
+from pymongo.collection import Collection
+from pymongo.database import Database
+from pymongo.errors import DuplicateKeyError
 
 # necessary for the mongodb provider
 from pymongo.mongo_client import MongoClient
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
 
 from ..schemes import (
+    AttributeIdStr,
+    AttributePathStr,
+    BackendConfigSchemaIn,
+    DisplayNameStr,
+    MongodbLoginInformation,
+    PathStr,
     ResultDict,
     StatusMsgDict,
-    MongodbLoginInformation,
-    BackendStatusSchemaOut,
-    BackendConfigSchemaIn,
-    BackendConfigSchemaOut,
 )
+from ..security import JWK
+from .base import StorageCore, StorageProvider, validate_active
 
-from .base import StorageProvider, validate_active
 
-
-class MongodbProviderExtended(StorageProvider):
+class MongodbCore(StorageCore):
     """
-    The access to the mongodb
+    Base class that creates the most important functions for the mongodb storage provider.
     """
 
     def __init__(
@@ -65,23 +74,22 @@ class MongodbProviderExtended(StorageProvider):
         storage_path: the access path towards the mongodb collection
         job_id: the id of the file we are about to create
         """
-        storage_splitted = storage_path.split("/")
 
-        # get the database on which we work
-        database = self.client[storage_splitted[0]]
-
-        # get the collection on which we work
-        collection_name = ".".join(storage_splitted[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(storage_path)
 
         content_dict["_id"] = ObjectId(job_id)
-        collection.insert_one(content_dict)
 
+        try:
+            collection.insert_one(content_dict)
+        except DuplicateKeyError as err:
+            raise FileExistsError(
+                f"The file with the id {job_id} already exists in the collection {storage_path}."
+            ) from err
         # remove the id from the content dict for further use
         content_dict.pop("_id", None)
 
     @validate_active
-    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+    def get(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage
 
@@ -101,12 +109,7 @@ class MongodbProviderExtended(StorageProvider):
 
         document_to_find = {"_id": ObjectId(job_id)}
 
-        # get the database on which we work
-        database = self.client[storage_path.split("/")[0]]
-
-        # get the collection on which we work
-        collection_name = ".".join(storage_path.split("/")[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(storage_path)
 
         result_found = collection.find_one(document_to_find)
 
@@ -119,22 +122,8 @@ class MongodbProviderExtended(StorageProvider):
         result_found.pop("_id", None)
         return result_found
 
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
-        """
-        Get the content of the job from the storage. This is a wrapper around get_file_content
-        and and handles the different ways of identifiying the job.
-
-        storage_path: the path towards the file, excluding the filename / id
-        job_id: the id of the file we are about to look up
-
-        Returns:
-
-        """
-        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
-        job_dict.pop("_id", None)
-        return job_dict
-
-    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    @validate_active
+    def update(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content. It replaces the old content with the new content.
 
@@ -150,12 +139,8 @@ class MongodbProviderExtended(StorageProvider):
         Raises:
             FileNotFoundError: If the file is not found
         """
-        # get the database on which we work
-        database = self.client[storage_path.split("/")[0]]
 
-        # get the collection on which we work
-        collection_name = ".".join(storage_path.split("/")[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(storage_path)
 
         filter_dict = {"_id": ObjectId(job_id)}
         result = collection.replace_one(filter_dict, content_dict)
@@ -164,7 +149,7 @@ class MongodbProviderExtended(StorageProvider):
             raise FileNotFoundError(f"Could not update file under {storage_path}")
 
     @validate_active
-    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+    def move(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
 
@@ -175,27 +160,22 @@ class MongodbProviderExtended(StorageProvider):
         Returns:
             None
         """
-        # get the database on which we work
-        database = self.client[start_path.split("/")[0]]
 
-        # get the collection on which we work
-        collection_name = ".".join(start_path.split("/")[1:])
-        collection = database[collection_name]
+        # delete the old file
+        _, collection = self._get_database_and_collection(start_path)
 
         document_to_find = {"_id": ObjectId(job_id)}
         result_found = collection.find_one(document_to_find)
 
-        # delete the old file
         collection.delete_one(document_to_find)
 
         # add the document to the new collection
-        database = self.client[final_path.split("/")[0]]
-        collection_name = ".".join(final_path.split("/")[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(final_path)
+
         collection.insert_one(result_found)
 
     @validate_active
-    def delete_file(self, storage_path: str, job_id: str) -> None:
+    def delete(self, storage_path: str, job_id: str) -> None:
         """
         Remove the file from the mongodb database
 
@@ -206,254 +186,486 @@ class MongodbProviderExtended(StorageProvider):
         Returns:
             None
         """
+        _, collection = self._get_database_and_collection(storage_path)
+
+        try:
+            document_to_find = {"_id": ObjectId(job_id)}
+        except InvalidId as err:
+            raise FileNotFoundError(
+                f"The job_id {job_id} is not valid. Please check the job_id."
+            ) from err
+        result = collection.delete_one(document_to_find)
+        if result.deleted_count == 0:
+            raise FileNotFoundError(
+                f"Could not find a file under {storage_path} with the id {job_id}."
+            )
+
+    def _get_database_and_collection(
+        self, storage_path: str
+    ) -> tuple[Database, Collection]:
+        """
+        Get the database and the collection on which we work.
+
+        Args:
+            storage_path: the path where the file is currently stored, but excluding the file name
+
+        Returns:
+            The database and the collection on which we work
+        """
+        # strip the path from leading and trailing slashes
+        storage_path = storage_path.strip("/")
+
         # get the database on which we work
         database = self.client[storage_path.split("/")[0]]
 
         # get the collection on which we work
         collection_name = ".".join(storage_path.split("/")[1:])
         collection = database[collection_name]
+        return database, collection
 
-        document_to_find = {"_id": ObjectId(job_id)}
-        collection.delete_one(document_to_find)
+
+class MongodbProviderExtended(StorageProvider, MongodbCore):
+    """
+    The access to the mongodb
+
+    Attributes:
+        configs_path: The path to the folder where the configurations are stored
+        queue_path: The path to the folder where the jobs are stored
+        running_path: The path to the folder where the running jobs are stored
+        finished_path: The path to the folder where the finished jobs are stored
+        deleted_path: The path to the folder where the deleted jobs are stored
+        status_path: The path to the folder where the status is stored
+        results_path: The path to the folder where the results are stored
+        pks_path: The path to the folder where the public keys are stored
+    """
+
+    configs_path: PathStr = "backends/configs"
+    queue_path: PathStr = "jobs/queued"
+    running_path: PathStr = "jobs/running"
+    finished_path: PathStr = "jobs/finished"
+    deleted_path: PathStr = "jobs/deleted"
+    status_path: PathStr = "status"
+    results_path: PathStr = "results"
+    pks_path: PathStr = "backends/public_keys"
+
+    def get_attribute_path(
+        self,
+        attribute_name: AttributePathStr,
+        display_name: Optional[DisplayNameStr] = None,
+        job_id: Optional[str] = None,
+        username: Optional[str] = None,
+    ) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
+            username: The username of the user
+
+        Returns:
+            The path to the results of the device.
+        """
+
+        match attribute_name:
+            case "configs":
+                path = self.configs_path
+            case "results":
+                path = f"{self.results_path}/{display_name}"
+            case "running":
+                path = self.running_path
+            case "status":
+                path = f"{self.status_path}/{display_name}"
+            case "queue":
+                path = f"{self.queue_path}/{display_name}"
+            case "deleted":
+                path = self.deleted_path
+            case "finished":
+                path = f"{self.finished_path}/{display_name}"
+            case "pks":
+                path = self.pks_path
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return path
+
+    def get_attribute_id(
+        self,
+        attribute_name: AttributeIdStr,
+        job_id: str,
+        display_name: Optional[DisplayNameStr] = None,
+    ) -> str:
+        """
+        Get the path to the id of the device.
+
+        Args:
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
+            display_name: The name of the backend
+
+        Returns:
+            The path to the results of the device.
+        """
+
+        match attribute_name:
+            case "configs":
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+            case "job":
+                _id = job_id
+            case "results":
+                _id = job_id
+            case "status":
+                _id = job_id
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return _id
 
     @validate_active
-    def get_backends(self) -> list[str]:
+    def get_backends(self) -> list[DisplayNameStr]:
         """
         Get a list of all the backends that the provider offers.
         """
 
-        # get the database on which we work
-        database = self.client["backends"]
-        config_collection = database["configs"]
+        # get the collection on which we work
+        _, config_collection = self._get_database_and_collection(self.configs_path)
+
         # get all the documents in the collection configs and save the disply_name in a list
-        backend_names: list[str] = []
+        backend_names: list[DisplayNameStr] = []
         for config_dict in config_collection.find():
-            backend_names.append(config_dict["display_name"])
+            config_dict.pop("_id")
+            expected_keys_for_jws = {"header", "payload", "signature"}
+            if set(config_dict.keys()) == expected_keys_for_jws:
+                backend_names.append(config_dict["payload"]["display_name"])
+            else:
+                backend_names.append(config_dict["display_name"])
         return backend_names
 
-    @validate_active
-    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
-        """
-        The configuration dictionary of the backend such that it can be sent out to the API to
-        the common user. We make sure that it is compatible with QISKIT within this function.
-
-        Args:
-            display_name: The identifier of the backend
-
-        Returns:
-            The full schema of the backend.
-        """
-        # get the database on which we work
-        database = self.client["backends"]
-        config_collection = database["configs"]
-
-        # create the filter for the document with display_name that is equal to display_name
-        document_to_find = {"display_name": display_name}
-        backend_config_dict = config_collection.find_one(document_to_find)
-
-        if not backend_config_dict:
-            raise FileNotFoundError("The backend does not exist for the given storage.")
-
-        backend_config_dict.pop("_id")
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
-        return qiskit_backend_dict
-
-    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
-        """
-        Get the status of the backend. This follows the qiskit logic.
-
-        Args:
-            display_name: The name of the backend
-
-        Returns:
-            The status dict of the backend
-
-        Raises:
-            FileNotFoundError: If the backend does not exist
-        """
-        # get the database on which we work
-        database = self.client["backends"]
-        config_collection = database["configs"]
-
-        # create the filter for the document with display_name that is equal to display_name
-        document_to_find = {"display_name": display_name}
-        backend_config_dict = config_collection.find_one(document_to_find)
-
-        if not backend_config_dict:
-            raise FileNotFoundError(
-                f"The backend {display_name} does not exist for the given storageprovider."
-            )
-
-        backend_config_dict.pop("_id")
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
-        return qiskit_backend_dict
-
     def upload_config(
-        self, config_dict: BackendConfigSchemaIn, backend_name: str
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         The function that uploads the spooler configuration to the storage.
 
         Args:
             config_dict: The dictionary containing the configuration
-            backend_name (str): The name of the backend
+            display_name : The name of the backend
+            private_jwk: The private JWK to sign the configuration with
 
         Returns:
             None
         """
-        config_path = "backends/configs"
+        config_dict = self._verify_config(config_dict, display_name)
 
         # first we have to check if the device already exists in the database
 
-        document_to_find = {"display_name": backend_name}
-
-        # get the database on which we work
-        database = self.client["backends"]
+        document_to_find = {"display_name": display_name}
 
         # get the collection on which we work
-        collection = database["configs"]
+        _, collection = self._get_database_and_collection(self.configs_path)
+
+        document_to_find = {"display_name": display_name}
+        result_found = collection.find_one(document_to_find)
+        if result_found:
+            raise FileExistsError(
+                f"The configuration for {display_name} already exists and should not be overwritten."
+            )
+
+        # now also look for signed configurations
+        signed_document_to_find = {"payload.display_name": display_name}
+        result_found = collection.find_one(signed_document_to_find)
+        if result_found:
+            raise FileExistsError(
+                f"The configuration for {display_name} already exists and should not be overwritten."
+            )
+
+        upload_dict = self._format_config_dict(config_dict, private_jwk)
+        config_id = uuid.uuid4().hex[:24]
+        self.upload(upload_dict, self.configs_path, config_id)
+
+    def update_config(
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
+    ) -> None:
+        """
+        The function that updates the spooler configuration on the storage.
+
+        Args:
+            config_dict: The dictionary containing the configuration
+            display_name : The name of the backend
+            private_jwk: The private key of the backend
+
+        Returns:
+            None
+        """
+
+        config_dict = self._verify_config(config_dict, display_name)
+
+        _, collection = self._get_database_and_collection(self.configs_path)
+
+        # now make sure that we add the timezone as we open the file
+        collection_with_tz = collection.with_options(
+            codec_options=CodecOptions(tz_aware=True, tzinfo=timezone.utc)
+        )
+        # first we have to check if the device already exists in the database
+        document_to_find = {"display_name": display_name}
+        result_found = collection_with_tz.find_one(document_to_find)
+
+        signed_document_to_find = {"payload.display_name": display_name}
+        signed_backend_config_dict = collection_with_tz.find_one(
+            signed_document_to_find
+        )
+
+        if result_found:
+            old_config_jws = result_found
+            job_id = result_found["_id"]
+        elif signed_backend_config_dict:
+            old_config_jws = signed_backend_config_dict
+            job_id = signed_backend_config_dict["_id"]
+            old_config_jws.pop("_id")
+        else:
+            raise FileNotFoundError(
+                (
+                    f"The config for {display_name} does not exist and should not be updated."
+                    "Use the upload_config method instead."
+                )
+            )
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
+
+        self.update(
+            content_dict=upload_dict,
+            storage_path=self.configs_path,
+            job_id=job_id,
+        )
+
+    @validate_active
+    def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
+        """
+        The function that downloads the spooler configuration to the storage.
+
+        Args:
+            display_name : The name of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
+
+        Returns:
+            The configuration of the backend in complete form.
+        """
+        # get the collection on which we work
+        _, config_collection = self._get_database_and_collection(self.configs_path)
+
+        # create the filter for the document with display_name that is equal to display_name
+        document_to_find = {"display_name": display_name}
+        backend_config_dict = config_collection.find_one(document_to_find)
+
+        signed_document_to_find = {"payload.display_name": display_name}
+        signed_backend_config_dict = config_collection.find_one(signed_document_to_find)
+
+        # work with the unsigned backend
+        if backend_config_dict:
+            backend_config_dict.pop("_id")
+            return BackendConfigSchemaIn(**backend_config_dict)
+
+        # work with the signed backend this is working normally due to the mongodb API, but to make
+        # mypy happy, we have to check if the signed_backend_config_dict is not None
+        elif signed_backend_config_dict:
+            payload = signed_backend_config_dict["payload"]
+            return BackendConfigSchemaIn(**payload)
+
+        raise FileNotFoundError("The backend does not exist for the given storage.")
+
+    def _delete_config(self, display_name: DisplayNameStr) -> bool:
+        """
+        Delete a config from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+
+        Raises:
+            FileNotFoundError: If the config does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+
+        config_dict = self.get_config(display_name)
+        _, collection = self._get_database_and_collection(self.configs_path)
+
+        if not config_dict.sign:
+            document_to_find = {"display_name": display_name}
+        else:
+            document_to_find = {"payload.display_name": display_name}
 
         result_found = collection.find_one(document_to_find)
-        config_dict.display_name = backend_name
+        if result_found is None:
+            raise FileNotFoundError(f"the config for {display_name} does not exist.")
+        self.delete(self.configs_path, str(result_found["_id"]))
+
+        return True
+
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
+        """
+        Create a job id for the job.
+
+        Returns:
+            The job id
+        """
+        return (uuid.uuid4().hex)[:24]
+
+    def _delete_status(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> bool:
+        """
+        Delete a status from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        status_json_dir = self.get_attribute_path("status", display_name)
+
+        self.delete(storage_path=status_json_dir, job_id=job_id)
+        return True
+
+    def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
+        """
+        Delete a result from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
+
+        Raises:
+            FileNotFoundError: If the result does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        result_json_dir = self.get_attribute_path("results", display_name, job_id)
+
+        self.delete(storage_path=result_json_dir, job_id=job_id)
+        return True
+
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+        # first make sure that the public key is intended for verification
+        if not public_jwk.key_ops == "verify":
+            raise ValueError("The key is not intended for verification")
+
+        # make sure that the key does not contain a private key
+        if public_jwk.d is not None:
+            raise ValueError("The key contains a private key")
+
+        # make sure that the key has the correct kid
+        config_dict = self.get_config(display_name)
+        if public_jwk.kid != config_dict.kid:
+            raise ValueError("The key does not have the correct kid.")
+
+        pks_path = self.get_attribute_path("pks")
+        _, collection = self._get_database_and_collection(pks_path)
+
+        # first we have to check if the device already exists in the database
+        document_to_find = {"kid": config_dict.kid}
+
+        result_found = collection.find_one(document_to_find)
         if result_found:
             # update the file
-            self.update_file(
-                content_dict=config_dict.model_dump(),
-                storage_path=config_path,
+            self.update(
+                content_dict=public_jwk.model_dump(),
+                storage_path=pks_path,
                 job_id=result_found["_id"],
             )
             return
 
         # if the device does not exist, we have to create it
-
         config_id = uuid.uuid4().hex[:24]
-        self.upload(config_dict.model_dump(), config_path, config_id)
+        self.upload(public_jwk.model_dump(), pks_path, config_id)
 
-    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
         """
-        Upload the job to the storage provider.
+        The function that gets the spooler public JWK for the device.
 
         Args:
-            job_dict: the full job dict
-            display_name: the name of the backend
-            username: the name of the user that submitted the job
+            display_name : The name of the backend
 
         Returns:
-            The job id of the uploaded job.
+            JWk : The public JWK object
         """
 
-        storage_path = "jobs/queued/" + display_name
-        job_id = (uuid.uuid4().hex)[:24]
+        # get the database on which we work
+        pks_path = self.get_attribute_path("pks")
+        _, collection = self._get_database_and_collection(pks_path)
 
-        self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
-        return job_id
+        # now get the appropiate kid
+        config_dict = self.get_config(display_name)
+        if config_dict.kid is None:
+            raise ValueError("The kid is not set in the backend configuration.")
 
-    def upload_status(
-        self, display_name: str, username: str, job_id: str
-    ) -> StatusMsgDict:
+        # create the filter for the document with display_name that is equal to display_name
+        document_to_find = {"kid": config_dict.kid}
+        public_jwk_dict = collection.find_one(document_to_find)
+
+        if not public_jwk_dict:
+            raise FileNotFoundError("The backend does not exist for the given storage.")
+
+        public_jwk_dict.pop("_id")
+        return JWK(**public_jwk_dict)
+
+    def _delete_public_key(self, kid: str) -> bool:
         """
-        This function uploads a status file to the backend and creates the status dict.
+        Delete a public key from the storage. This is only intended for test purposes.
 
         Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
+            kid: The key id of the public key
+
+        Raises:
+            FileNotFoundError: If the public key does not exist.
 
         Returns:
-            The status dict of the job
+            Success if the file was deleted successfully
         """
-        storage_path = "status/" + display_name
-        status_draft = {
-            "job_id": job_id,
-            "status": "INITIALIZING",
-            "detail": "Got your json.",
-            "error_message": "None",
-        }
+        document_to_find = {"kid": kid}
+        # get the database on which we work
+        pks_path = self.get_attribute_path("pks")
+        _, collection = self._get_database_and_collection(pks_path)
 
-        # should we also upload the username into the dict ?
-        status_dict = StatusMsgDict(**status_draft)
-        # now upload the status dict
-        self.upload(
-            content_dict=status_dict.model_dump(),
-            storage_path=storage_path,
-            job_id=job_id,
-        )
-        return status_dict
-
-    def get_status(
-        self, display_name: str, username: str, job_id: str
-    ) -> StatusMsgDict:
-        """
-        This function gets the status file from the backend and returns the status dict.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
-
-        Returns:
-            The status dict of the job
-        """
-        status_json_dir = "status/" + display_name
-
-        try:
-            status_dict = self.get_file_content(
-                storage_path=status_json_dir, job_id=job_id
-            )
-            return StatusMsgDict(**status_dict)
-        except FileNotFoundError as err:
-            # if the job_id is not valid, we return an error
-            return StatusMsgDict(
-                job_id=job_id,
-                status="ERROR",
-                detail="The job_id is not valid.",
-                error_message=str(err),
-            )
-
-    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
-        """
-        This function gets the result file from the backend and returns the result dict.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
-
-        Returns:
-            The result dict of the job. If the information is not available, the result dict
-            has a status of "ERROR".
-        """
-        result_json_dir = "results/" + display_name
-        try:
-            result_dict = self.get_file_content(
-                storage_path=result_json_dir, job_id=job_id
-            )
-        except FileNotFoundError:
-            # if the job_id is not valid, we return an error
-            return ResultDict(
-                display_name=display_name,
-                backend_version="",
-                job_id=job_id,
-                qobj_id=None,
-                success=False,
-                status="ERROR",
-                header={},
-                results=[],
-            )
-        backend_config_info = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_info.backend_name
-
-        typed_result = ResultDict(**result_dict)
-        return typed_result
+        result_found = collection.find_one(document_to_find)
+        if result_found is None:
+            raise FileNotFoundError(f"The public key with kid {kid} does not exist")
+        self.delete(pks_path, str(result_found["_id"]))
+        return True
 
     def update_in_database(
         self,
         result_dict: ResultDict | None,
         status_msg_dict: StatusMsgDict,
         job_id: str,
-        backend_name: str,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -466,7 +678,8 @@ class MongodbProviderExtended(StorageProvider):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
-            backend_name: the name of the backend
+            display_name: the name of the backend
+            private_jwk: the private JWK to sign the result with
 
         Returns:
             None
@@ -475,7 +688,7 @@ class MongodbProviderExtended(StorageProvider):
 
         """
 
-        job_json_start_dir = "jobs/running"
+        job_json_start_dir = self.get_attribute_path("running")
         # check if the job is done or had an error
         if status_msg_dict.status == "DONE":
             # test if the result dict is None
@@ -483,24 +696,38 @@ class MongodbProviderExtended(StorageProvider):
                 raise ValueError(
                     "The 'result_dict' argument cannot be None if the job is done."
                 )
-            # let us create the result json file
-            result_json_dir = "results/" + backend_name
-            self.upload(result_dict.model_dump(), result_json_dir, job_id)
+            result_uploaded = self.upload_result(
+                result_dict, display_name, job_id, private_jwk
+            )
+            if not result_uploaded:
+                raise ValueError("The result was not uploaded successfully.")
 
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = "jobs/finished/" + backend_name
-            self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
+            job_finished_json_dir = self.get_attribute_path(
+                "finished", display_name=display_name
+            )
+            self.move(job_json_start_dir, job_finished_json_dir, job_id)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            deleted_json_dir = "jobs/deleted"
-            self.move_file(job_json_start_dir, deleted_json_dir, job_id)
+            deleted_json_dir = self.get_attribute_path("deleted")
+            self.move(job_json_start_dir, deleted_json_dir, job_id)
 
         # TODO: most likely we should raise an error if the status of the job is not DONE or ERROR
 
         # and create the status json file
-        status_json_dir = "status/" + backend_name
-        self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
+        status_json_dir = self.get_attribute_path("status", display_name)
+
+        try:
+            self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
+        except FileNotFoundError:
+            logging.warning(
+                "The status file was missing for %s with job_id %s was missing.",
+                display_name,
+                job_id,
+            )
+            self.upload_status(display_name, "", job_id)
+            self.update(status_msg_dict.model_dump(), status_json_dir, job_id)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
@@ -512,15 +739,8 @@ class MongodbProviderExtended(StorageProvider):
         Returns:
             A list of files that was found.
         """
-        # strip trailing and leading slashes from the paths
-        storage_path = storage_path.strip("/")
 
-        # get the database on which we work
-        database = self.client[storage_path.split("/")[0]]
-
-        # get the collection on which we work
-        collection_name = ".".join(storage_path.split("/")[1:])
-        collection = database[collection_name]
+        _, collection = self._get_database_and_collection(storage_path)
 
         # now get the id of all the documents in the collection
         results = collection.find({}, {"_id": 1})
@@ -528,31 +748,6 @@ class MongodbProviderExtended(StorageProvider):
         for result in results:
             file_list.append(str(result["_id"]))
         return file_list
-
-    def get_next_job_in_queue(self, backend_name: str) -> dict:
-        """
-        A function that obtains the next job in the queue. It looks in the queued folder and moves the
-        first job to the running folder.
-
-        Args:
-            backend_name (str): The name of the backend
-
-        Returns:
-            the path towards the job
-        """
-
-        queue_dir = "jobs/queued/" + backend_name
-        job_dict = {"job_id": 0, "job_json_path": "None"}
-        job_list = self.get_file_queue(queue_dir)
-        # if there is a job, we should move it
-        if job_list:
-            job_id = job_list[0]
-            job_dict["job_id"] = job_id
-
-            # and move the file into the right directory
-            self.move_file(queue_dir, "jobs/running", job_id)
-            job_dict["job_json_path"] = "jobs/running"
-        return job_dict
 
 
 class MongodbProvider(MongodbProviderExtended):

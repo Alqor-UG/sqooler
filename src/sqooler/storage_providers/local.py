@@ -2,30 +2,30 @@
 The module that contains all the necessary logic for communication with the local storage providers.
 """
 
-import uuid
 import json
-
-from typing import Mapping
-
-# necessary for the local provider
-import shutil
+import logging
 import os
+import shutil
+import uuid
+from typing import Mapping, Optional
 
 from ..schemes import (
+    AttributeIdStr,
+    AttributePathStr,
+    BackendConfigSchemaIn,
+    DisplayNameStr,
+    LocalLoginInformation,
+    PathStr,
     ResultDict,
     StatusMsgDict,
-    LocalLoginInformation,
-    BackendStatusSchemaOut,
-    BackendConfigSchemaIn,
-    BackendConfigSchemaOut,
 )
+from ..security import JWK
+from .base import StorageCore, StorageProvider, datetime_handler, validate_active
 
-from .base import StorageProvider, validate_active
 
-
-class LocalProviderExtended(StorageProvider):
+class LocalCore(StorageCore):
     """
-    Create a file storage that works on the local machine.
+    Base class that creates the most important functions for the local storage provider.
     """
 
     def __init__(
@@ -50,6 +50,11 @@ class LocalProviderExtended(StorageProvider):
     def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
         """
         Upload the file to the storage
+
+        Args:
+            content_dict: The dictionary containing the content of the file
+            storage_path: The path to the file
+            job_id: The id of the job
         """
         # strip trailing and leading slashes from the storage_path
         storage_path = storage_path.strip("/")
@@ -63,12 +68,17 @@ class LocalProviderExtended(StorageProvider):
         file_name = job_id + ".json"
         full_json_path = os.path.join(folder_path, file_name)
         secure_path = os.path.normpath(full_json_path)
+        # test if the file already exists and raise a warning if it does
+        if os.path.exists(secure_path):
+            raise FileExistsError(
+                f"The file {secure_path} already exists and should not be overwritten."
+            )
 
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json.dump(content_dict, json_file)
+            json.dump(content_dict, json_file, default=datetime_handler)
 
     @validate_active
-    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+    def get(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the storage
         """
@@ -89,21 +99,8 @@ class LocalProviderExtended(StorageProvider):
             loaded_data_dict = json.load(json_file)
         return loaded_data_dict
 
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
-        """
-        Get the content of the job from the storage. This is a wrapper around get_file_content
-        and and handles the different ways of identifiying the job.
-
-        storage_path: the path towards the file, excluding the filename / id
-        job_id: the id of the file we are about to look up
-
-        Returns:
-            The content of the job
-        """
-        job_dict = self.get_file_content(storage_path=storage_path, job_id=job_id)
-        return job_dict
-
-    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    @validate_active
+    def update(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content.
 
@@ -132,10 +129,10 @@ class LocalProviderExtended(StorageProvider):
                 f"The file {secure_path} does not exist and cannot be updated."
             )
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json.dump(content_dict, json_file)
+            json.dump(content_dict, json_file, default=datetime_handler)
 
     @validate_active
-    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+    def move(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from `start_path` to `final_path`
         """
@@ -151,13 +148,16 @@ class LocalProviderExtended(StorageProvider):
         shutil.move(source_file, final_path)
 
     @validate_active
-    def delete_file(self, storage_path: str, job_id: str) -> None:
+    def delete(self, storage_path: str, job_id: str) -> None:
         """
         Delete the file from the storage
 
         Args:
             storage_path: the path where the file is currently stored, but excluding the file name
             job_id: the name of the file
+
+        Raises:
+            FileNotFoundError: If the file is not found
 
         Returns:
             None
@@ -166,241 +166,338 @@ class LocalProviderExtended(StorageProvider):
         source_file = self.base_path + "/" + storage_path + "/" + job_id + ".json"
         os.remove(source_file)
 
-    @validate_active
-    def get_backends(self) -> list[str]:
+
+class LocalProviderExtended(StorageProvider, LocalCore):
+    """
+    Create a file storage that works on the local machine.
+
+    Attributes:
+        configs_path: The path to the folder where the configurations are stored
+        queue_path: The path to the folder where the jobs are stored
+        running_path: The path to the folder where the running jobs are stored
+        finished_path: The path to the folder where the finished jobs are stored
+        deleted_path: The path to the folder where the deleted jobs are stored
+        status_path: The path to the folder where the status is stored
+        results_path: The path to the folder where the results are stored
+        pks_path: The path to the folder where the public keys are stored
+    """
+
+    configs_path: PathStr = "backends/configs"
+    queue_path: PathStr = "jobs/queued"
+    running_path: PathStr = "jobs/running"
+    finished_path: PathStr = "jobs/finished"
+    deleted_path: PathStr = "jobs/deleted"
+    status_path: PathStr = "status"
+    results_path: PathStr = "results"
+    pks_path: PathStr = "backends/public_keys"
+
+    def get_attribute_path(
+        self,
+        attribute_name: AttributePathStr,
+        display_name: Optional[DisplayNameStr] = None,
+        job_id: Optional[str] = None,
+        username: Optional[str] = None,
+    ) -> str:
         """
-        Get a list of all the backends that the provider offers.
-        """
-        # path of the configs
-        config_path = self.base_path + "/backends/configs"
-        backend_names: list[str] = []
-
-        # If the folder does not exist, return an empty list
-        if not os.path.exists(config_path):
-            return backend_names
-
-        # Get a list of all items in the folder
-        all_items = os.listdir(config_path)
-        # Filter out only the JSON files
-        json_files = [item for item in all_items if item.endswith(".json")]
-
-        for file_name in json_files:
-            full_json_path = os.path.join(config_path, file_name)
-            secure_path = os.path.normpath(full_json_path)
-
-            with open(secure_path, "r", encoding="utf-8") as json_file:
-                config_dict = json.load(json_file)
-                backend_names.append(config_dict["display_name"])
-        return backend_names
-
-    @validate_active
-    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
-        """
-        The configuration dictionary of the backend such that it can be sent out to the API to
-        the common user. We make sure that it is compatible with QISKIT within this function.
-
-        Args:
-            display_name: The identifier of the backend
-
-        Returns:
-            The full schema of the backend.
-
-        Raises:
-            FileNotFoundError: If the backend does not exist
-        """
-        # path of the configs
-        config_path = self.base_path + "/backends/configs"
-        file_name = display_name + ".json"
-        full_json_path = os.path.join(config_path, file_name)
-        secure_path = os.path.normpath(full_json_path)
-        with open(secure_path, "r", encoding="utf-8") as json_file:
-            backend_config_dict = json.load(json_file)
-
-        if not backend_config_dict:
-            raise FileNotFoundError("The backend does not exist for the given storage.")
-
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
-        return qiskit_backend_dict
-
-    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
-        """
-        Get the status of the backend. This follows the qiskit logic.
+        Get the path to the attribute of the device.
 
         Args:
             display_name: The name of the backend
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
+            username: The username of the user
 
         Returns:
-            The status dict of the backend
+            The path to the results of the device.
+        """
+
+        match attribute_name:
+            case "configs":
+                path = self.configs_path
+            case "results":
+                path = f"{self.results_path}/{display_name}"
+            case "running":
+                path = self.running_path
+            case "status":
+                path = f"{self.status_path}/{display_name}"
+            case "queue":
+                path = f"{self.queue_path}/{display_name}"
+            case "deleted":
+                path = self.deleted_path
+            case "finished":
+                path = f"{self.finished_path}/{display_name}"
+            case "pks":
+                path = self.pks_path
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return path
+
+    def get_attribute_id(
+        self,
+        attribute_name: AttributeIdStr,
+        job_id: str,
+        display_name: Optional[DisplayNameStr] = None,
+    ) -> str:
+        """
+        Get the path to the id of the device.
+
+        Args:
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
+            display_name: The name of the backend
+
+        Returns:
+            The path to the results of the device.
+        """
+        match attribute_name:
+            case "configs":
+                if display_name is None:
+                    raise ValueError("The display_name is missing")
+                _id = display_name
+            case "job":
+                _id = job_id
+            case "results":
+                _id = job_id
+            case "status":
+                _id = job_id
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return _id
+
+    def get_backends(self) -> list[DisplayNameStr]:
+        """
+        Get a list of all the backends that the provider offers.
+        """
+        return self.get_file_queue(self.configs_path)
+
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
+        """
+        Create a job id for the job.
+
+        Returns:
+            The job id
+        """
+        return (uuid.uuid4().hex)[:24]
+
+    def _delete_status(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> bool:
+        """
+        Delete a status from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+            username: The username of the user that is uploading the job
+            job_id: The job_id of the job that we want to upload the status for
 
         Raises:
-            FileNotFoundError: If the backend does not exist
-        """
-        # path of the configs
-        file_name = display_name + ".json"
-        config_path = self.base_path + "/backends/configs"
-        full_json_path = os.path.join(config_path, file_name)
-        secure_path = os.path.normpath(full_json_path)
-        with open(secure_path, "r", encoding="utf-8") as json_file:
-            backend_config_dict = json.load(json_file)
-
-        if not backend_config_dict:
-            raise FileNotFoundError(
-                f"The backend {display_name} does not exist for the given storageprovider."
-            )
-
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
-        return qiskit_backend_dict
-
-    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
-        """
-        Upload the job to the storage provider.
-
-        Args:
-            job_dict: the full job dict
-            display_name: the name of the backend
-            username: the name of the user that submitted the job
+            FileNotFoundError: If the status does not exist.
 
         Returns:
-            The job id of the uploaded job.
+            Success if the file was deleted successfully
         """
+        status_json_dir = self.get_attribute_path("status", display_name)
 
-        storage_path = "jobs/queued/" + display_name
-        job_id = (uuid.uuid4().hex)[:24]
+        self.delete(storage_path=status_json_dir, job_id=job_id)
+        return True
 
-        self.upload(content_dict=job_dict, storage_path=storage_path, job_id=job_id)
-        return job_id
-
-    def upload_status(
-        self, display_name: str, username: str, job_id: str
-    ) -> StatusMsgDict:
+    def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
         """
-        This function uploads a status file to the backend and creates the status dict.
+        Delete a result from the storage. This is only intended for test purposes.
 
         Args:
             display_name: The name of the backend to which we want to upload the job
             username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
 
-        Returns:
-            The status dict of the job
-        """
-        storage_path = "status/" + display_name
-        status_draft = {
-            "job_id": job_id,
-            "status": "INITIALIZING",
-            "detail": "Got your json.",
-            "error_message": "None",
-        }
-
-        # should we also upload the username into the dict ?
-        status_dict = StatusMsgDict(**status_draft)
-        # now upload the status dict
-        self.upload(
-            content_dict=status_dict.model_dump(),
-            storage_path=storage_path,
-            job_id=job_id,
-        )
-        return status_dict
-
-    def get_status(
-        self, display_name: str, username: str, job_id: str
-    ) -> StatusMsgDict:
-        """
-        This function gets the status file from the backend and returns the status dict.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
+        Raises:
+            FileNotFoundError: If the result does not exist.
 
         Returns:
-            The status dict of the job
+            Success if the file was deleted successfully
         """
-        status_json_dir = "status/" + display_name
 
-        try:
-            status_dict = self.get_file_content(
-                storage_path=status_json_dir, job_id=job_id
-            )
-            return StatusMsgDict(**status_dict)
-        except FileNotFoundError:
-            # if the job_id is not valid, we return an error
-            return StatusMsgDict(
-                job_id=job_id,
-                status="ERROR",
-                detail="Cannot get status",
-                error_message=f"Could not find status for {display_name} with job_id {job_id}.",
-            )
+        result_json_dir = self.get_attribute_path("results", display_name, job_id)
+        self.delete(storage_path=result_json_dir, job_id=job_id)
+        return True
 
-    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
-        """
-        This function gets the result file from the backend and returns the result dict.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
-
-        Returns:
-            The result dict of the job. If the information is not available, the result dict
-            has a status of "ERROR".
-        """
-        result_json_dir = "results/" + display_name
-        try:
-            result_dict = self.get_file_content(
-                storage_path=result_json_dir, job_id=job_id
-            )
-        except FileNotFoundError:
-            # if the job_id is not valid, we return an error
-            return ResultDict(
-                display_name=display_name,
-                backend_version="",
-                job_id=job_id,
-                qobj_id=None,
-                success=False,
-                status="ERROR",
-                header={},
-                results=[],
-            )
-        backend_config_info = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_info.backend_name
-        typed_result = ResultDict(**result_dict)
-        return typed_result
-
-    def upload_config(
-        self, config_dict: BackendConfigSchemaIn, backend_name: str
+    def update_config(
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
-        The function that uploads the spooler configuration to the storage.
+        The function that updates the spooler configuration on the storage.
 
         Args:
             config_dict: The dictionary containing the configuration
-            backend_name (str): The name of the backend
+            display_name : The name of the backend
+            private_jwk: The private key of the backend
 
         Returns:
             None
         """
-        # path of the configs
-        config_path = os.path.join(self.base_path, "backends/configs")
-        config_path = os.path.normpath(os.path.join(self.base_path, "backends/configs"))
-        # test if the config path already exists. If it does not, create it
-        if not os.path.exists(config_path):
-            os.makedirs(config_path)
 
-        file_name = backend_name + ".json"
+        config_dict = self._verify_config(config_dict, display_name)
+        # path of the configs
+        config_path = os.path.join(self.base_path, self.configs_path)
+        config_path = os.path.normpath(config_path)
+
+        file_name = display_name + ".json"
         full_json_path = os.path.join(config_path, file_name)
         secure_path = os.path.normpath(full_json_path)
+
+        # check if the file already exists
+        if not os.path.exists(secure_path):
+            raise FileNotFoundError(
+                (
+                    f"The file {secure_path} does not exist and should not be updated."
+                    "Use the upload_config method instead."
+                )
+            )
+
+        # now read the old config
+        with open(secure_path, "r", encoding="utf-8") as json_file:
+            old_config_jws = json.load(json_file)
+
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
+
+        self.update(
+            content_dict=upload_dict,
+            storage_path=self.configs_path,
+            job_id=display_name,
+        )
+
+    def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
+        """
+        The function that downloads the spooler configuration to the storage.
+
+        Args:
+            display_name : The name of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
+
+        Returns:
+            The configuration of the backend in complete form.
+        """
+        # path of the configs
+        backend_config_dict = self.get(self.configs_path, job_id=display_name)
+        typed_config = self._adapt_get_config(backend_config_dict)
+        return typed_config
+
+    def _delete_config(self, display_name: DisplayNameStr) -> bool:
+        """
+        Delete a config from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+
+        self.delete(storage_path=self.configs_path, job_id=display_name)
+        return True
+
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage. It should
+        only be used after `upload_config` as the kid is set there.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+        # first make sure that the public key is intended for verification
+        if not public_jwk.key_ops == "verify":
+            raise ValueError("The key is not intended for verification")
+
+        # make sure that the key does not contain a private key
+        if public_jwk.d is not None:
+            raise ValueError("The key contains a private key")
+
+        # make sure that the key has the correct kid
+        config_dict = self.get_config(display_name)
+        if public_jwk.kid != config_dict.kid:
+            raise ValueError("The key does not have the correct kid.")
+
+        # path of the public keys
+        pks_path = self.get_attribute_path("pks")
+        key_path = os.path.join(self.base_path, pks_path)
+        key_path = os.path.normpath(key_path)
+        # test if the config path already exists. If it does not, create it
+        if not os.path.exists(key_path):
+            os.makedirs(key_path)
+
+        # this should most likely depend on the kid at some point
+        file_name = f"{public_jwk.kid}.json"
+        full_json_path = os.path.join(key_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
         with open(secure_path, "w", encoding="utf-8") as json_file:
-            json.dump(config_dict.model_dump(), json_file)
+            json_file.write(public_jwk.model_dump_json())
+
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+
+        # first we have to get the kid
+        config_info = self.get_config(display_name)
+
+        # path of the configs
+        pks_path = self.get_attribute_path("pks")
+        key_path = os.path.join(self.base_path, pks_path)
+        file_name = f"{config_info.kid}.json"
+        full_json_path = os.path.join(key_path, file_name)
+        secure_path = os.path.normpath(full_json_path)
+        with open(secure_path, "r", encoding="utf-8") as json_file:
+            public_key_dict = json.load(json_file)
+
+        if not public_key_dict:
+            raise FileNotFoundError("The backend does not exist for the given storage.")
+
+        return JWK(**public_key_dict)
+
+    def _delete_public_key(self, kid: str) -> bool:
+        """
+        Delete a public key from the storage. This is only intended for test purposes.
+
+        Args:
+            kid: The key id of the public key
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        pks_path = self.get_attribute_path("pks")
+        self.delete(storage_path=pks_path, job_id=kid)
+        return True
 
     def update_in_database(
         self,
         result_dict: ResultDict,
         status_msg_dict: StatusMsgDict,
         job_id: str,
-        backend_name: str,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the `StorageProvider`.
@@ -409,12 +506,27 @@ class LocalProviderExtended(StorageProvider):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
-            backend_name: the name of the backend
+            display_name: the name of the backend
+            private_jwk: the private key of the backend
 
         Returns:
             None
         """
-        job_json_start_dir = "jobs/running"
+
+        # this is an ugly hack to get the username
+        if job_id.startswith("job-"):
+            extracted_username = job_id.split("-")[2]
+        else:
+            extracted_username = None
+
+        status_json_dir = self.get_attribute_path(
+            "status", display_name, extracted_username
+        )
+        job_json_start_dir = self.get_attribute_path("running")
+
+        status_json_name = self.get_attribute_id("status", job_id=job_id)
+        job_json_name = self.get_attribute_id("job", job_id)
+
         # check if the job is done or had an error
         if status_msg_dict.status == "DONE":
             # test if the result dict is None
@@ -422,26 +534,40 @@ class LocalProviderExtended(StorageProvider):
                 raise ValueError(
                     "The 'result_dict' argument cannot be None if the job is done."
                 )
-            # let us create the result json file
-            result_json_dir = "results/" + backend_name
-            self.upload(result_dict.model_dump(), result_json_dir, job_id)
+            result_uploaded = self.upload_result(
+                result_dict, display_name, job_id, private_jwk
+            )
+            if not result_uploaded:
+                raise ValueError("The result was not uploaded successfully.")
 
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = "jobs/finished/" + backend_name
-            self.move_file(job_json_start_dir, job_finished_json_dir, job_id)
+            job_finished_json_dir = self.get_attribute_path(
+                "finished", display_name=display_name
+            )
+
+            self.move(job_json_start_dir, job_finished_json_dir, job_json_name)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            deleted_json_dir = "jobs/deleted"
-            self.move_file(job_json_start_dir, deleted_json_dir, job_id)
+            deleted_json_dir = self.get_attribute_path("deleted", display_name)
+            self.move(job_json_start_dir, deleted_json_dir, job_json_name)
 
         # and create the status json file
-        status_json_dir = "status/" + backend_name
-        self.update_file(status_msg_dict.model_dump(), status_json_dir, job_id)
+        try:
+            self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
+        except FileNotFoundError:
+            logging.warning(
+                "The status file was missing for %s with job_id %s was missing.",
+                display_name,
+                job_id,
+            )
+            self.upload_status(display_name, "", status_json_name)
+            self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
-        Get a list of files
+        Get a list of files. Only json files are considered. And the ending of
+        the file is removed.
 
         Args:
             storage_path: Where are we looking for the files.
@@ -454,31 +580,15 @@ class LocalProviderExtended(StorageProvider):
         # test if the path exists. Otherwise simply return an empty list
         if not os.path.exists(full_path):
             return []
-        return os.listdir(full_path)
 
-    def get_next_job_in_queue(self, backend_name: str) -> dict:
-        """
-        A function that obtains the next job in the queue.
+        all_items = os.listdir(full_path)
+        # Filter out only the JSON files
+        json_files = [item for item in all_items if item.endswith(".json")]
 
-        Args:
-            backend_name: The name of the backend
+        # Get the backend names
+        names = [os.path.splitext(file_name)[0] for file_name in json_files]
 
-        Returns:
-            the dict of the next job
-        """
-        queue_dir = "jobs/queued/" + backend_name
-        job_dict = {"job_id": 0, "job_json_path": "None"}
-        job_list = self.get_file_queue(queue_dir)
-        # if there is a job, we should move it
-        if job_list:
-            job_json_name = job_list[0]
-            job_id = job_json_name[:-5]
-            job_dict["job_id"] = job_id
-
-            # and move the file into the right directory
-            self.move_file(queue_dir, "jobs/running", job_id)
-            job_dict["job_json_path"] = "jobs/running"
-        return job_dict
+        return names
 
 
 class LocalProvider(LocalProviderExtended):

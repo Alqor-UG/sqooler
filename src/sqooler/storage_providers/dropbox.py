@@ -2,34 +2,36 @@
 The module that contains all the necessary logic for communication with the Dropbox providers.
 """
 
-import sys
-import uuid
-import json
-
-from typing import Mapping
-
 # necessary for the dropbox provider
 import datetime
+import json
+import logging
+import sys
+import uuid
 from datetime import timezone
+from typing import Mapping, Optional
+
 import dropbox
-from dropbox.files import WriteMode
 from dropbox.exceptions import ApiError, AuthError
+from dropbox.files import WriteMode
 
 from ..schemes import (
+    AttributeIdStr,
+    AttributePathStr,
+    BackendConfigSchemaIn,
+    DisplayNameStr,
+    DropboxLoginInformation,
+    PathStr,
     ResultDict,
     StatusMsgDict,
-    DropboxLoginInformation,
-    BackendStatusSchemaOut,
-    BackendConfigSchemaIn,
-    BackendConfigSchemaOut,
 )
+from ..security import JWK
+from .base import StorageCore, StorageProvider, datetime_handler, validate_active
 
-from .base import StorageProvider, validate_active
 
-
-class DropboxProviderExtended(StorageProvider):
+class DropboxCore(StorageCore):
     """
-    The class that implements the dropbox storage provider.
+    Base class that creates the most important functions for the local storage provider.
     """
 
     def __init__(
@@ -47,18 +49,17 @@ class DropboxProviderExtended(StorageProvider):
         self.app_secret = login_dict.app_secret
         self.refresh_token = login_dict.refresh_token
 
-    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
+    def upload_string(
+        self, content_string: str, storage_path: str, job_id: str
+    ) -> None:
         """
-        Upload the content_dict as a json file to the dropbox
+        Upload the content_string as a json file to the dropbox
 
         Args:
-            content_dict: the content of the file that should be uploaded
+            content_string: the content of the file that should be uploaded
             storage_path: the path where the file should be stored, but excluding the file name
             job_id: the name of the file without the .json extension
         """
-
-        # create the appropriate string for the dropbox API
-        dump_str = json.dumps(content_dict)
 
         # strip trailing and leading slashes from the storage_path
         storage_path = storage_path.strip("/")
@@ -75,10 +76,34 @@ class DropboxProviderExtended(StorageProvider):
             # Check that the access token is valid
             dbx.users_get_current_account()
             dbx.files_upload(
-                dump_str.encode("utf-8"), full_path, mode=WriteMode("overwrite")
+                content_string.encode("utf-8"), full_path, mode=WriteMode("overwrite")
             )
 
-    def get_file_content(self, storage_path: str, job_id: str) -> dict:
+    @validate_active
+    def upload(self, content_dict: Mapping, storage_path: str, job_id: str) -> None:
+        """
+        Upload the content_dict as a json file to the dropbox
+
+        Args:
+            content_dict: the content of the file that should be uploaded
+            storage_path: the path where the file should be stored, but excluding the file name
+            job_id: the name of the file without the .json extension
+        """
+
+        # let us first see if the file already exists by using the get function
+        # it would be much nicer to use an exists function, but we do not have that
+        try:
+            self.get(storage_path, job_id)
+            raise FileExistsError(
+                f"The file {job_id} in {storage_path} already exists and should not be overwritten."
+            )
+        except FileNotFoundError:
+            # create the appropriate string for the dropbox API
+            dump_str = json.dumps(content_dict, default=datetime_handler)
+            self.upload_string(dump_str, storage_path, job_id)
+
+    @validate_active
+    def get(self, storage_path: str, job_id: str) -> dict:
         """
         Get the file content from the dropbox
 
@@ -110,20 +135,8 @@ class DropboxProviderExtended(StorageProvider):
             data = res.content
         return json.loads(data.decode("utf-8"))
 
-    def get_job_content(self, storage_path: str, job_id: str) -> dict:
-        """
-        Get the content of the job from the storage. This is a wrapper around get_file_content
-        and and handles the different ways of identifiying the job.
-
-        storage_path: the path towards the file, excluding the filename / id
-        job_id: the id of the file we are about to look up
-
-        Returns:
-            The content of the job
-        """
-        return self.get_file_content(storage_path=storage_path, job_id=f"job-{job_id}")
-
-    def update_file(self, content_dict: dict, storage_path: str, job_id: str) -> None:
+    @validate_active
+    def update(self, content_dict: dict, storage_path: str, job_id: str) -> None:
         """
         Update the file content.
 
@@ -136,7 +149,7 @@ class DropboxProviderExtended(StorageProvider):
             None
         """
         # create the appropriate string for the dropbox API
-        dump_str = json.dumps(content_dict)
+        dump_str = json.dumps(content_dict, default=datetime_handler)
 
         # strip trailing and leading slashes from the storage_path
         storage_path = storage_path.strip("/")
@@ -165,7 +178,7 @@ class DropboxProviderExtended(StorageProvider):
             )
 
     @validate_active
-    def move_file(self, start_path: str, final_path: str, job_id: str) -> None:
+    def move(self, start_path: str, final_path: str, job_id: str) -> None:
         """
         Move the file from start_path to final_path
 
@@ -193,7 +206,7 @@ class DropboxProviderExtended(StorageProvider):
             dbx.files_move_v2(full_start_path, full_final_path)
 
     @validate_active
-    def delete_file(self, storage_path: str, job_id: str) -> None:
+    def delete(self, storage_path: str, job_id: str) -> None:
         """
         Remove the file from the dropbox
 
@@ -221,34 +234,269 @@ class DropboxProviderExtended(StorageProvider):
                 sys.exit("ERROR: Invalid access token.")
 
             full_path = "/" + storage_path + "/" + job_id + ".json"
-            _ = dbx.files_delete(path=full_path)
+            try:
+                _ = dbx.files_delete_v2(path=full_path)
+            except ApiError as err:
+                raise FileNotFoundError(
+                    f"Could not delete file under {full_path}"
+                ) from err
 
-    def upload_config(
-        self, config_dict: BackendConfigSchemaIn, backend_name: str
+    def delete_folder(self, folder_path: str) -> None:
+        """
+        Remove the folder from the dropbox. Attention this will remove all the files in the folder.
+        It is not a standard function for storage providers, but allows us to better clean up the
+        tests.
+
+        Args:
+            folder_path: the path where the file should be stored, but excluding the file name
+
+        Returns:
+            None
+        """
+
+        # strip trailing and leading slashes from the storage_path
+        folder_path = folder_path.strip("/")
+
+        # Create an instance of a Dropbox class, which can make requests to the API.
+        with dropbox.Dropbox(
+            app_key=self.app_key,
+            app_secret=self.app_secret,
+            oauth2_refresh_token=self.refresh_token,
+        ) as dbx:
+            # Check that the access token is valid
+            try:
+                dbx.users_get_current_account()
+            except AuthError:
+                sys.exit("ERROR: Invalid access token.")
+
+            # to remove a folder there must be no trailing slash
+            full_path = "/" + folder_path
+            _ = dbx.files_delete_v2(path=full_path)
+
+
+class DropboxProviderExtended(StorageProvider, DropboxCore):
+    """
+    The class that implements the dropbox storage provider.
+
+    Attributes:
+        configs_path: The path to the folder where the configurations are stored
+        queue_path: The path to the folder where the jobs are stored
+        running_path: The path to the folder where the running jobs are stored
+        finished_path: The path to the folder where the finished jobs are stored
+        deleted_path: The path to the folder where the deleted jobs are stored
+        status_path: The path to the folder where the status is stored
+        results_path: The path to the folder where the results are stored
+        pks_path: The path to the folder where the public keys are stored
+
+    """
+
+    configs_path: PathStr = "Backend_files/Config"
+    queue_path: PathStr = "Backend_files/Queued_Jobs"
+    running_path: PathStr = "Backend_files/Running_Jobs"
+    finished_path: PathStr = "Backend_files/Finished_Jobs"
+    deleted_path: PathStr = "Backend_files/Deleted_Jobs"
+    status_path: PathStr = "Backend_files/Status"
+    results_path: PathStr = "Backend_files/Result"
+    pks_path: PathStr = "Backend_files/public_keys"
+
+    def get_attribute_path(
+        self,
+        attribute_name: AttributePathStr,
+        display_name: Optional[DisplayNameStr] = None,
+        job_id: Optional[str] = None,
+        username: Optional[str] = None,
+    ) -> str:
+        """
+        Get the path to the results of the device.
+
+        Args:
+            display_name: The name of the backend
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
+            username: The username of the user that is uploading the job
+
+        Returns:
+            The path to the results of the device.
+        """
+
+        match attribute_name:
+            case "configs":
+                if display_name is None:
+                    raise ValueError("The display_name must be set for configs_path.")
+                path = f"{self.configs_path}/{display_name}"
+            case "results":
+                if job_id is None:
+                    raise ValueError("The job_id must be set for results path.")
+                extracted_username = job_id.split("-")[2]
+                path = f"/{self.results_path}/{display_name}/{extracted_username}/"
+            case "running":
+                path = self.running_path
+            case "status":
+                path = f"/{self.status_path}/{display_name}/{username}/"
+            case "queue":
+                path = f"/{self.queue_path}/{display_name}/"
+            case "deleted":
+                path = self.deleted_path
+            case "finished":
+                path = f"/{self.finished_path}/{display_name}/{username}/"
+            case "pks":
+                path = self.pks_path
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return path
+
+    def get_attribute_id(
+        self,
+        attribute_name: AttributeIdStr,
+        job_id: str,
+        display_name: Optional[DisplayNameStr] = None,
+    ) -> str:
+        """
+        Get the path to the id of the device.
+
+        Args:
+            attribute_name: The name of the attribute
+            job_id: The job_id of the job
+            display_name: The name of the backend
+
+        Returns:
+            The path to the results of the device.
+        """
+
+        match attribute_name:
+            case "configs":
+                _id = "config"
+            case "job":
+                _id = f"job-{job_id}"
+            case "results":
+                _id = "result-" + job_id
+            case "status":
+                _id = "status-" + job_id
+            case _:
+                raise ValueError(f"The attribute name {attribute_name} is not valid.")
+        return _id
+
+    def update_config(
+        self,
+        config_dict: BackendConfigSchemaIn,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
-        The function that uploads the spooler configuration to the storage.
+        The function that updates the spooler configuration to the storage.
 
         All the configurations are stored in the Backend_files/Config folder.
         For each backend there is a separate folder in which the configuration is stored as a json file.
 
         Args:
             config_dict: The dictionary containing the configuration
-            backend_name (str): The name of the backend
+            display_name : The name of the backend
+            private_jwk: The private JWK to sign the configuration with
 
         Returns:
             None
         """
 
-        config_path = "Backend_files/Config/" + backend_name
-        self.upload(config_dict.model_dump(), config_path, "config")
+        config_dict = self._verify_config(config_dict, display_name)
+        # check that the file exists
+        config_path = self.get_attribute_path("configs", display_name=display_name)
+        old_config_jws = self.get(config_path, "config")
+
+        upload_dict = self._format_update_config(
+            old_config_jws, config_dict, private_jwk
+        )
+
+        self.update(upload_dict, config_path, "config")
+
+    def _delete_config(self, display_name: DisplayNameStr) -> bool:
+        """
+        Delete a config from the storage. This is only intended for test purposes.
+
+        Args:
+            display_name: The name of the backend to which we want to upload the job
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        config_path = f"{self.configs_path}/{display_name}"
+
+        self.delete(storage_path=config_path, job_id="config")
+        self.delete_folder(config_path)
+        return True
+
+    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+        """
+        The function that uploads the spooler public JWK to the storage.
+
+        Args:
+            public_jwk: The JWK that contains the public key
+            display_name : The name of the backend
+
+        Returns:
+            None
+        """
+        # first make sure that the public key is intended for verification
+        if not public_jwk.key_ops == "verify":
+            raise ValueError("The key is not intended for verification")
+
+        # make sure that the key does not contain a private key
+        if public_jwk.d is not None:
+            raise ValueError("The key contains a private key")
+
+        # make sure that the key has the correct kid
+        config_dict = self.get_config(display_name)
+        if public_jwk.kid != config_dict.kid:
+            raise ValueError("The key does not have the correct kid.")
+        pks_path = self.get_attribute_path("pks")
+        self.upload_string(public_jwk.model_dump_json(), pks_path, config_dict.kid)
+
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+
+        # now get the appropiate kid
+        config_dict = self.get_config(display_name)
+        if config_dict.kid is None:
+            raise ValueError("The kid is not set in the backend configuration.")
+        pks_path = self.get_attribute_path("pks")
+
+        public_jwk_dict = self.get(storage_path=pks_path, job_id=config_dict.kid)
+        return JWK(**public_jwk_dict)
+
+    def _delete_public_key(self, kid: str) -> bool:
+        """
+        Delete a public key from the storage. This is only intended for test purposes.
+
+        Args:
+            kid: The key id of the public key
+
+        Raises:
+            FileNotFoundError: If the status does not exist.
+
+        Returns:
+            Success if the file was deleted successfully
+        """
+        pks_path = self.get_attribute_path("pks")
+        self.delete(storage_path=pks_path, job_id=kid)
+        return True
 
     def update_in_database(
         self,
         result_dict: ResultDict,
         status_msg_dict: StatusMsgDict,
         job_id: str,
-        backend_name: str,
+        display_name: DisplayNameStr,
+        private_jwk: Optional[JWK] = None,
     ) -> None:
         """
         Upload the status and result to the dropbox.
@@ -257,7 +505,8 @@ class DropboxProviderExtended(StorageProvider):
             result_dict: the dictionary containing the result of the job
             status_msg_dict: the dictionary containing the status message of the job
             job_id: the name of the job
-            backend_name: the name of the backend
+            display_name: the name of the backend
+            private_jwk: the private JWK to sign the result with
 
         Returns:
             None
@@ -265,39 +514,44 @@ class DropboxProviderExtended(StorageProvider):
         # this should become part of the json file instead of its name in the future
         extracted_username = job_id.split("-")[2]
 
-        status_json_dir = (
-            "/Backend_files/Status/" + backend_name + "/" + extracted_username + "/"
+        status_json_dir = self.get_attribute_path(
+            "status", display_name, extracted_username
         )
-        status_json_name = "status-" + job_id
 
-        job_json_name = "job-" + job_id
-        job_json_start_dir = "Backend_files/Running_Jobs"
+        status_json_name = self.get_attribute_id("status", job_id=job_id)
+
+        job_json_name = self.get_attribute_id("job", job_id)
+        job_json_start_dir = self.get_attribute_path("running")
 
         if status_msg_dict.status == "DONE":
-            # let us create the result json file
-            result_json_dir = (
-                "/Backend_files/Result/" + backend_name + "/" + extracted_username + "/"
+            self.upload_result(
+                result_dict,
+                display_name,
+                job_id,
+                private_jwk,
             )
-            result_json_name = "result-" + job_id
-            self.upload(result_dict.model_dump(), result_json_dir, result_json_name)
-
             # now move the job out of the running jobs into the finished jobs
-            job_finished_json_dir = (
-                "/Backend_files/Finished_Jobs/"
-                + backend_name
-                + "/"
-                + extracted_username
-                + "/"
+            job_finished_json_dir = self.get_attribute_path(
+                "finished", display_name=display_name, username=extracted_username
             )
-            self.move_file(job_json_start_dir, job_finished_json_dir, job_json_name)
+
+            self.move(job_json_start_dir, job_finished_json_dir, job_json_name)
 
         elif status_msg_dict.status == "ERROR":
             # because there was an error, we move the job to the deleted jobs
-            deleted_json_dir = "Backend_files/Deleted_Jobs"
-            self.move_file(job_json_start_dir, deleted_json_dir, job_json_name)
+            deleted_json_dir = self.get_attribute_path("deleted", display_name)
+            self.move(job_json_start_dir, deleted_json_dir, job_json_name)
 
-        # and create the status json file
-        self.upload(status_msg_dict.model_dump(), status_json_dir, status_json_name)
+        try:
+            self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
+        except FileNotFoundError:
+            logging.warning(
+                "The status file was missing for %s with job_id %s was missing.",
+                display_name,
+                job_id,
+            )
+            self.upload_status(display_name, username=extracted_username, job_id=job_id)
+            self.update(status_msg_dict.model_dump(), status_json_dir, status_json_name)
 
     def get_file_queue(self, storage_path: str) -> list[str]:
         """
@@ -316,7 +570,7 @@ class DropboxProviderExtended(StorageProvider):
         storage_path = "/" + storage_path.strip("/") + "/"
 
         # Create an instance of a Dropbox class, which can make requests to the API.
-        file_list = []
+        names: list[str] = []
         with dropbox.Dropbox(
             app_key=self.app_key,
             app_secret=self.app_secret,
@@ -334,18 +588,28 @@ class DropboxProviderExtended(StorageProvider):
                 response = dbx.files_list_folder(path=storage_path)
                 file_list = response.entries
                 file_list = [item.name for item in file_list]
+                json_files = [item for item in file_list if item.endswith(".json")]
+
+                # Get the backend names
+                names = [file_name.split(".")[0] for file_name in json_files]
+
             except ApiError:
                 print(f"Could not obtain job queue for {storage_path}")
             except Exception as err:
                 print(err)
-        return file_list
+        return names
 
     @validate_active
     def get_backends(self) -> list[str]:
         """
         Get a list of all the backends that the provider offers.
         """
-        backend_config_path = "/Backend_files/Config/"
+
+        # strip possible trailing and leading slashes from the path
+        config_path = self.configs_path.strip("/")
+
+        # and now add them nicely
+        full_config_path = f"/{config_path}/"
         with dropbox.Dropbox(
             app_key=self.app_key,
             app_secret=self.app_secret,
@@ -357,60 +621,41 @@ class DropboxProviderExtended(StorageProvider):
             except AuthError:
                 sys.exit("ERROR: Invalid access token.")
 
-            folders_results = dbx.files_list_folder(path=backend_config_path)
+            folders_results = dbx.files_list_folder(path=full_config_path)
             entries = folders_results.entries
             backend_names = []
             for entry in entries:
                 backend_names.append(entry.name)
         return backend_names
 
-    def get_backend_dict(self, display_name: str) -> BackendConfigSchemaOut:
+    def get_config(self, display_name: DisplayNameStr) -> BackendConfigSchemaIn:
         """
-        The configuration of the backend.
+        The function that downloads the spooler configuration to the storage.
 
         Args:
-            display_name: The identifier of the backend
+            display_name : The name of the backend
+
+        Raises:
+            FileNotFoundError: If the backend does not exist
 
         Returns:
-            The full schema of the backend.
+            The configuration of the backend in complete form.
         """
-        backend_json_path = f"Backend_files/Config/{display_name}"
-        backend_config_dict = self.get_file_content(
-            storage_path=backend_json_path, job_id="config"
-        )
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit(backend_config_info)
-        return qiskit_backend_dict
+        backend_json_path = f"{self.configs_path}/{display_name}"
+        backend_config_dict = self.get(storage_path=backend_json_path, job_id="config")
+        typed_config = self._adapt_get_config(backend_config_dict)
+        return typed_config
 
-    def get_backend_status(self, display_name: str) -> BackendStatusSchemaOut:
+    def create_job_id(self, display_name: DisplayNameStr, username: str) -> str:
         """
-        Get the status of the backend. This follows the qiskit logic.
+        Create a job id for the job.
 
         Args:
             display_name: The name of the backend
-
-        Returns:
-            The status dict of the backend
-        """
-        backend_json_path = f"Backend_files/Config/{display_name}"
-        backend_config_dict = self.get_file_content(
-            storage_path=backend_json_path, job_id="config"
-        )
-        backend_config_info = BackendConfigSchemaIn(**backend_config_dict)
-        qiskit_backend_dict = self.backend_dict_to_qiskit_status(backend_config_info)
-        return qiskit_backend_dict
-
-    def upload_job(self, job_dict: dict, display_name: str, username: str) -> str:
-        """
-        This function uploads a job to the backend and creates the job_id.
-
-        Args:
-            job_dict: The job dictionary that should be uploaded
-            display_name: The name of the backend to which we want to upload the job
             username: The username of the user that is uploading the job
 
         Returns:
-            The job_id of the uploaded job
+            The job id
         """
         job_id = (
             (datetime.datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S"))
@@ -421,137 +666,52 @@ class DropboxProviderExtended(StorageProvider):
             + "-"
             + (uuid.uuid4().hex)[:5]
         )
-        # now we upload the job to the backend
-        # this is currently very much backend specific
-        job_json_dir = "/Backend_files/Queued_Jobs/" + display_name + "/"
-        job_json_name = "job-" + job_id
-
-        self.upload(
-            content_dict=job_dict, storage_path=job_json_dir, job_id=job_json_name
-        )
         return job_id
 
-    def upload_status(
-        self, display_name: str, username: str, job_id: str
-    ) -> StatusMsgDict:
+    def _delete_status(
+        self, display_name: DisplayNameStr, username: str, job_id: str
+    ) -> bool:
         """
-        This function uploads a status file to the backend and creates the status dict.
+        Delete a status from the storage. This is only intended for test purposes.
 
         Args:
             display_name: The name of the backend to which we want to upload the job
             username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
 
-        Returns:
-            The status dict of the job
-        """
-        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
-        status_json_name = "status-" + job_id
-        status_draft = {
-            "job_id": job_id,
-            "status": "INITIALIZING",
-            "detail": "Got your json.",
-            "error_message": "None",
-        }
-        status_dict = StatusMsgDict(**status_draft)
-        self.upload(
-            content_dict=status_dict.model_dump(),
-            storage_path=status_json_dir,
-            job_id=status_json_name,
-        )
-        return status_dict
+        Raises:
+            FileNotFoundError: If the status does not exist.
 
-    def get_status(
-        self, display_name: str, username: str, job_id: str
-    ) -> StatusMsgDict:
+        Returns:
+            Success if the file was deleted successfully
         """
-        This function gets the status file from the backend and returns the status dict.
+
+        status_json_dir = self.get_attribute_path("status", display_name, username)
+
+        status_json_name = self.get_attribute_id("status", job_id)
+
+        self.delete(storage_path=status_json_dir, job_id=status_json_name)
+        self.delete_folder(status_json_dir)
+        return True
+
+    def _delete_result(self, display_name: DisplayNameStr, job_id: str) -> bool:
+        """
+        Delete a result from the storage. This is only intended for test purposes.
 
         Args:
             display_name: The name of the backend to which we want to upload the job
             username: The username of the user that is uploading the job
             job_id: The job_id of the job that we want to upload the status for
 
-        Returns:
-            The status dict of the job
-        """
-        status_json_dir = "Backend_files/Status/" + display_name + "/" + username
-        status_json_name = "status-" + job_id
-
-        try:
-            status_dict = self.get_file_content(
-                storage_path=status_json_dir, job_id=status_json_name
-            )
-            return StatusMsgDict(**status_dict)
-        except FileNotFoundError:
-            status_draft = {
-                "job_id": job_id,
-                "status": "ERROR",
-                "detail": "Could not find the status file.",
-                "error_message": f"Missing status file for {job_id}.",
-            }
-            return StatusMsgDict(**status_draft)
-
-    def get_result(self, display_name: str, username: str, job_id: str) -> ResultDict:
-        """
-        This function gets the result file from the backend and returns the result dict.
-
-        Args:
-            display_name: The name of the backend to which we want to upload the job
-            username: The username of the user that is uploading the job
-            job_id: The job_id of the job that we want to upload the status for
+        Raises:
+            FileNotFoundError: If the result does not exist.
 
         Returns:
-            The result dict of the job. If the information is not available, the result dict
-            has a status of "ERROR".
+            Success if the file was deleted successfully
         """
-        result_json_dir = "Backend_files/Result/" + display_name + "/" + username
-        result_json_name = "result-" + job_id
-        try:
-            result_dict = self.get_file_content(
-                storage_path=result_json_dir, job_id=result_json_name
-            )
-        except FileNotFoundError:
-            return ResultDict(
-                display_name=display_name,
-                backend_version="",
-                job_id=job_id,
-                qobj_id=None,
-                success=False,
-                status="ERROR",
-                header={},
-                results=[],
-            )
-        backend_config_info = self.get_backend_dict(display_name)
-        result_dict["backend_name"] = backend_config_info.backend_name
-
-        typed_result = ResultDict(**result_dict)
-        return typed_result
-
-    def get_next_job_in_queue(self, backend_name: str) -> dict:
-        """
-        A function that obtains the next job in the queue.
-
-        Args:
-            backend_name (str): The name of the backend
-
-        Returns:
-            the path towards the job
-        """
-        job_json_dir = "/Backend_files/Queued_Jobs/" + backend_name + "/"
-        job_dict = {"job_id": 0, "job_json_path": "None"}
-        job_list = self.get_file_queue(job_json_dir)
-        # if there is a job, we should move it
-        if job_list:
-            job_json_name = job_list[0]
-            job_dict["job_id"] = job_json_name[4:-5]
-
-            # split the .json from the job_json_name
-            job_json_name = job_json_name.split(".")[0]
-            # and move the file into the right directory
-            self.move_file(job_json_dir, "Backend_files/Running_Jobs", job_json_name)
-            job_dict["job_json_path"] = "Backend_files/Running_Jobs"
-        return job_dict
+        result_device_dir = self.get_attribute_path("results", display_name, job_id)
+        self.delete_folder(result_device_dir)
+        return True
 
 
 class DropboxProvider(DropboxProviderExtended):

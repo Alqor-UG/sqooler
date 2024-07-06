@@ -7,22 +7,29 @@ The `LabscriptSpooler` class is a specialized version of the `Spooler` class tha
 jobs in labscript directly.
 """
 
+import logging
 import os
-from collections.abc import Callable
-from typing import Type, Any
-from time import sleep
-
 from abc import ABC
+from binascii import Error as BinasciiError
+from time import sleep
+from typing import Any, Callable, Optional, Type
 
-from pydantic import ValidationError, BaseModel
+from decouple import config
+from pydantic import BaseModel, ValidationError
+
 from .schemes import (
     BackendConfigSchemaIn,
+    ColdAtomStr,
+    ExperimentalInputDict,
     ExperimentDict,
-    ResultDict,
-    StatusMsgDict,
     GateDict,
     LabscriptParams,
+    ResultDict,
+    StatusMsgDict,
+    WireOrderStr,
+    get_init_status,
 )
+from .security import JWK, jwk_from_config_str
 
 
 class BaseSpooler(ABC):
@@ -39,7 +46,7 @@ class BaseSpooler(ABC):
         n_max_experiments: the maximum number of experiments that can be executed
         wire_order: the order of the wires
         num_species: the number of atomic species in the experiment
-        operational: is the backend ready for access by remote users ?
+        sign: sign the results of the job
     """
 
     def __init__(
@@ -50,11 +57,11 @@ class BaseSpooler(ABC):
         description: str = "",
         n_max_shots: int = 1000,
         version: str = "0.0.1",
-        cold_atom_type: str = "spin",
+        cold_atom_type: ColdAtomStr = "spin",
         n_max_experiments: int = 15,
-        wire_order: str = "interleaved",
+        wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
-        operational: bool = True,
+        sign: bool = False,
     ):
         """
         The constructor of the class.
@@ -70,12 +77,12 @@ class BaseSpooler(ABC):
         self.wire_order = wire_order
         self.num_species = num_species
         self._display_name: str = ""
-        self.operational = operational
+        self.sign = sign
 
     def check_experiment(self, exper_dict: dict) -> tuple[str, bool]:
         """
-        Check the validity of the experiment.
-        This has to be implement in each subclass extra.
+        Check the validity of the experiment. It checks if the the instructions are valid
+        based on the device configuration of the spooler.
 
         Args:
             exper_dict: The dictionary that contains the logic and should
@@ -94,6 +101,12 @@ class BaseSpooler(ABC):
     def get_configuration(self) -> BackendConfigSchemaIn:
         """
         Sends back the configuration dictionary of the spooler.
+
+        This creates the configuration of the Spooler. However, it does not contain
+        any information about the operational status. This is not really connected to
+        the machine but much rather to the queue etc. So items of the `BackendConfigSchemaIn`
+        like `operational` or `last_queue_check` are not set here at just the default values.
+        ``
 
         Returns:
             The configuration dictionary of the spooler.
@@ -114,8 +127,8 @@ class BaseSpooler(ABC):
             "num_wires": self.n_wires,
             "wire_order": self.wire_order,
             "num_species": self.num_species,
-            "operational": self.operational,
             "display_name": self.display_name,
+            "sign": self.sign,
         }
         return BackendConfigSchemaIn(**backend_config_dict)
 
@@ -144,7 +157,7 @@ class BaseSpooler(ABC):
                 gate_instr = gate_dict_from_list(ins)
                 # see if the instruction is part of the allowed instructions
                 if gate_instr.name not in self.ins_schema_dict.keys():
-                    err_code = "Instruction not allowed."
+                    err_code = f"Instruction {gate_instr.name} not allowed."
                     exp_ok = False
                     return err_code, exp_ok
 
@@ -176,7 +189,9 @@ class BaseSpooler(ABC):
         # pylint: disable=W0613
         return "", True
 
-    def check_json_dict(self, json_dict: dict) -> tuple[str, bool]:
+    def check_json_dict(
+        self, json_dict: dict[str, dict]
+    ) -> tuple[str, bool, dict[str, ExperimentalInputDict]]:
         """
         Check if the json file has the appropiate syntax.
 
@@ -184,25 +199,30 @@ class BaseSpooler(ABC):
             json_dict (dict): the dictonary that we will test.
 
         Returns:
+            str: the error message
             bool: is the expression having the appropiate syntax ?
+            dict: the cleaned dictionary with proper typing
         """
         err_code = "No instructions received."
         exp_ok = False
+        clean_dict: dict[str, ExperimentalInputDict] = {}
         for expr in json_dict:
             err_code = "Wrong experiment name or too many experiments"
-            # Fix this pylint issue whenever you have time, but be careful !
-            # pylint: disable=W0702
-            try:
-                exp_ok = (
-                    expr.startswith("experiment_")
-                    and expr[11:].isdigit()
-                    and (int(expr[11:]) <= self.n_max_experiments)
-                )
-            except:
+            # test the name of the experiment
+            if not expr.startswith("experiment_"):
+                err_code = "Experiment name must start with experiment_"
                 exp_ok = False
                 break
-            if not exp_ok:
+            if not expr[11:].isdigit():
+                err_code = "Experiment name must end with a number"
+                exp_ok = False
                 break
+            if int(expr[11:]) > self.n_max_experiments:
+                err_code = f"Experiment number too high. Must be less than {self.n_max_experiments}"
+                exp_ok = False
+                break
+            exp_ok = True
+
             # test the structure of the experiment
             err_code, exp_ok = self.check_experiment(json_dict[expr])
             if not exp_ok:
@@ -212,7 +232,75 @@ class BaseSpooler(ABC):
             err_code, exp_ok = self.check_instructions(ins_list)
             if not exp_ok:
                 break
-        return err_code.replace("\n", ".."), exp_ok
+            clean_dict[expr] = self.get_exp_input_dict(json_dict[expr])
+        return err_code.replace("\n", ".."), exp_ok, clean_dict
+
+    def _prep_job(
+        self, json_dict: dict, job_id: str
+    ) -> tuple[ResultDict, StatusMsgDict, dict]:
+        """
+        Prepare the job for execution. It checks the json file and prepares the
+        result and status dictionaries.
+
+        Args:
+            json_dict: The dictionary with the instructions.
+            job_id: The id of the job.
+
+        Returns:
+            result_dict: The dictionary with the results of the job.
+            status_msg_dict: The status dictionary of the job.
+            clean_dict: The cleaned dictionary with the instructions.
+        """
+        status_msg_dict = get_init_status()
+        status_msg_dict.job_id = job_id
+
+        result_dict = ResultDict(
+            display_name=self.display_name,
+            backend_version=self.version,
+            job_id=job_id,
+            status="INITIALIZING",
+        )
+
+        result_dict.results = []  # this simply helps pylint to understand the code
+
+        # check that the json_dict is indeed well behaved
+        err_msg, json_is_fine, clean_dict = self.check_json_dict(json_dict)
+
+        if not json_is_fine:
+            status_msg_dict.detail += (
+                "; Failed json sanity check. File will be deleted. Error message : "
+                + err_msg
+            )
+            status_msg_dict.error_message += (
+                "; Failed json sanity check. File will be deleted. Error message : "
+                + err_msg
+            )
+            status_msg_dict.status = "ERROR"
+            logging.error(
+                "Error in json compatibility test.",
+                extra={"error_message": status_msg_dict.error_message},
+            )
+            return result_dict, status_msg_dict, clean_dict
+
+        # now we need to check the dimensionality of the experiment
+        dim_err_msg, dim_ok = self.check_dimension(json_dict)
+        if not dim_ok:
+            status_msg_dict.detail += (
+                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
+                + dim_err_msg
+            )
+            status_msg_dict.error_message += (
+                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
+                + dim_err_msg
+            )
+            status_msg_dict.status = "ERROR"
+            logging.error(
+                "Error in dimensionality test.",
+                extra={"error_message": status_msg_dict.error_message},
+            )
+            return result_dict, status_msg_dict, clean_dict
+
+        return result_dict, status_msg_dict, clean_dict
 
     @property
     def display_name(self) -> str:
@@ -228,6 +316,58 @@ class BaseSpooler(ABC):
         else:
             raise ValueError("display_name must be a string")
 
+    def get_exp_input_dict(self, json_dict: dict) -> ExperimentalInputDict:
+        """
+        Transforms the dictionary into an ExperimentalInputDict object.
+
+        Args:
+            json_dict: The dictionary that should be transformed.
+
+        Returns:
+            A ExperimentalInputDict object.
+        """
+        raw_ins_list = json_dict["instructions"]
+        ins_list = [gate_dict_from_list(instr) for instr in raw_ins_list]
+        exp_info = ExperimentalInputDict(
+            instructions=ins_list,
+            shots=json_dict["shots"],
+            wire_order=json_dict["wire_order"],
+            num_wires=json_dict["num_wires"],
+        )
+        exp_info = ExperimentalInputDict(
+            instructions=ins_list,
+            shots=json_dict["shots"],
+            wire_order=json_dict["wire_order"],
+            num_wires=json_dict["num_wires"],
+            seed=json_dict.get("seed", None),
+        )
+        return exp_info
+
+    def get_private_jwk(self) -> JWK:
+        """
+        Get the private JWK for the spooler.
+
+        Returns:
+            The private JWK for the spooler.
+
+        Raises:
+            ValueError: If the private JWK is not set.
+        """
+        private_jwk_str = config("PRIVATE_JWK_STR", default=None)
+        if private_jwk_str == "":
+            logging.error("PRIVATE_JWK_STR must not be empty.")
+
+            raise ValueError("PRIVATE_JWK_STR must not be empty.")
+
+        if private_jwk_str is None:
+            logging.error("PRIVATE_JWK_STR is not set and available.")
+            raise ValueError("PRIVATE_JWK_STR is not set and available.")
+        try:
+            return jwk_from_config_str(private_jwk_str)
+        except BinasciiError as bin_err:
+            logging.error("PRIVATE_JWK_STR is invalid.")
+            raise ValueError("PRIVATE_JWK_STR is invalid.") from bin_err
+
 
 class Spooler(BaseSpooler):
     """
@@ -235,7 +375,7 @@ class Spooler(BaseSpooler):
     """
 
     @property
-    def gen_circuit(self) -> Callable[[dict], ExperimentDict]:
+    def gen_circuit(self) -> Callable[[str, ExperimentalInputDict], ExperimentDict]:
         """
         The function that generates the circuit.
         It can be basically anything that allows the execution of the circuit.
@@ -251,9 +391,12 @@ class Spooler(BaseSpooler):
         return self._gen_circuit
 
     @gen_circuit.setter
-    def gen_circuit(self, value: Callable[[dict], ExperimentDict]) -> None:
+    def gen_circuit(
+        self, value: Callable[[str, ExperimentalInputDict], ExperimentDict]
+    ) -> None:
         """
-        The setter for the gen_circuit function.
+        The setter for the gen_circuit function. The first argument is the name of the
+        experiment and the second argument is the dictionary with the instructions.
 
         Args:
             value: The function that generates the circuit.
@@ -264,7 +407,7 @@ class Spooler(BaseSpooler):
             raise ValueError("gen_circuit must be a callable function")
 
     def add_job(
-        self, json_dict: dict, status_msg_dict: StatusMsgDict
+        self, json_dict: dict[str, dict], job_id: str
     ) -> tuple[ResultDict, StatusMsgDict]:
         """
         The function that translates the json with the instructions into some circuit and executes it.
@@ -273,64 +416,32 @@ class Spooler(BaseSpooler):
 
         Args:
             json_dict: The job dictonary of all the instructions.
-            status_msg_dict: the status dictionary of the job we are treating.
+            job_id: the id of the the job we are treating.
 
         Returns:
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-        job_id = status_msg_dict.job_id
-
-        result_dict = ResultDict(
-            display_name=self.display_name,
-            backend_version=self.version,
-            job_id=job_id,
-            status="INITIALIZING",
-        )
-        result_dict.results = []  # this simply helps pylint to understand the code
-
-        err_msg, json_is_fine = self.check_json_dict(json_dict)
-        if json_is_fine:
-            # check_hilbert_space_dimension
-            dim_err_msg, dim_ok = self.check_dimension(json_dict)
-            if dim_ok:
-                for exp in json_dict:
-                    exp_dict = {exp: json_dict[exp]}
-                    # Here we
-                    try:
-                        # this assumes that we never have more than one argument here.
-                        result_dict.results.append(self.gen_circuit(exp_dict))
-                    except ValueError as err:
-                        status_msg_dict.detail += "; " + str(err)
-                        status_msg_dict.error_message += "; " + str(err)
-                        status_msg_dict.status = "ERROR"
-                        return result_dict, status_msg_dict
-                status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
-                    Shots sent to solver."
-                status_msg_dict.status = "DONE"
-                return result_dict, status_msg_dict
-
-            status_msg_dict.detail += (
-                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message : "
-                + dim_err_msg
-            )
-            status_msg_dict.error_message += (
-                "; Failed dimensionality test. Too many atoms. File will be deleted. Error message :  "
-                + dim_err_msg
-            )
-            status_msg_dict.status = "ERROR"
+        result_dict, status_msg_dict, clean_dict = self._prep_job(json_dict, job_id)
+        if status_msg_dict.status == "ERROR":
             return result_dict, status_msg_dict
-        else:
-            status_msg_dict.detail += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.error_message += (
-                "; Failed json sanity check. File will be deleted. Error message : "
-                + err_msg
-            )
-            status_msg_dict.status = "ERROR"
-
+        # now we can generate the circuit for each experiment
+        for exp_name, exp_info in clean_dict.items():
+            try:
+                result_dict.results.append(self.gen_circuit(exp_name, exp_info))
+                logging.info("Experiment %s done.", exp_name)
+            except ValueError as err:
+                status_msg_dict.detail += "; " + str(err)
+                status_msg_dict.error_message += "; " + str(err)
+                status_msg_dict.status = "ERROR"
+                logging.exception(
+                    "Error in gen_circuit.",
+                    extra={"error_message": status_msg_dict.error_message},
+                )
+                return result_dict, status_msg_dict
+        status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
+                    Shots sent to solver."
+        status_msg_dict.status = "DONE"
         return result_dict, status_msg_dict
 
 
@@ -357,11 +468,11 @@ class LabscriptSpooler(BaseSpooler):
         description: str = "",
         n_max_shots: int = 1000,
         version: str = "0.0.1",
-        cold_atom_type: str = "spin",
+        cold_atom_type: ColdAtomStr = "spin",
         n_max_experiments: int = 15,
-        wire_order: str = "interleaved",
+        wire_order: WireOrderStr = "interleaved",
         num_species: int = 1,
-        operational: bool = True,
+        sign: bool = False,
     ):
         """
         The constructor of the class. The  arguments are the same as for the Spooler
@@ -380,14 +491,14 @@ class LabscriptSpooler(BaseSpooler):
             n_max_experiments,
             wire_order,
             num_species,
-            operational,
+            sign,
         )
         self.remote_client = remote_client
         self.labscript_params = labscript_params
         self.run = run
 
     def add_job(
-        self, json_dict: dict, status_msg_dict: StatusMsgDict
+        self, json_dict: dict[str, dict], job_id: str
     ) -> tuple[ResultDict, StatusMsgDict]:
         """
         The function that translates the json with the instructions into some circuit
@@ -397,72 +508,34 @@ class LabscriptSpooler(BaseSpooler):
 
         Args:
             json_dict: The job dictonary of all the instructions.
-            status_msg_dict: the status dictionary of the job we are treating.
+            job_id: the id of the the job we are treating.
 
         Returns:
             result_dict: The dictionary with the results of the job.
             status_msg_dict: The status dictionary of the job.
         """
-        job_id = status_msg_dict.job_id
+        result_dict, status_msg_dict, clean_dict = self._prep_job(json_dict, job_id)
 
-        result_dict = ResultDict(
-            display_name=self.display_name,
-            backend_version=self.version,
-            job_id=job_id,
-            qobj_id=None,
-            success=True,
-            status="INITIALIZING",
-            header={},
-            results=[],
-        )
-
-        err_msg, json_is_fine = self.check_json_dict(json_dict)
-        if json_is_fine:
-            # check_hilbert_space_dimension
-            dim_err_msg, dim_ok = self.check_dimension(json_dict)
-            if dim_ok:
-                for exp in json_dict:
-                    exp_dict = {exp: json_dict[exp]}
-                    # prepare the shots folder
-                    self.remote_client.reset_shot_output_folder()
-                    self._modify_shot_output_folder(job_id + "/" + str(exp))
-
-                    # Here we generate the ciruit
-                    try:
-                        result_dict.results.append(self.gen_circuit(exp_dict, job_id))
-                    except FileNotFoundError as err:
-                        error_message = str(err)
-                        status_msg_dict.detail += "; Failed to generate labscript file."
-                        status_msg_dict.error_message += f"; Failed to generate labscript \
-                            file. Error: {error_message}"
-                        status_msg_dict.status = "ERROR"
-                        return result_dict, status_msg_dict
-                status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
-                    Shots sent to solver."
-                status_msg_dict.status = "DONE"
-                return result_dict, status_msg_dict
-
-            status_msg_dict.detail += (
-                ";Failed dimensionality test. Too many atoms. File will be deleted. Error message: "
-                + dim_err_msg
-            )
-            status_msg_dict.error_message += (
-                ";Failed dimensionality test. Too many atoms. File will be deleted. Error message: "
-                + dim_err_msg
-            )
-            status_msg_dict.status = "ERROR"
+        if status_msg_dict.status == "ERROR":
             return result_dict, status_msg_dict
 
-        status_msg_dict.detail += (
-            "; Failed json sanity check. File will be deleted. Error message : "
-            + err_msg
-        )
-        status_msg_dict.error_message += (
-            "; Failed json sanity check. File will be deleted. Error message : "
-            + err_msg
-        )
-        status_msg_dict.status = "ERROR"
+        for exp_name, exp_info in clean_dict.items():
+            # prepare the shots folder
+            self.remote_client.reset_shot_output_folder()
+            self._modify_shot_output_folder(job_id + "/" + str(exp_name))
 
+            try:
+                result_dict.results.append(self.gen_circuit(exp_name, exp_info, job_id))
+            except FileNotFoundError as err:
+                error_message = str(err)
+                status_msg_dict.detail += "; Failed to generate labscript file."
+                status_msg_dict.error_message += f"; Failed to generate labscript \
+                            file. Error: {error_message}"
+                status_msg_dict.status = "ERROR"
+                return result_dict, status_msg_dict
+        status_msg_dict.detail += "; Passed json sanity check; Compilation done. \
+                    Shots sent to solver."
+        status_msg_dict.status = "DONE"
         return result_dict, status_msg_dict
 
     def _modify_shot_output_folder(self, new_dir: str) -> str:
@@ -487,11 +560,14 @@ class LabscriptSpooler(BaseSpooler):
         self.remote_client.set_shot_output_folder(modified_shot_folder)
         return modified_shot_folder
 
-    def gen_circuit(self, json_dict: dict, job_id: str) -> ExperimentDict:
+    def gen_circuit(
+        self, exp_name: str, json_dict: ExperimentalInputDict, job_id: str
+    ) -> ExperimentDict:
         """
         This is the main script that generates the labscript file.
 
         Args:
+            exp_name: The name of the experiment
             json_dict: The dictionary that contains the instructions for the circuit.
             job_id: The user id of the user that is running the experiment.
 
@@ -510,9 +586,8 @@ class LabscriptSpooler(BaseSpooler):
                 f"The path {remote_experiments_path} does not exist."
             )
 
-        exp_name = next(iter(json_dict))
-        ins_list = json_dict[next(iter(json_dict))]["instructions"]
-        n_shots = json_dict[next(iter(json_dict))]["shots"]
+        n_shots = json_dict.shots
+        ins_list = json_dict.instructions
 
         globals_dict = {
             "job_id": "guest",
@@ -524,7 +599,6 @@ class LabscriptSpooler(BaseSpooler):
         self.remote_client.set_globals(globals_dict)
         script_name = f"experiment_{globals_dict['job_id']}.py"
         exp_script = os.path.join(remote_experiments_path, script_name)
-        ins_list = json_dict[next(iter(json_dict))]["instructions"]
         code = ""
         # this is the top part of the script it allows us to import the
         # typical functions that we require for each single sequence
@@ -544,17 +618,14 @@ class LabscriptSpooler(BaseSpooler):
         for inst in ins_list:
             # we can directly use the function name as we have already verified
             # that the function exists in the `add_job` function
-            func_name = inst[0]
-            params = "(" + str(inst[1:])[1:-1] + ")"
-            code = "Experiment." + func_name + params + "\n"
-
+            code = f"Experiment.{inst.name}({inst.wires}, {inst.params})\n"
             # we should add proper error handling here
             # pylint: disable=bare-except
             try:
                 with open(exp_script, "a", encoding="UTF-8") as script_file:
                     script_file.write(code)
             except:
-                print("Something wrong. Does file path exists?")
+                logging.error("Something wrong. Does file path exists?")
 
         code = "Experiment.final_action()" + "\n" + "stop(Experiment.t+0.1)"
         # pylint: disable=bare-except
@@ -562,7 +633,7 @@ class LabscriptSpooler(BaseSpooler):
             with open(exp_script, "a", encoding="UTF-8") as script_file:
                 script_file.write(code)
         except:
-            print("Something wrong. Does file path exists?")
+            logging.error("Something wrong. Does file path exists?")
         self.remote_client.set_labscript_file(
             exp_script
         )  # CAUTION !! This command only selects the file. It does not generate it!
@@ -600,11 +671,10 @@ class LabscriptSpooler(BaseSpooler):
                     shots_array.append(this_run.get_results("/measure", "nat"))
                     got_nat = True
                 except Exception as exc:
-                    print(exc)
+                    logging.exception(exc)
                     sleep(self.labscript_params.t_wait)
                     n_tries += 1
-
-        exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots)
+        exp_sub_dict = create_memory_data(shots_array, exp_name, n_shots, ins_list)
         return exp_sub_dict
 
 
@@ -649,7 +719,10 @@ def get_file_queue(dir_path: str) -> list[str]:
 
 
 def create_memory_data(
-    shots_array: list, exp_name: str, n_shots: int
+    shots_array: list,
+    exp_name: str,
+    n_shots: int,
+    instructions: Optional[list[GateDict]] = None,
 ) -> ExperimentDict:
     """
     The function to create memory key in results dictionary
@@ -659,6 +732,7 @@ def create_memory_data(
         shots_array: The array with the shots.
         exp_name: The name of the experiment.
         n_shots: The number of shots.
+        instructions: The list of instructions that were executed
 
     Returns:
         The ExperimentDict object describing the results.
@@ -677,4 +751,6 @@ def create_memory_data(
         for shot in shots_array
     ]
     exp_sub_dict["data"]["memory"] = memory_list
+    if instructions is not None:
+        exp_sub_dict["data"]["instructions"] = instructions
     return ExperimentDict(**exp_sub_dict)
