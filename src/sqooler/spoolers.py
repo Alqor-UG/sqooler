@@ -428,7 +428,10 @@ class Spooler(BaseSpooler):
         # now we can generate the circuit for each experiment
         for exp_name, exp_info in clean_dict.items():
             try:
-                result_dict.results.append(self.gen_circuit(exp_name, exp_info))
+                # not sure why pylint is complaining here so we disable it
+                result_dict.results.append(
+                    self.gen_circuit(exp_name, exp_info)  # pylint: disable=E1102
+                )
                 logging.info("Experiment %s done.", exp_name)
             except ValueError as err:
                 status_msg_dict.detail += "; " + str(err)
