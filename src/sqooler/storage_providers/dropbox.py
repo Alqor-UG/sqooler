@@ -596,7 +596,7 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
                     else:
                         # we can ignore the mypy error that this is unreachable as the cursor is
                         # set in the while loop
-                        folders_results = dbx.files_list_folder_continue(cursor) # type: ignore
+                        folders_results = dbx.files_list_folder_continue(cursor)  # type: ignore
                     file_list.extend(folders_results.entries)
                     cursor = folders_results.cursor
                     has_more_files = folders_results.has_more
