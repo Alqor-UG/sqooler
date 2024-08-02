@@ -587,11 +587,11 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             try:
 
                 # we have too loop as dropbox somehow sometimes only returns a part of the files
-                file_list = [] # collects all files here
+                file_list = []  # collects all files here
                 has_more_files = True  # because we haven't queried yet
                 cursor = None  # because we haven't queried yet
                 while has_more_files:
-                    if cursor is None: # if it is our first time querying
+                    if cursor is None:  # if it is our first time querying
                         folders_results = dbx.files_list_folder(storage_path)
                     else:
                         folders_results = dbx.files_list_folder_continue(cursor)
