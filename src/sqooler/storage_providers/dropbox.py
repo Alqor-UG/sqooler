@@ -585,8 +585,20 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             # complicated right now
             # pylint: disable=W0703
             try:
-                response = dbx.files_list_folder(path=storage_path)
-                file_list = response.entries
+
+                # we have too loop as dropbox somehow sometimes only returns a part of the files
+                file_list = [] # collects all files here
+                has_more_files = True  # because we haven't queried yet
+                cursor = None  # because we haven't queried yet
+                while has_more_files:
+                    if cursor is None: # if it is our first time querying
+                        folders_results = dbx.files_list_folder(storage_path)
+                    else:
+                        folders_results = dbx.files_list_folder_continue(cursor)
+                    file_list.extend(folders_results.entries)
+                    cursor = folders_results.cursor
+                    has_more_files = folders_results.has_more
+
                 file_list = [item.name for item in file_list]
                 json_files = [item for item in file_list if item.endswith(".json")]
 
