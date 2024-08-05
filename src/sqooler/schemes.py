@@ -76,6 +76,9 @@ PathStr = Annotated[
     ),
 ]
 
+# String that is allowed for the public key strings
+PksStr = Literal["backend", "user"]
+
 
 class StatusMsgDict(BaseModel):
     """

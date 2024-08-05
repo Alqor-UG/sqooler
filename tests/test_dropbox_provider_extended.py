@@ -180,3 +180,9 @@ class TestDropboxProviderExtended(StorageProviderTestUtils):
         Test that it is possible to upload the public key.
         """
         self.signature_tests(DB_NAME)
+
+    def test_user_signature(self) -> None:
+        """
+        Test that we can create a signature for the user.
+        """
+        self.user_signature_tests(DB_NAME)

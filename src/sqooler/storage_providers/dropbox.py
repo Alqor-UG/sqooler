@@ -22,6 +22,7 @@ from ..schemes import (
     DisplayNameStr,
     DropboxLoginInformation,
     PathStr,
+    PksStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -427,13 +428,16 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         self.delete_folder(config_path)
         return True
 
-    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+    def upload_public_key(
+        self, public_jwk: JWK, display_name: DisplayNameStr, type: PksStr = "backend"
+    ) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
 
         Args:
             public_jwk: The JWK that contains the public key
             display_name : The name of the backend
+            type: The type of the public key
 
         Returns:
             None
@@ -447,11 +451,13 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             raise ValueError("The key contains a private key")
 
         # make sure that the key has the correct kid
-        config_dict = self.get_config(display_name)
-        if public_jwk.kid != config_dict.kid:
-            raise ValueError("The key does not have the correct kid.")
+        if type == "backend":
+            config_dict = self.get_config(display_name)
+            if public_jwk.kid != config_dict.kid:
+                raise ValueError("The key does not have the correct kid.")
+        
         pks_path = self.get_attribute_path("pks")
-        self.upload_string(public_jwk.model_dump_json(), pks_path, config_dict.kid)
+        self.upload_string(public_jwk.model_dump_json(), pks_path, public_jwk.kid)
 
     def get_public_key(self, display_name: DisplayNameStr) -> JWK:
         """
@@ -468,11 +474,24 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         config_dict = self.get_config(display_name)
         if config_dict.kid is None:
             raise ValueError("The kid is not set in the backend configuration.")
+        
+        return self.get_public_key_from_kid(config_dict.kid)
+
+    def get_public_key_from_kid(self, kid: str) -> JWK:
+        """
+        The function that gets public JWK based on the key id.
+
+        Args:
+            kid : The key id of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+
         pks_path = self.get_attribute_path("pks")
-
-        public_jwk_dict = self.get(storage_path=pks_path, job_id=config_dict.kid)
+        public_jwk_dict = self.get(storage_path=pks_path, job_id=kid)
         return JWK(**public_jwk_dict)
-
+    
     def _delete_public_key(self, kid: str) -> bool:
         """
         Delete a public key from the storage. This is only intended for test purposes.

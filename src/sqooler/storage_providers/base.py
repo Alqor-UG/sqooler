@@ -22,6 +22,7 @@ from ..schemes import (
     BackendStatusSchemaOut,
     DisplayNameStr,
     NextJobSchema,
+    PksStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -565,7 +566,9 @@ class StorageProvider(StorageCore):
         """
 
     @abstractmethod
-    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+    def upload_public_key(
+        self, public_jwk: JWK, display_name: DisplayNameStr, type: PksStr = "backend"
+    ) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
 
@@ -584,6 +587,18 @@ class StorageProvider(StorageCore):
 
         Args:
             display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+
+    @abstractmethod
+    def get_public_key_from_kid(self, kid: str) -> JWK:
+        """
+        The function that gets public JWK based on the key id.
+
+        Args:
+            kid : The key id of the backend
 
         Returns:
             JWk : The public JWK object
