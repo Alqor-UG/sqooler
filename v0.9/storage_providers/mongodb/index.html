@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.30">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
     
     
       
@@ -780,9 +780,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_public_key" class="md-nav__link">
+  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_public_key_from_kid" class="md-nav__link">
     <span class="md-ellipsis">
-      get_public_key
+      get_public_key_from_kid
     </span>
   </a>
   
@@ -1100,9 +1100,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_public_key" class="md-nav__link">
+  <a href="#src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_public_key_from_kid" class="md-nav__link">
     <span class="md-ellipsis">
-      get_public_key
+      get_public_key_from_kid
     </span>
   </a>
   
@@ -1210,8 +1210,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 34</span>
-<span class="normal"> 35</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 35</span>
 <span class="normal"> 36</span>
 <span class="normal"> 37</span>
 <span class="normal"> 38</span>
@@ -1400,7 +1399,8 @@
 <span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
-<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbCore</span><span class="p">(</span><span class="n">StorageCore</span><span class="p">):</span>
+<span class="normal">224</span>
+<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbCore</span><span class="p">(</span><span class="n">StorageCore</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class that creates the most important functions for the mongodb storage provider.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1702,8 +1702,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">39</span>
-<span class="normal">40</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span>
@@ -1729,7 +1728,8 @@
 <span class="normal">63</span>
 <span class="normal">64</span>
 <span class="normal">65</span>
-<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">66</span>
+<span class="normal">67</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">MongodbLoginInformation</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_active</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1844,8 +1844,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
-<span class="normal">178</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">178</span>
 <span class="normal">179</span>
 <span class="normal">180</span>
 <span class="normal">181</span>
@@ -1868,7 +1867,8 @@
 <span class="normal">198</span>
 <span class="normal">199</span>
 <span class="normal">200</span>
-<span class="normal">201</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">201</span>
+<span class="normal">202</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove the file from the mongodb database</span>
@@ -1980,8 +1980,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
-<span class="normal"> 92</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 92</span>
 <span class="normal"> 93</span>
 <span class="normal"> 94</span>
 <span class="normal"> 95</span>
@@ -2012,7 +2011,8 @@
 <span class="normal">120</span>
 <span class="normal">121</span>
 <span class="normal">122</span>
-<span class="normal">123</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">123</span>
+<span class="normal">124</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the file content from the storage</span>
@@ -2092,8 +2092,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
-<span class="normal">152</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
@@ -2116,7 +2115,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
-<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">175</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">final_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Move the file from start_path to final_path</span>
@@ -2265,8 +2265,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
-<span class="normal">126</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">126</span>
 <span class="normal">127</span>
 <span class="normal">128</span>
 <span class="normal">129</span>
@@ -2289,7 +2288,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">146</span>
 <span class="normal">147</span>
 <span class="normal">148</span>
-<span class="normal">149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">149</span>
+<span class="normal">150</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Update the file content. It replaces the old content with the new content.</span>
@@ -2338,8 +2338,7 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">68</span>
-<span class="normal">69</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">69</span>
 <span class="normal">70</span>
 <span class="normal">71</span>
 <span class="normal">72</span>
@@ -2359,7 +2358,8 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">86</span>
 <span class="normal">87</span>
 <span class="normal">88</span>
-<span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">89</span>
+<span class="normal">90</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Upload the file to the storage</span>
@@ -2415,16 +2415,16 @@ job_id: the id of the file we are about to create</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">753</span>
-<span class="normal">754</span>
-<span class="normal">755</span>
-<span class="normal">756</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">756</span>
 <span class="normal">757</span>
 <span class="normal">758</span>
 <span class="normal">759</span>
 <span class="normal">760</span>
 <span class="normal">761</span>
-<span class="normal">762</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbProvider</span><span class="p">(</span><span class="n">MongodbProviderExtended</span><span class="p">):</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbProvider</span><span class="p">(</span><span class="n">MongodbProviderExtended</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The access to the mongodb. This is the simplified version for people that are running devices.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2464,11 +2464,11 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">758</span>
-<span class="normal">759</span>
-<span class="normal">760</span>
-<span class="normal">761</span>
-<span class="normal">762</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">MongodbLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">MongodbLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set up the neccessary keys and create the client through which all the connections will run.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2609,8 +2609,7 @@ job_id: the id of the file we are about to create</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">227</span>
-<span class="normal">228</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span>
 <span class="normal">231</span>
@@ -3132,7 +3131,10 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">747</span>
 <span class="normal">748</span>
 <span class="normal">749</span>
-<span class="normal">750</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">,</span> <span class="n">MongodbCore</span><span class="p">):</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">MongodbProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">,</span> <span class="n">MongodbCore</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The access to the mongodb</span>
 
@@ -3469,13 +3471,16 @@ job_id: the id of the file we are about to create</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">result_json_dir</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job_id</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">PksStr</span> <span class="o">=</span> <span class="s2">&quot;backend&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The function that uploads the spooler public JWK to the storage.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            public_jwk: The JWK that contains the public key</span>
 <span class="sd">            display_name : The name of the backend</span>
+<span class="sd">            role: The role of the public key</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
@@ -3488,16 +3493,17 @@ job_id: the id of the file we are about to create</p>
         <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key contains a private key&quot;</span><span class="p">)</span>
 
-        <span class="c1"># make sure that the key has the correct kid</span>
-        <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;backend&quot;</span><span class="p">:</span>
+            <span class="c1"># make sure that the key has the correct kid</span>
+            <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
 
         <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">collection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_database_and_collection</span><span class="p">(</span><span class="n">pks_path</span><span class="p">)</span>
 
         <span class="c1"># first we have to check if the device already exists in the database</span>
-        <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">}</span>
+        <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span><span class="p">}</span>
 
         <span class="n">result_found</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">document_to_find</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">result_found</span><span class="p">:</span>
@@ -3509,32 +3515,30 @@ job_id: the id of the file we are about to create</p>
             <span class="p">)</span>
             <span class="k">return</span>
 
-        <span class="c1"># if the device does not exist, we have to create it</span>
-        <span class="n">config_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">24</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
+        <span class="c1"># in the case of the user this uuid should most likely become identical</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">display_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if the public key does not exist, we have to create it</span>
+            <span class="n">config_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">24</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">get_public_key_from_kid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The function that gets the spooler public JWK for the device.</span>
+<span class="sd">        The function that gets public JWK based on the key id.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            display_name : The name of the backend</span>
+<span class="sd">            kid : The key id of the backend</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            JWk : The public JWK object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># get the database on which we work</span>
         <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">collection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_database_and_collection</span><span class="p">(</span><span class="n">pks_path</span><span class="p">)</span>
 
-        <span class="c1"># now get the appropiate kid</span>
-        <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The kid is not set in the backend configuration.&quot;</span><span class="p">)</span>
-
         <span class="c1"># create the filter for the document with display_name that is equal to display_name</span>
-        <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">}</span>
+        <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">kid</span><span class="p">}</span>
         <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">document_to_find</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">public_jwk_dict</span><span class="p">:</span>
@@ -3709,14 +3713,14 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">513</span>
-<span class="normal">514</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">514</span>
 <span class="normal">515</span>
 <span class="normal">516</span>
 <span class="normal">517</span>
 <span class="normal">518</span>
 <span class="normal">519</span>
-<span class="normal">520</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_job_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">520</span>
+<span class="normal">521</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_job_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a job id for the job.</span>
 
@@ -3825,8 +3829,7 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">292</span>
-<span class="normal">293</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">293</span>
 <span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
@@ -3854,7 +3857,8 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span>
-<span class="normal">321</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_attribute_id</span><span class="p">(</span>
+<span class="normal">321</span>
+<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_attribute_id</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">attribute_name</span><span class="p">:</span> <span class="n">AttributeIdStr</span><span class="p">,</span>
     <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3999,8 +4003,7 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">251</span>
-<span class="normal">252</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">252</span>
 <span class="normal">253</span>
 <span class="normal">254</span>
 <span class="normal">255</span>
@@ -4038,7 +4041,8 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">287</span>
 <span class="normal">288</span>
 <span class="normal">289</span>
-<span class="normal">290</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_attribute_path</span><span class="p">(</span>
+<span class="normal">290</span>
+<span class="normal">291</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_attribute_path</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">attribute_name</span><span class="p">:</span> <span class="n">AttributePathStr</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DisplayNameStr</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4099,8 +4103,7 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">323</span>
-<span class="normal">324</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
 <span class="normal">325</span>
 <span class="normal">326</span>
 <span class="normal">327</span>
@@ -4117,7 +4120,8 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">338</span>
 <span class="normal">339</span>
 <span class="normal">340</span>
-<span class="normal">341</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">341</span>
+<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">get_backends</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DisplayNameStr</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of all the backends that the provider offers.</span>
@@ -4231,8 +4235,7 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">447</span>
-<span class="normal">448</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">448</span>
 <span class="normal">449</span>
 <span class="normal">450</span>
 <span class="normal">451</span>
@@ -4266,7 +4269,8 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">479</span>
 <span class="normal">480</span>
 <span class="normal">481</span>
-<span class="normal">482</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">482</span>
+<span class="normal">483</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that downloads the spooler configuration to the storage.</span>
@@ -4375,10 +4379,7 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">732</span>
-<span class="normal">733</span>
-<span class="normal">734</span>
-<span class="normal">735</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">735</span>
 <span class="normal">736</span>
 <span class="normal">737</span>
 <span class="normal">738</span>
@@ -4393,7 +4394,10 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">747</span>
 <span class="normal">748</span>
 <span class="normal">749</span>
-<span class="normal">750</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of documents in the collection of all the queued jobs.</span>
 
@@ -4421,15 +4425,15 @@ job_id: the id of the file we are about to create</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_public_key" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_public_key</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span></code>
+<h3 id="src.sqooler.storage_providers.mongodb.MongodbProviderExtended.get_public_key_from_kid" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_public_key_from_kid</span><span class="p">(</span><span class="n">kid</span><span class="p">)</span></code>
 
 </h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>The function that gets the spooler public JWK for the device.</p>
+      <p>The function that gets public JWK based on the key id.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4444,12 +4448,12 @@ job_id: the id of the file we are about to create</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>display_name</code></td>
+            <td><code>kid</code></td>
             <td>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The name of the backend</p>
+                <p>The key id of the backend</p>
               </div>
             </td>
             <td>
@@ -4484,16 +4488,7 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
 <span class="normal">618</span>
 <span class="normal">619</span>
 <span class="normal">620</span>
@@ -4512,28 +4507,25 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">633</span>
 <span class="normal">634</span>
 <span class="normal">635</span>
-<span class="normal">636</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_public_key_from_kid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The function that gets the spooler public JWK for the device.</span>
+<span class="sd">    The function that gets public JWK based on the key id.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        display_name : The name of the backend</span>
+<span class="sd">        kid : The key id of the backend</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        JWk : The public JWK object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># get the database on which we work</span>
     <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">collection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_database_and_collection</span><span class="p">(</span><span class="n">pks_path</span><span class="p">)</span>
 
-    <span class="c1"># now get the appropiate kid</span>
-    <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The kid is not set in the backend configuration.&quot;</span><span class="p">)</span>
-
     <span class="c1"># create the filter for the document with display_name that is equal to display_name</span>
-    <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">}</span>
+    <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">kid</span><span class="p">}</span>
     <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">document_to_find</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">public_jwk_dict</span><span class="p">:</span>
@@ -4641,8 +4633,7 @@ job_id: the id of the file we are about to create</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">388</span>
-<span class="normal">389</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">389</span>
 <span class="normal">390</span>
 <span class="normal">391</span>
 <span class="normal">392</span>
@@ -4698,7 +4689,8 @@ job_id: the id of the file we are about to create</p>
 <span class="normal">442</span>
 <span class="normal">443</span>
 <span class="normal">444</span>
-<span class="normal">445</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_config</span><span class="p">(</span>
+<span class="normal">445</span>
+<span class="normal">446</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">config_dict</span><span class="p">:</span> <span class="n">BackendConfigSchemaIn</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span>
@@ -4889,10 +4881,7 @@ status json file.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">662</span>
-<span class="normal">663</span>
-<span class="normal">664</span>
-<span class="normal">665</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">665</span>
 <span class="normal">666</span>
 <span class="normal">667</span>
 <span class="normal">668</span>
@@ -4957,7 +4946,10 @@ status json file.</p>
 <span class="normal">727</span>
 <span class="normal">728</span>
 <span class="normal">729</span>
-<span class="normal">730</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result_dict</span><span class="p">:</span> <span class="n">ResultDict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">status_msg_dict</span><span class="p">:</span> <span class="n">StatusMsgDict</span><span class="p">,</span>
@@ -5126,8 +5118,7 @@ status json file.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">343</span>
-<span class="normal">344</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">344</span>
 <span class="normal">345</span>
 <span class="normal">346</span>
 <span class="normal">347</span>
@@ -5169,7 +5160,8 @@ status json file.</p>
 <span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
-<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
+<span class="normal">386</span>
+<span class="normal">387</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">config_dict</span><span class="p">:</span> <span class="n">BackendConfigSchemaIn</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span>
@@ -5223,7 +5215,7 @@ status json file.</p>
 
 
 <h3 id="src.sqooler.storage_providers.mongodb.MongodbProviderExtended.upload_public_key" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">upload_public_key</span><span class="p">(</span><span class="n">public_jwk</span><span class="p">,</span> <span class="n">display_name</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">upload_public_key</span><span class="p">(</span><span class="n">public_jwk</span><span class="p">,</span> <span class="n">display_name</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="s1">&#39;backend&#39;</span><span class="p">)</span></code>
 
 </h3>
 
@@ -5271,6 +5263,20 @@ status json file.</p>
                 <em>required</em>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code>role</code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PksStr">PksStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The role of the public key</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;backend&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -5299,8 +5305,7 @@ status json file.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/mongodb.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">564</span>
-<span class="normal">565</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">565</span>
 <span class="normal">566</span>
 <span class="normal">567</span>
 <span class="normal">568</span>
@@ -5341,13 +5346,25 @@ status json file.</p>
 <span class="normal">603</span>
 <span class="normal">604</span>
 <span class="normal">605</span>
-<span class="normal">606</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">PksStr</span> <span class="o">=</span> <span class="s2">&quot;backend&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that uploads the spooler public JWK to the storage.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        public_jwk: The JWK that contains the public key</span>
 <span class="sd">        display_name : The name of the backend</span>
+<span class="sd">        role: The role of the public key</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        None</span>
@@ -5360,16 +5377,17 @@ status json file.</p>
     <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key contains a private key&quot;</span><span class="p">)</span>
 
-    <span class="c1"># make sure that the key has the correct kid</span>
-    <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;backend&quot;</span><span class="p">:</span>
+        <span class="c1"># make sure that the key has the correct kid</span>
+        <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
 
     <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
     <span class="n">_</span><span class="p">,</span> <span class="n">collection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_database_and_collection</span><span class="p">(</span><span class="n">pks_path</span><span class="p">)</span>
 
     <span class="c1"># first we have to check if the device already exists in the database</span>
-    <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">}</span>
+    <span class="n">document_to_find</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;kid&quot;</span><span class="p">:</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span><span class="p">}</span>
 
     <span class="n">result_found</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">find_one</span><span class="p">(</span><span class="n">document_to_find</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">result_found</span><span class="p">:</span>
@@ -5381,9 +5399,13 @@ status json file.</p>
         <span class="p">)</span>
         <span class="k">return</span>
 
-    <span class="c1"># if the device does not exist, we have to create it</span>
-    <span class="n">config_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">24</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
+    <span class="c1"># in the case of the user this uuid should most likely become identical</span>
+    <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">display_name</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># if the public key does not exist, we have to create it</span>
+        <span class="n">config_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">24</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">config_id</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

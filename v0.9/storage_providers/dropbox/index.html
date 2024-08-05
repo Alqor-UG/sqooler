@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.30">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
     
     
       
@@ -840,9 +840,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.dropbox.DropboxProviderExtended.get_public_key" class="md-nav__link">
+  <a href="#src.sqooler.storage_providers.dropbox.DropboxProviderExtended.get_public_key_from_kid" class="md-nav__link">
     <span class="md-ellipsis">
-      get_public_key
+      get_public_key_from_kid
     </span>
   </a>
   
@@ -1127,9 +1127,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#src.sqooler.storage_providers.dropbox.DropboxProviderExtended.get_public_key" class="md-nav__link">
+  <a href="#src.sqooler.storage_providers.dropbox.DropboxProviderExtended.get_public_key_from_kid" class="md-nav__link">
     <span class="md-ellipsis">
-      get_public_key
+      get_public_key_from_kid
     </span>
   </a>
   
@@ -1228,8 +1228,7 @@
 
               <details class="quote">
                 <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 32</span>
-<span class="normal"> 33</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 33</span>
 <span class="normal"> 34</span>
 <span class="normal"> 35</span>
 <span class="normal"> 36</span>
@@ -1470,7 +1469,8 @@
 <span class="normal">271</span>
 <span class="normal">272</span>
 <span class="normal">273</span>
-<span class="normal">274</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxCore</span><span class="p">(</span><span class="n">StorageCore</span><span class="p">):</span>
+<span class="normal">274</span>
+<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxCore</span><span class="p">(</span><span class="n">StorageCore</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class that creates the most important functions for the local storage provider.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1799,8 +1799,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">37</span>
-<span class="normal">38</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">38</span>
 <span class="normal">39</span>
 <span class="normal">40</span>
 <span class="normal">41</span>
@@ -1812,7 +1811,8 @@
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
-<span class="normal">50</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">50</span>
+<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">DropboxLoginInformation</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_active</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1913,8 +1913,7 @@
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
-<span class="normal">209</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
@@ -1947,7 +1946,8 @@
 <span class="normal">239</span>
 <span class="normal">240</span>
 <span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove the file from the dropbox</span>
@@ -2057,8 +2057,7 @@ tests.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
-<span class="normal">245</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
 <span class="normal">248</span>
@@ -2087,7 +2086,8 @@ tests.</p>
 <span class="normal">271</span>
 <span class="normal">272</span>
 <span class="normal">273</span>
-<span class="normal">274</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">274</span>
+<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">delete_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Remove the folder from the dropbox. Attention this will remove all the files in the folder.</span>
 <span class="sd">    It is not a standard function for storage providers, but allows us to better clean up the</span>
@@ -2141,8 +2141,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
-<span class="normal">106</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">106</span>
 <span class="normal">107</span>
 <span class="normal">108</span>
 <span class="normal">109</span>
@@ -2172,7 +2171,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">133</span>
 <span class="normal">134</span>
 <span class="normal">135</span>
-<span class="normal">136</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">136</span>
+<span class="normal">137</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the file content from the dropbox</span>
@@ -2251,8 +2251,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
-<span class="normal">181</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">181</span>
 <span class="normal">182</span>
 <span class="normal">183</span>
 <span class="normal">184</span>
@@ -2277,7 +2276,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">203</span>
 <span class="normal">204</span>
 <span class="normal">205</span>
-<span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">final_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Move the file from start_path to final_path</span>
@@ -2405,8 +2405,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">138</span>
-<span class="normal">139</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
@@ -2445,7 +2444,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">175</span>
 <span class="normal">176</span>
 <span class="normal">177</span>
-<span class="normal">178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">178</span>
+<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Update the file content.</span>
@@ -2564,8 +2564,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 82</span>
-<span class="normal"> 83</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 83</span>
 <span class="normal"> 84</span>
 <span class="normal"> 85</span>
 <span class="normal"> 86</span>
@@ -2585,7 +2584,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">100</span>
 <span class="normal">101</span>
 <span class="normal">102</span>
-<span class="normal">103</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">103</span>
+<span class="normal">104</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content_dict</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Upload the content_dict as a json file to the dropbox</span>
@@ -2685,8 +2685,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">52</span>
-<span class="normal">53</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">53</span>
 <span class="normal">54</span>
 <span class="normal">55</span>
 <span class="normal">56</span>
@@ -2713,7 +2712,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">77</span>
 <span class="normal">78</span>
 <span class="normal">79</span>
-<span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_string</span><span class="p">(</span>
+<span class="normal">80</span>
+<span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_string</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">content_string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2776,18 +2776,18 @@ job_id: the name of the file. Is a json file</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">731</span>
-<span class="normal">732</span>
-<span class="normal">733</span>
-<span class="normal">734</span>
-<span class="normal">735</span>
-<span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProvider</span><span class="p">(</span><span class="n">DropboxProviderExtended</span><span class="p">):</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProvider</span><span class="p">(</span><span class="n">DropboxProviderExtended</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class that implements the dropbox storage provider.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2857,13 +2857,13 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">DropboxLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">login_dict</span><span class="p">:</span> <span class="n">DropboxLoginInformation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Args:</span>
 <span class="sd">        login_dict: The dictionary that contains the login information</span>
@@ -3006,8 +3006,7 @@ job_id: the name of the file. Is a json file</p>
 
               <details class="quote">
                 <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">277</span>
-<span class="normal">278</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">278</span>
 <span class="normal">279</span>
 <span class="normal">280</span>
 <span class="normal">281</span>
@@ -3457,7 +3456,21 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">725</span>
 <span class="normal">726</span>
 <span class="normal">727</span>
-<span class="normal">728</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">,</span> <span class="n">DropboxCore</span><span class="p">):</span>
+<span class="normal">728</span>
+<span class="normal">729</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">DropboxProviderExtended</span><span class="p">(</span><span class="n">StorageProvider</span><span class="p">,</span> <span class="n">DropboxCore</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The class that implements the dropbox storage provider.</span>
 
@@ -3610,13 +3623,16 @@ job_id: the name of the file. Is a json file</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">delete_folder</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">PksStr</span> <span class="o">=</span> <span class="s2">&quot;backend&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The function that uploads the spooler public JWK to the storage.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            public_jwk: The JWK that contains the public key</span>
 <span class="sd">            display_name : The name of the backend</span>
+<span class="sd">            role: The role of the public key</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            None</span>
@@ -3630,30 +3646,27 @@ job_id: the name of the file. Is a json file</p>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key contains a private key&quot;</span><span class="p">)</span>
 
         <span class="c1"># make sure that the key has the correct kid</span>
-        <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
-        <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">upload_string</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;backend&quot;</span><span class="p">:</span>
+            <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
+        <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upload_string</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_public_key_from_kid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The function that gets the spooler public JWK for the device.</span>
+<span class="sd">        The function that gets public JWK based on the key id.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            display_name : The name of the backend</span>
+<span class="sd">            kid : The key id of the backend</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            JWk : The public JWK object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="c1"># now get the appropiate kid</span>
-        <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The kid is not set in the backend configuration.&quot;</span><span class="p">)</span>
         <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
-
-        <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+        <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">kid</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">JWK</span><span class="p">(</span><span class="o">**</span><span class="n">public_jwk_dict</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_delete_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -3818,10 +3831,23 @@ job_id: the name of the file. Is a json file</p>
             <span class="k">except</span> <span class="n">AuthError</span><span class="p">:</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Invalid access token.&quot;</span><span class="p">)</span>
 
-            <span class="n">folders_results</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_list_folder</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">full_config_path</span><span class="p">)</span>
-            <span class="n">entries</span> <span class="o">=</span> <span class="n">folders_results</span><span class="o">.</span><span class="n">entries</span>
+            <span class="c1"># we have too loop as dropbox somehow sometimes only returns a part of the files</span>
+            <span class="n">file_list</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># collects all files here</span>
+            <span class="n">has_more_files</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># because we haven&#39;t queried yet</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># because we haven&#39;t queried yet</span>
+            <span class="k">while</span> <span class="n">has_more_files</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">cursor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if it is our first time querying</span>
+                    <span class="n">folders_results</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_list_folder</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">full_config_path</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># we can ignore the mypy error that this is unreachable as the cursor is</span>
+                    <span class="c1"># set in the while loop</span>
+                    <span class="n">folders_results</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_list_folder_continue</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="n">file_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">folders_results</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span>
+                <span class="n">cursor</span> <span class="o">=</span> <span class="n">folders_results</span><span class="o">.</span><span class="n">cursor</span>
+                <span class="n">has_more_files</span> <span class="o">=</span> <span class="n">folders_results</span><span class="o">.</span><span class="n">has_more</span>
+
             <span class="n">backend_names</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
                 <span class="n">backend_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">backend_names</span>
 
@@ -4005,27 +4031,27 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">663</span>
-<span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">677</span>
 <span class="normal">678</span>
 <span class="normal">679</span>
 <span class="normal">680</span>
 <span class="normal">681</span>
 <span class="normal">682</span>
-<span class="normal">683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_job_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_job_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a job id for the job.</span>
 
@@ -4147,8 +4173,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">348</span>
-<span class="normal">349</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">349</span>
 <span class="normal">350</span>
 <span class="normal">351</span>
 <span class="normal">352</span>
@@ -4176,7 +4201,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">374</span>
 <span class="normal">375</span>
 <span class="normal">376</span>
-<span class="normal">377</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_attribute_id</span><span class="p">(</span>
+<span class="normal">377</span>
+<span class="normal">378</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_attribute_id</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">attribute_name</span><span class="p">:</span> <span class="n">AttributeIdStr</span><span class="p">,</span>
     <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -4321,8 +4347,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">302</span>
-<span class="normal">303</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">303</span>
 <span class="normal">304</span>
 <span class="normal">305</span>
 <span class="normal">306</span>
@@ -4365,7 +4390,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">343</span>
 <span class="normal">344</span>
 <span class="normal">345</span>
-<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_attribute_path</span><span class="p">(</span>
+<span class="normal">346</span>
+<span class="normal">347</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_attribute_path</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">attribute_name</span><span class="p">:</span> <span class="n">AttributePathStr</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DisplayNameStr</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4431,8 +4457,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">616</span>
-<span class="normal">617</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">617</span>
 <span class="normal">618</span>
 <span class="normal">619</span>
 <span class="normal">620</span>
@@ -4458,7 +4483,21 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">640</span>
 <span class="normal">641</span>
 <span class="normal">642</span>
-<span class="normal">643</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@validate_active</span>
 <span class="k">def</span> <span class="nf">get_backends</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of all the backends that the provider offers.</span>
@@ -4480,10 +4519,23 @@ job_id: the name of the file. Is a json file</p>
         <span class="k">except</span> <span class="n">AuthError</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;ERROR: Invalid access token.&quot;</span><span class="p">)</span>
 
-        <span class="n">folders_results</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_list_folder</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">full_config_path</span><span class="p">)</span>
-        <span class="n">entries</span> <span class="o">=</span> <span class="n">folders_results</span><span class="o">.</span><span class="n">entries</span>
+        <span class="c1"># we have too loop as dropbox somehow sometimes only returns a part of the files</span>
+        <span class="n">file_list</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># collects all files here</span>
+        <span class="n">has_more_files</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># because we haven&#39;t queried yet</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># because we haven&#39;t queried yet</span>
+        <span class="k">while</span> <span class="n">has_more_files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cursor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># if it is our first time querying</span>
+                <span class="n">folders_results</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_list_folder</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">full_config_path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># we can ignore the mypy error that this is unreachable as the cursor is</span>
+                <span class="c1"># set in the while loop</span>
+                <span class="n">folders_results</span> <span class="o">=</span> <span class="n">dbx</span><span class="o">.</span><span class="n">files_list_folder_continue</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">file_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">folders_results</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">folders_results</span><span class="o">.</span><span class="n">cursor</span>
+            <span class="n">has_more_files</span> <span class="o">=</span> <span class="n">folders_results</span><span class="o">.</span><span class="n">has_more</span>
+
         <span class="n">backend_names</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
             <span class="n">backend_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">backend_names</span>
 </code></pre></div></td></tr></table></div>
@@ -4581,23 +4633,23 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">645</span>
-<span class="normal">646</span>
-<span class="normal">647</span>
-<span class="normal">648</span>
-<span class="normal">649</span>
-<span class="normal">650</span>
-<span class="normal">651</span>
-<span class="normal">652</span>
-<span class="normal">653</span>
-<span class="normal">654</span>
-<span class="normal">655</span>
-<span class="normal">656</span>
-<span class="normal">657</span>
-<span class="normal">658</span>
-<span class="normal">659</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">659</span>
 <span class="normal">660</span>
-<span class="normal">661</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
+<span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BackendConfigSchemaIn</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that downloads the spooler configuration to the storage.</span>
 
@@ -4687,8 +4739,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">556</span>
-<span class="normal">557</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">557</span>
 <span class="normal">558</span>
 <span class="normal">559</span>
 <span class="normal">560</span>
@@ -4745,7 +4796,8 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">611</span>
 <span class="normal">612</span>
 <span class="normal">613</span>
-<span class="normal">614</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="normal">614</span>
+<span class="normal">615</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_file_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get a list of files. Typically we are looking for the queued jobs of a backend here.</span>
 
@@ -4813,15 +4865,15 @@ job_id: the name of the file. Is a json file</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.get_public_key" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_public_key</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span></code>
+<h3 id="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.get_public_key_from_kid" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_public_key_from_kid</span><span class="p">(</span><span class="n">kid</span><span class="p">)</span></code>
 
 </h3>
 
 
     <div class="doc doc-contents ">
 
-      <p>The function that gets the spooler public JWK for the device.</p>
+      <p>The function that gets public JWK based on the key id.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4836,12 +4888,12 @@ job_id: the name of the file. Is a json file</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>display_name</code></td>
+            <td><code>kid</code></td>
             <td>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>The name of the backend</p>
+                <p>The key id of the backend</p>
               </div>
             </td>
             <td>
@@ -4876,13 +4928,7 @@ job_id: the name of the file. Is a json file</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">462</span>
 <span class="normal">463</span>
 <span class="normal">464</span>
 <span class="normal">465</span>
@@ -4894,24 +4940,20 @@ job_id: the name of the file. Is a json file</p>
 <span class="normal">471</span>
 <span class="normal">472</span>
 <span class="normal">473</span>
-<span class="normal">474</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
+<span class="normal">474</span>
+<span class="normal">475</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">get_public_key_from_kid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The function that gets the spooler public JWK for the device.</span>
+<span class="sd">    The function that gets public JWK based on the key id.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        display_name : The name of the backend</span>
+<span class="sd">        kid : The key id of the backend</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        JWk : The public JWK object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># now get the appropiate kid</span>
-    <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The kid is not set in the backend configuration.&quot;</span><span class="p">)</span>
     <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
-
-    <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+    <span class="n">public_jwk_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_path</span><span class="o">=</span><span class="n">pks_path</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">kid</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">JWK</span><span class="p">(</span><span class="o">**</span><span class="n">public_jwk_dict</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5015,8 +5057,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">379</span>
-<span class="normal">380</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">380</span>
 <span class="normal">381</span>
 <span class="normal">382</span>
 <span class="normal">383</span>
@@ -5045,7 +5086,8 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span>
-<span class="normal">409</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_config</span><span class="p">(</span>
+<span class="normal">409</span>
+<span class="normal">410</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_config</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">config_dict</span><span class="p">:</span> <span class="n">BackendConfigSchemaIn</span><span class="p">,</span>
     <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span>
@@ -5205,8 +5247,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">493</span>
-<span class="normal">494</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">494</span>
 <span class="normal">495</span>
 <span class="normal">496</span>
 <span class="normal">497</span>
@@ -5266,7 +5307,8 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">551</span>
 <span class="normal">552</span>
 <span class="normal">553</span>
-<span class="normal">554</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
+<span class="normal">554</span>
+<span class="normal">555</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_in_database</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">result_dict</span><span class="p">:</span> <span class="n">ResultDict</span><span class="p">,</span>
     <span class="n">status_msg_dict</span><span class="p">:</span> <span class="n">StatusMsgDict</span><span class="p">,</span>
@@ -5338,7 +5380,7 @@ For each backend there is a separate folder in which the configuration is stored
 
 
 <h3 id="src.sqooler.storage_providers.dropbox.DropboxProviderExtended.upload_public_key" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">upload_public_key</span><span class="p">(</span><span class="n">public_jwk</span><span class="p">,</span> <span class="n">display_name</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">upload_public_key</span><span class="p">(</span><span class="n">public_jwk</span><span class="p">,</span> <span class="n">display_name</span><span class="p">,</span> <span class="n">role</span><span class="o">=</span><span class="s1">&#39;backend&#39;</span><span class="p">)</span></code>
 
 </h3>
 
@@ -5386,6 +5428,20 @@ For each backend there is a separate folder in which the configuration is stored
                 <em>required</em>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code>role</code></td>
+            <td>
+                  <code><span title="src.sqooler.schemes.PksStr">PksStr</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The role of the public key</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;backend&#39;</code>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -5414,8 +5470,7 @@ For each backend there is a separate folder in which the configuration is stored
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/storage_providers/dropbox.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">430</span>
-<span class="normal">431</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">431</span>
 <span class="normal">432</span>
 <span class="normal">433</span>
 <span class="normal">434</span>
@@ -5438,13 +5493,22 @@ For each backend there is a separate folder in which the configuration is stored
 <span class="normal">451</span>
 <span class="normal">452</span>
 <span class="normal">453</span>
-<span class="normal">454</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">upload_public_key</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">,</span> <span class="n">display_name</span><span class="p">:</span> <span class="n">DisplayNameStr</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">PksStr</span> <span class="o">=</span> <span class="s2">&quot;backend&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The function that uploads the spooler public JWK to the storage.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        public_jwk: The JWK that contains the public key</span>
 <span class="sd">        display_name : The name of the backend</span>
+<span class="sd">        role: The role of the public key</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        None</span>
@@ -5458,11 +5522,13 @@ For each backend there is a separate folder in which the configuration is stored
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key contains a private key&quot;</span><span class="p">)</span>
 
     <span class="c1"># make sure that the key has the correct kid</span>
-    <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;backend&quot;</span><span class="p">:</span>
+        <span class="n">config_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">display_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span> <span class="o">!=</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The key does not have the correct kid.&quot;</span><span class="p">)</span>
+
     <span class="n">pks_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_attribute_path</span><span class="p">(</span><span class="s2">&quot;pks&quot;</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">upload_string</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">config_dict</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">upload_string</span><span class="p">(</span><span class="n">public_jwk</span><span class="o">.</span><span class="n">model_dump_json</span><span class="p">(),</span> <span class="n">pks_path</span><span class="p">,</span> <span class="n">public_jwk</span><span class="o">.</span><span class="n">kid</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
