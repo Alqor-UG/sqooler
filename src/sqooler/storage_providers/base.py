@@ -567,7 +567,7 @@ class StorageProvider(StorageCore):
 
     @abstractmethod
     def upload_public_key(
-        self, public_jwk: JWK, display_name: DisplayNameStr, type: PksStr = "backend"
+        self, public_jwk: JWK, display_name: DisplayNameStr, role: PksStr = "backend"
     ) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
@@ -575,6 +575,7 @@ class StorageProvider(StorageCore):
         Args:
             public_jwk: The JWK that contains the public key
             display_name : The name of the backend
+            role: The role of the public key
 
         Returns:
             None

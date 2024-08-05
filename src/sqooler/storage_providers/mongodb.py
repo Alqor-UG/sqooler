@@ -563,7 +563,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         return True
 
     def upload_public_key(
-        self, public_jwk: JWK, display_name: DisplayNameStr, type: PksStr = "backend"
+        self, public_jwk: JWK, display_name: DisplayNameStr, role: PksStr = "backend"
     ) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
@@ -571,7 +571,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         Args:
             public_jwk: The JWK that contains the public key
             display_name : The name of the backend
-            type: The type of the public key
+            role: The role of the public key
 
         Returns:
             None
@@ -584,7 +584,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         if public_jwk.d is not None:
             raise ValueError("The key contains a private key")
 
-        if type=="backend":
+        if role == "backend":
             # make sure that the key has the correct kid
             config_dict = self.get_config(display_name)
             if public_jwk.kid != config_dict.kid:
@@ -607,7 +607,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             return
 
         # in the case of the user this uuid should most likely become identical
-        if type=="user":
+        if role == "user":
             self.upload(public_jwk.model_dump(), pks_path, display_name)
         else:
             # if the public key does not exist, we have to create it
@@ -654,7 +654,7 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             raise FileNotFoundError("The backend does not exist for the given storage.")
 
         public_jwk_dict.pop("_id")
-        return JWK(**public_jwk_dict)     
+        return JWK(**public_jwk_dict)
 
     def _delete_public_key(self, kid: str) -> bool:
         """

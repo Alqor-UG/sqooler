@@ -502,12 +502,12 @@ class StorageProviderTestUtils:
         # this is impossible as the config is not uploaded
         with pytest.raises(FileNotFoundError):
             storage_provider.upload_public_key(
-                public_jwk, display_name=dummy_user, type="backend"
+                public_jwk, display_name=dummy_user, role="backend"
             )
 
         # make sure that we can upload the public key now
         storage_provider.upload_public_key(
-            public_jwk, display_name=dummy_user, type="user"
+            public_jwk, display_name=dummy_user, role="user"
         )
 
         # make sure that we cannot upload it again

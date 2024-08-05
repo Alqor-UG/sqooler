@@ -410,7 +410,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         return True
 
     def upload_public_key(
-        self, public_jwk: JWK, display_name: DisplayNameStr, type: PksStr = "backend"
+        self, public_jwk: JWK, display_name: DisplayNameStr, role: PksStr = "backend"
     ) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
@@ -418,7 +418,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         Args:
             public_jwk: The JWK that contains the public key
             display_name : The name of the backend
-            type: The type of the public key
+            role: The role of the public key
 
         Returns:
             None
@@ -432,7 +432,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
             raise ValueError("The key contains a private key")
 
         # make sure that the key has the correct kid for the backend
-        if type == "backend":
+        if role == "backend":
             config_dict = self.get_config(display_name)
             if public_jwk.kid != config_dict.kid:
                 raise ValueError("The key does not have the correct kid.")
@@ -468,7 +468,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         config_info = self.get_config(display_name)
 
         # now proceed with the usual function
-        return  self.get_public_key_from_kid(config_info.kid)
+        return self.get_public_key_from_kid(config_info.kid)
 
     def get_public_key_from_kid(self, kid: str) -> JWK:
         """
@@ -479,7 +479,7 @@ class LocalProviderExtended(StorageProvider, LocalCore):
 
         Returns:
             JWk : The public JWK object
-        """        
+        """
         pks_path = self.get_attribute_path("pks")
         key_path = os.path.join(self.base_path, pks_path)
         file_name = f"{kid}.json"
