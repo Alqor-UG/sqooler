@@ -582,18 +582,6 @@ class StorageProvider(StorageCore):
         """
 
     @abstractmethod
-    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
-        """
-        The function that gets the spooler public JWK for the device.
-
-        Args:
-            display_name : The name of the backend
-
-        Returns:
-            JWk : The public JWK object
-        """
-
-    @abstractmethod
     def get_public_key_from_kid(self, kid: str) -> JWK:
         """
         The function that gets public JWK based on the key id.
@@ -654,6 +642,25 @@ class StorageProvider(StorageCore):
         Returns:
             A list of files that was found.
         """
+
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+        # first we have to get the kid
+        config_info = self.get_config(display_name)
+        # make sure that the kid is defined and raise an error otherwise
+        if config_info.kid is None:
+            raise ValueError("Missing kid for the configuration")
+
+        # now proceed with the usual function
+        return self.get_public_key_from_kid(config_info.kid)
 
     def get_next_job_in_queue(
         self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None

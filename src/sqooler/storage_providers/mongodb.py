@@ -614,24 +614,6 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             config_id = uuid.uuid4().hex[:24]
             self.upload(public_jwk.model_dump(), pks_path, config_id)
 
-    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
-        """
-        The function that gets the spooler public JWK for the device.
-
-        Args:
-            display_name : The name of the backend
-
-        Returns:
-            JWk : The public JWK object
-        """
-
-        # now get the appropiate kid
-        config_dict = self.get_config(display_name)
-        if config_dict.kid is None:
-            raise ValueError("The kid is not set in the backend configuration.")
-
-        return self.get_public_key_from_kid(config_dict.kid)
-
     def get_public_key_from_kid(self, kid: str) -> JWK:
         """
         The function that gets public JWK based on the key id.

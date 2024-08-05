@@ -453,23 +453,6 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         with open(secure_path, "w", encoding="utf-8") as json_file:
             json_file.write(public_jwk.model_dump_json())
 
-    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
-        """
-        The function that gets the spooler public JWK for the device.
-
-        Args:
-            display_name : The name of the backend
-
-        Returns:
-            JWk : The public JWK object
-        """
-
-        # first we have to get the kid
-        config_info = self.get_config(display_name)
-
-        # now proceed with the usual function
-        return self.get_public_key_from_kid(config_info.kid)
-
     def get_public_key_from_kid(self, kid: str) -> JWK:
         """
         The function that gets public JWK based on the key id.
