@@ -22,6 +22,7 @@ from ..schemes import (
     DisplayNameStr,
     DropboxLoginInformation,
     PathStr,
+    PksStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -427,13 +428,16 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
         self.delete_folder(config_path)
         return True
 
-    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+    def upload_public_key(
+        self, public_jwk: JWK, display_name: DisplayNameStr, role: PksStr = "backend"
+    ) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
 
         Args:
             public_jwk: The JWK that contains the public key
             display_name : The name of the backend
+            role: The role of the public key
 
         Returns:
             None
@@ -447,30 +451,27 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             raise ValueError("The key contains a private key")
 
         # make sure that the key has the correct kid
-        config_dict = self.get_config(display_name)
-        if public_jwk.kid != config_dict.kid:
-            raise ValueError("The key does not have the correct kid.")
-        pks_path = self.get_attribute_path("pks")
-        self.upload_string(public_jwk.model_dump_json(), pks_path, config_dict.kid)
+        if role == "backend":
+            config_dict = self.get_config(display_name)
+            if public_jwk.kid != config_dict.kid:
+                raise ValueError("The key does not have the correct kid.")
 
-    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        pks_path = self.get_attribute_path("pks")
+        self.upload_string(public_jwk.model_dump_json(), pks_path, public_jwk.kid)
+
+    def get_public_key_from_kid(self, kid: str) -> JWK:
         """
-        The function that gets the spooler public JWK for the device.
+        The function that gets public JWK based on the key id.
 
         Args:
-            display_name : The name of the backend
+            kid : The key id of the backend
 
         Returns:
             JWk : The public JWK object
         """
 
-        # now get the appropiate kid
-        config_dict = self.get_config(display_name)
-        if config_dict.kid is None:
-            raise ValueError("The kid is not set in the backend configuration.")
         pks_path = self.get_attribute_path("pks")
-
-        public_jwk_dict = self.get(storage_path=pks_path, job_id=config_dict.kid)
+        public_jwk_dict = self.get(storage_path=pks_path, job_id=kid)
         return JWK(**public_jwk_dict)
 
     def _delete_public_key(self, kid: str) -> bool:
@@ -635,10 +636,23 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             except AuthError:
                 sys.exit("ERROR: Invalid access token.")
 
-            folders_results = dbx.files_list_folder(path=full_config_path)
-            entries = folders_results.entries
+            # we have too loop as dropbox somehow sometimes only returns a part of the files
+            file_list = []  # collects all files here
+            has_more_files = True  # because we haven't queried yet
+            cursor = None  # because we haven't queried yet
+            while has_more_files:
+                if cursor is None:  # if it is our first time querying
+                    folders_results = dbx.files_list_folder(path=full_config_path)
+                else:
+                    # we can ignore the mypy error that this is unreachable as the cursor is
+                    # set in the while loop
+                    folders_results = dbx.files_list_folder_continue(cursor)  # type: ignore
+                file_list.extend(folders_results.entries)
+                cursor = folders_results.cursor
+                has_more_files = folders_results.has_more
+
             backend_names = []
-            for entry in entries:
+            for entry in file_list:
                 backend_names.append(entry.name)
         return backend_names
 

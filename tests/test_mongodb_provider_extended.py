@@ -136,6 +136,12 @@ class TestMongodbProviderExtended(StorageProviderTestUtils):
         """
         self.signature_tests(DB_NAME)
 
+    def test_user_signature(self) -> None:
+        """
+        Test that we can create a signature for the user.
+        """
+        self.user_signature_tests(DB_NAME)
+
     @pytest.mark.parametrize("sign_it", [True, False])
     def test_backend_status(
         self,

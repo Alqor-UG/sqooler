@@ -24,6 +24,7 @@ from ..schemes import (
     DisplayNameStr,
     MongodbLoginInformation,
     PathStr,
+    PksStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -561,13 +562,16 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         self.delete(storage_path=result_json_dir, job_id=job_id)
         return True
 
-    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+    def upload_public_key(
+        self, public_jwk: JWK, display_name: DisplayNameStr, role: PksStr = "backend"
+    ) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
 
         Args:
             public_jwk: The JWK that contains the public key
             display_name : The name of the backend
+            role: The role of the public key
 
         Returns:
             None
@@ -580,16 +584,17 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
         if public_jwk.d is not None:
             raise ValueError("The key contains a private key")
 
-        # make sure that the key has the correct kid
-        config_dict = self.get_config(display_name)
-        if public_jwk.kid != config_dict.kid:
-            raise ValueError("The key does not have the correct kid.")
+        if role == "backend":
+            # make sure that the key has the correct kid
+            config_dict = self.get_config(display_name)
+            if public_jwk.kid != config_dict.kid:
+                raise ValueError("The key does not have the correct kid.")
 
         pks_path = self.get_attribute_path("pks")
         _, collection = self._get_database_and_collection(pks_path)
 
         # first we have to check if the device already exists in the database
-        document_to_find = {"kid": config_dict.kid}
+        document_to_find = {"kid": public_jwk.kid}
 
         result_found = collection.find_one(document_to_find)
         if result_found:
@@ -601,32 +606,30 @@ class MongodbProviderExtended(StorageProvider, MongodbCore):
             )
             return
 
-        # if the device does not exist, we have to create it
-        config_id = uuid.uuid4().hex[:24]
-        self.upload(public_jwk.model_dump(), pks_path, config_id)
+        # in the case of the user this uuid should most likely become identical
+        if role == "user":
+            self.upload(public_jwk.model_dump(), pks_path, display_name)
+        else:
+            # if the public key does not exist, we have to create it
+            config_id = uuid.uuid4().hex[:24]
+            self.upload(public_jwk.model_dump(), pks_path, config_id)
 
-    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+    def get_public_key_from_kid(self, kid: str) -> JWK:
         """
-        The function that gets the spooler public JWK for the device.
+        The function that gets public JWK based on the key id.
 
         Args:
-            display_name : The name of the backend
+            kid : The key id of the backend
 
         Returns:
             JWk : The public JWK object
         """
-
         # get the database on which we work
         pks_path = self.get_attribute_path("pks")
         _, collection = self._get_database_and_collection(pks_path)
 
-        # now get the appropiate kid
-        config_dict = self.get_config(display_name)
-        if config_dict.kid is None:
-            raise ValueError("The kid is not set in the backend configuration.")
-
         # create the filter for the document with display_name that is equal to display_name
-        document_to_find = {"kid": config_dict.kid}
+        document_to_find = {"kid": kid}
         public_jwk_dict = collection.find_one(document_to_find)
 
         if not public_jwk_dict:

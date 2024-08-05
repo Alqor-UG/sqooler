@@ -9,6 +9,8 @@ import shutil
 import uuid
 from typing import Mapping, Optional
 
+from pathvalidate import validate_filename
+
 from ..schemes import (
     AttributeIdStr,
     AttributePathStr,
@@ -16,6 +18,7 @@ from ..schemes import (
     DisplayNameStr,
     LocalLoginInformation,
     PathStr,
+    PksStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -406,14 +409,16 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         self.delete(storage_path=self.configs_path, job_id=display_name)
         return True
 
-    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+    def upload_public_key(
+        self, public_jwk: JWK, display_name: DisplayNameStr, role: PksStr = "backend"
+    ) -> None:
         """
-        The function that uploads the spooler public JWK to the storage. It should
-        only be used after `upload_config` as the kid is set there.
+        The function that uploads the spooler public JWK to the storage.
 
         Args:
             public_jwk: The JWK that contains the public key
             display_name : The name of the backend
+            role: The role of the public key
 
         Returns:
             None
@@ -426,16 +431,18 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         if public_jwk.d is not None:
             raise ValueError("The key contains a private key")
 
-        # make sure that the key has the correct kid
-        config_dict = self.get_config(display_name)
-        if public_jwk.kid != config_dict.kid:
-            raise ValueError("The key does not have the correct kid.")
+        # make sure that the key has the correct kid for the backend
+        if role == "backend":
+            config_dict = self.get_config(display_name)
+            if public_jwk.kid != config_dict.kid:
+                raise ValueError("The key does not have the correct kid.")
 
         # path of the public keys
         pks_path = self.get_attribute_path("pks")
         key_path = os.path.join(self.base_path, pks_path)
         key_path = os.path.normpath(key_path)
-        # test if the config path already exists. If it does not, create it
+
+        # test if the key path already exists. If it does not, create it
         if not os.path.exists(key_path):
             os.makedirs(key_path)
 
@@ -446,24 +453,21 @@ class LocalProviderExtended(StorageProvider, LocalCore):
         with open(secure_path, "w", encoding="utf-8") as json_file:
             json_file.write(public_jwk.model_dump_json())
 
-    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+    def get_public_key_from_kid(self, kid: str) -> JWK:
         """
-        The function that gets the spooler public JWK for the device.
+        The function that gets public JWK based on the key id.
 
         Args:
-            display_name : The name of the backend
+            kid : The key id of the backend
 
         Returns:
             JWk : The public JWK object
         """
-
-        # first we have to get the kid
-        config_info = self.get_config(display_name)
-
-        # path of the configs
         pks_path = self.get_attribute_path("pks")
         key_path = os.path.join(self.base_path, pks_path)
-        file_name = f"{config_info.kid}.json"
+        file_name = f"{kid}.json"
+
+        validate_filename(file_name)
         full_json_path = os.path.join(key_path, file_name)
         secure_path = os.path.normpath(full_json_path)
         with open(secure_path, "r", encoding="utf-8") as json_file:

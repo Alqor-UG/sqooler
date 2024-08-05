@@ -22,6 +22,7 @@ from ..schemes import (
     BackendStatusSchemaOut,
     DisplayNameStr,
     NextJobSchema,
+    PksStr,
     ResultDict,
     StatusMsgDict,
 )
@@ -565,25 +566,28 @@ class StorageProvider(StorageCore):
         """
 
     @abstractmethod
-    def upload_public_key(self, public_jwk: JWK, display_name: DisplayNameStr) -> None:
+    def upload_public_key(
+        self, public_jwk: JWK, display_name: DisplayNameStr, role: PksStr = "backend"
+    ) -> None:
         """
         The function that uploads the spooler public JWK to the storage.
 
         Args:
             public_jwk: The JWK that contains the public key
             display_name : The name of the backend
+            role: The role of the public key
 
         Returns:
             None
         """
 
     @abstractmethod
-    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+    def get_public_key_from_kid(self, kid: str) -> JWK:
         """
-        The function that gets the spooler public JWK for the device.
+        The function that gets public JWK based on the key id.
 
         Args:
-            display_name : The name of the backend
+            kid : The key id of the backend
 
         Returns:
             JWk : The public JWK object
@@ -638,6 +642,25 @@ class StorageProvider(StorageCore):
         Returns:
             A list of files that was found.
         """
+
+    def get_public_key(self, display_name: DisplayNameStr) -> JWK:
+        """
+        The function that gets the spooler public JWK for the device.
+
+        Args:
+            display_name : The name of the backend
+
+        Returns:
+            JWk : The public JWK object
+        """
+        # first we have to get the kid
+        config_info = self.get_config(display_name)
+        # make sure that the kid is defined and raise an error otherwise
+        if config_info.kid is None:
+            raise ValueError("Missing kid for the configuration")
+
+        # now proceed with the usual function
+        return self.get_public_key_from_kid(config_info.kid)
 
     def get_next_job_in_queue(
         self, display_name: DisplayNameStr, private_jwk: Optional[JWK] = None

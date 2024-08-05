@@ -480,6 +480,49 @@ class StorageProviderTestUtils:
         storage_provider._delete_config(other_backend_name)
         storage_provider._delete_public_key(key_id)
 
+    def user_signature_tests(self, db_name: str) -> None:
+        """
+        Test that we can create a signature for the user.
+        """
+        # create a storageprovider object
+        storage_provider_class = self.get_storage_provider()
+        try:
+            storage_provider = storage_provider_class(self.get_login(), db_name)
+        except TypeError:
+            storage_provider = storage_provider_class(self.get_login())
+
+        # create a user name
+        dummy_user = uuid.uuid4().hex[:24]
+
+        # create a dummy key
+        key_id = f"user{dummy_user}"
+        private_jwk, public_jwk = create_jwk_pair(key_id)
+
+        # make sure that we cannot upload it as a normal backend
+        # this is impossible as the config is not uploaded
+        with pytest.raises(FileNotFoundError):
+            storage_provider.upload_public_key(
+                public_jwk, display_name=dummy_user, role="backend"
+            )
+
+        # make sure that we can upload the public key now
+        storage_provider.upload_public_key(
+            public_jwk, display_name=dummy_user, role="user"
+        )
+
+        # make sure that we cannot upload it again
+        with pytest.raises(ValueError):
+            storage_provider.upload_public_key(private_jwk, display_name=dummy_user)
+
+        # now test that we can also get the public key
+        obtained_public_jwk = storage_provider.get_public_key_from_kid(
+            kid=f"user{dummy_user}"
+        )
+        assert obtained_public_jwk.x == public_jwk.x
+
+        # remove old stuff
+        storage_provider._delete_public_key(key_id)
+
     def backend_status_tests(
         self,
         db_name: str,
