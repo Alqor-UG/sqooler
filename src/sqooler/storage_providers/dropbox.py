@@ -636,10 +636,23 @@ class DropboxProviderExtended(StorageProvider, DropboxCore):
             except AuthError:
                 sys.exit("ERROR: Invalid access token.")
 
-            folders_results = dbx.files_list_folder(path=full_config_path)
-            entries = folders_results.entries
+            # we have too loop as dropbox somehow sometimes only returns a part of the files
+            file_list = []  # collects all files here
+            has_more_files = True  # because we haven't queried yet
+            cursor = None  # because we haven't queried yet
+            while has_more_files:
+                if cursor is None:  # if it is our first time querying
+                    folders_results = dbx.files_list_folder(path=full_config_path)
+                else:
+                    # we can ignore the mypy error that this is unreachable as the cursor is
+                    # set in the while loop
+                    folders_results = dbx.files_list_folder_continue(cursor)  # type: ignore
+                file_list.extend(folders_results.entries)
+                cursor = folders_results.cursor
+                has_more_files = folders_results.has_more
+
             backend_names = []
-            for entry in entries:
+            for entry in file_list:
                 backend_names.append(entry.name)
         return backend_names
 
