@@ -8,10 +8,12 @@ from datetime import datetime, timezone
 import pytest
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from icecream import ic
 
 from sqooler.security import (
     JWK,
     JWSDict,
+    JWSFlat,
     JWSHeader,
     create_jwk_pair,
     jwk_from_config_str,
@@ -122,3 +124,14 @@ def test_jws_serialization() -> None:
 
     signed_pl = sign_payload(payload, private_jwk)
     signed_pl.model_dump_json()
+
+
+def test_flat_jws() -> None:
+    """
+    Test the possibility to serialize a jws object into the flat JWS
+    """
+    payload = {"test": "test"}
+    private_jwk, _ = create_jwk_pair("test_kid")
+
+    signed_pl = sign_payload(payload, private_jwk)
+    ic(signed_pl)

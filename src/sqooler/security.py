@@ -13,7 +13,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
 )
-from pydantic import BaseModel, Field
+from pydantic import Base64UrlStr, BaseModel, Field
 
 
 class JWSHeader(BaseModel):
@@ -172,6 +172,20 @@ class JWSDict(BaseModel):
             return True
         except InvalidSignature:
             return False
+
+
+class JWSFlat(BaseModel):
+    """
+    A serialization of a JSON Web Signature in its flat JSON form. We follow the
+    form described in section 3 and exemplified in Annex 7 of RFC 7515. Quite
+    importantly we have no need of the unprotected header.
+
+    https://datatracker.ietf.org/doc/html/rfc7515
+    """
+
+    protected: Base64UrlStr
+    payload: Base64UrlStr
+    signature: Base64UrlStr
 
 
 def jwk_from_config_str(jwk_base64_str: str) -> JWK:
