@@ -3,6 +3,7 @@ In this module we test the basic ability to sign payloads and verify the signatu
 """
 
 import base64
+import json
 from datetime import datetime, timezone
 
 import pytest
@@ -12,6 +13,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from sqooler.security import (
     JWK,
     JWSDict,
+    JWSFlat,
     JWSHeader,
     create_jwk_pair,
     jwk_from_config_str,
@@ -84,6 +86,10 @@ def test_jwk() -> None:
     assert reloaded_public.d is None
     assert reloaded_public.x == public_base64
 
+    # do we get and error if we try it with a public key input ?
+    with pytest.raises(ValueError):
+        public_from_private_jwk(reloaded_public)
+
 
 def test_sign_and_verify_jws() -> None:
     """
@@ -112,6 +118,14 @@ def test_sign_and_verify_jws() -> None:
     payload_dt = {"test": "test", "last_queued": current_time}
     sign_payload(payload_dt, private_jwk)
 
+    # test that we raise errors if we try to verify a signature with a private key
+    with pytest.raises(ValueError):
+        signed_pl.verify_signature(private_jwk)
+
+    # test that we raise erros if we try to sign with a public key
+    with pytest.raises(ValueError):
+        sign_payload(payload_dt, public_jwk)
+
 
 def test_jws_serialization() -> None:
     """
@@ -122,3 +136,40 @@ def test_jws_serialization() -> None:
 
     signed_pl = sign_payload(payload, private_jwk)
     signed_pl.model_dump_json()
+
+
+def test_flat_jws() -> None:
+    """
+    Test the possibility to serialize a jws object into the flat JWS
+    """
+    payload = {"test": "test"}
+    private_jwk, _ = create_jwk_pair("test_kid")
+
+    signed_pl = sign_payload(payload, private_jwk)
+
+    b64_header_str = signed_pl.header.to_base64url().decode("utf-8")
+    b64_payload_str = payload_to_base64url(signed_pl.payload).decode("utf-8")
+
+    # some tests with the signature
+
+    signature_str = signed_pl.signature.encode("utf-8")
+    signature_bytes = base64.urlsafe_b64decode(signature_str)
+
+    # now try to serialize it
+    flat_jws = JWSFlat(
+        protected=b64_header_str,
+        payload=b64_payload_str,
+        signature=signature_str,
+    )
+
+    assert flat_jws.signature == signature_bytes
+    assert json.loads(flat_jws.payload) == payload
+
+    # and are we able to dump it into a json ?
+    json_jws = flat_jws.model_dump_json()
+
+    # and can we load it back?
+    json_dict = json.loads(json_jws)
+    loaded_jws = JWSFlat(**json_dict)
+    assert loaded_jws.signature == signature_bytes
+    assert json.loads(loaded_jws.payload) == payload

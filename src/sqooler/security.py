@@ -6,14 +6,14 @@ Any suggestions for improvements will be very welcome."""
 import base64
 import datetime
 import json
-from typing import Any, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
 )
-from pydantic import BaseModel, Field
+from pydantic import Base64UrlBytes, Base64UrlStr, BaseModel, Field
 
 
 class JWSHeader(BaseModel):
@@ -138,11 +138,14 @@ class JWSDict(BaseModel):
     https://datatracker.ietf.org/doc/html/rfc7515
     """
 
-    header: JWSHeader = Field(description="The header of the JWS object")
-    payload: dict = Field(description="The payload of the JWS object")
-    signature: str = Field(
-        description="The signature of the JWS objec. It is base64url encoded as a string."
-    )
+    header: Annotated[JWSHeader, Field(description="The header of the JWS object")]
+    payload: Annotated[dict, Field(description="The payload of the JWS object")]
+    signature: Annotated[
+        str,
+        Field(
+            description="The signature of the JWS objec. It is base64url encoded as a string."
+        ),
+    ]
 
     def verify_signature(self, public_jwk: JWK) -> bool:
         """
@@ -172,6 +175,24 @@ class JWSDict(BaseModel):
             return True
         except InvalidSignature:
             return False
+
+
+class JWSFlat(BaseModel):
+    """
+    A serialization of a JSON Web Signature in its flat JSON form. We follow the
+    form described in section 3 and exemplified in Annex 7 of RFC 7515. Quite
+    importantly we have no need of the unprotected header.
+
+    https://datatracker.ietf.org/doc/html/rfc7515
+    """
+
+    protected: Annotated[
+        Base64UrlStr, Field(description="The header of the JWS object")
+    ]
+    payload: Annotated[Base64UrlStr, Field(description="The payload of the JWS object")]
+    signature: Annotated[
+        Base64UrlBytes, Field(description="The signature of the JWS object.")
+    ]
 
 
 def jwk_from_config_str(jwk_base64_str: str) -> JWK:
@@ -276,18 +297,3 @@ def public_from_private_jwk(private_jwk: JWK) -> JWK:
         x=private_jwk.x,
     )
     return public_jwk
-
-
-def create_key_pair() -> tuple[Ed25519PrivateKey, Ed25519PublicKey]:
-    """
-    Create a new key pair for signing and verification.
-
-    Returns:
-        tuple : A tuple containing the public and private keys
-    """
-
-    # create a new key pair
-    private_key = Ed25519PrivateKey.generate()
-    public_key = private_key.public_key()
-
-    return private_key, public_key
