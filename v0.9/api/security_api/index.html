@@ -543,6 +543,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#src.sqooler.security.JWSFlat" class="md-nav__link">
+    <span class="md-ellipsis">
+      JWSFlat
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#src.sqooler.security.JWSHeader" class="md-nav__link">
     <span class="md-ellipsis">
       JWSHeader
@@ -570,15 +579,6 @@
   <a href="#src.sqooler.security.create_jwk_pair" class="md-nav__link">
     <span class="md-ellipsis">
       create_jwk_pair
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#src.sqooler.security.create_key_pair" class="md-nav__link">
-    <span class="md-ellipsis">
-      create_key_pair
     </span>
   </a>
   
@@ -919,6 +919,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#src.sqooler.security.JWSFlat" class="md-nav__link">
+    <span class="md-ellipsis">
+      JWSFlat
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#src.sqooler.security.JWSHeader" class="md-nav__link">
     <span class="md-ellipsis">
       JWSHeader
@@ -946,15 +955,6 @@
   <a href="#src.sqooler.security.create_jwk_pair" class="md-nav__link">
     <span class="md-ellipsis">
       create_jwk_pair
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#src.sqooler.security.create_key_pair" class="md-nav__link">
-    <span class="md-ellipsis">
-      create_key_pair
     </span>
   </a>
   
@@ -1294,18 +1294,24 @@ Any suggestions for improvements will be very welcome.</p>
 <span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
-<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">JWSDict</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">JWSDict</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A JSON Web Signature in a dictionary form. We follow the JWS standard as defined in RFC 7515.</span>
 
 <span class="sd">    https://datatracker.ietf.org/doc/html/rfc7515</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">header</span><span class="p">:</span> <span class="n">JWSHeader</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The header of the JWS object&quot;</span><span class="p">)</span>
-    <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The payload of the JWS object&quot;</span><span class="p">)</span>
-    <span class="n">signature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The signature of the JWS objec. It is base64url encoded as a string.&quot;</span>
-    <span class="p">)</span>
+    <span class="n">header</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">JWSHeader</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The header of the JWS object&quot;</span><span class="p">)]</span>
+    <span class="n">payload</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The payload of the JWS object&quot;</span><span class="p">)]</span>
+    <span class="n">signature</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span>
+        <span class="nb">str</span><span class="p">,</span>
+        <span class="n">Field</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The signature of the JWS objec. It is base64url encoded as a string.&quot;</span>
+        <span class="p">),</span>
+    <span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">verify_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1417,10 +1423,7 @@ Any suggestions for improvements will be very welcome.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/security.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
 <span class="normal">151</span>
 <span class="normal">152</span>
 <span class="normal">153</span>
@@ -1444,7 +1447,10 @@ Any suggestions for improvements will be very welcome.</p>
 <span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
-<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">verify_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">verify_signature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">public_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Verify the integraty of JWS object.</span>
 
@@ -1477,6 +1483,83 @@ Any suggestions for improvements will be very welcome.</p>
     </div>
 
 </div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="src.sqooler.security.JWSFlat" class="doc doc-heading">
+            <code>JWSFlat</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+      <p>A serialization of a JSON Web Signature in its flat JSON form. We follow the
+form described in section 3 and exemplified in Annex 7 of RFC 7515. Quite
+importantly we have no need of the unprotected header.</p>
+<p>https://datatracker.ietf.org/doc/html/rfc7515</p>
+
+              <details class="quote">
+                <summary>Source code in <code>src/sqooler/security.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">JWSFlat</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A serialization of a JSON Web Signature in its flat JSON form. We follow the</span>
+<span class="sd">    form described in section 3 and exemplified in Annex 7 of RFC 7515. Quite</span>
+<span class="sd">    importantly we have no need of the unprotected header.</span>
+
+<span class="sd">    https://datatracker.ietf.org/doc/html/rfc7515</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">protected</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span>
+        <span class="n">Base64UrlStr</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The header of the JWS object&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">payload</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Base64UrlStr</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The payload of the JWS object&quot;</span><span class="p">)]</span>
+    <span class="n">signature</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span>
+        <span class="n">Base64UrlBytes</span><span class="p">,</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;The signature of the JWS object.&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
 
 
 
@@ -1730,29 +1813,29 @@ Any suggestions for improvements will be very welcome.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/security.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_jwk_pair</span><span class="p">(</span><span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">JWK</span><span class="p">,</span> <span class="n">JWK</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_jwk_pair</span><span class="p">(</span><span class="n">kid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">JWK</span><span class="p">,</span> <span class="n">JWK</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a pair of JWKs designed for signing and verification.</span>
 
@@ -1775,75 +1858,6 @@ Any suggestions for improvements will be very welcome.</p>
     <span class="n">private_jwk</span> <span class="o">=</span> <span class="n">JWK</span><span class="p">(</span><span class="n">key_ops</span><span class="o">=</span><span class="s2">&quot;sign&quot;</span><span class="p">,</span> <span class="n">kid</span><span class="o">=</span><span class="n">kid</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">private_base64</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">public_base64</span><span class="p">)</span>
     <span class="n">public_jwk</span> <span class="o">=</span> <span class="n">JWK</span><span class="p">(</span><span class="n">key_ops</span><span class="o">=</span><span class="s2">&quot;verify&quot;</span><span class="p">,</span> <span class="n">kid</span><span class="o">=</span><span class="n">kid</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">public_base64</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">private_jwk</span><span class="p">,</span> <span class="n">public_jwk</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h2 id="src.sqooler.security.create_key_pair" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">create_key_pair</span><span class="p">()</span></code>
-
-</h2>
-
-
-    <div class="doc doc-contents ">
-
-      <p>Create a new key pair for signing and verification.</p>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>tuple</code></td>            <td>
-                  <code>tuple[<span title="cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PrivateKey">Ed25519PrivateKey</span>, <span title="cryptography.hazmat.primitives.asymmetric.ed25519.Ed25519PublicKey">Ed25519PublicKey</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>A tuple containing the public and private keys</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-            <details class="quote">
-              <summary>Source code in <code>src/sqooler/security.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_key_pair</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Ed25519PrivateKey</span><span class="p">,</span> <span class="n">Ed25519PublicKey</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Create a new key pair for signing and verification.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        tuple : A tuple containing the public and private keys</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># create a new key pair</span>
-    <span class="n">private_key</span> <span class="o">=</span> <span class="n">Ed25519PrivateKey</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-    <span class="n">public_key</span> <span class="o">=</span> <span class="n">private_key</span><span class="o">.</span><span class="n">public_key</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">private_key</span><span class="p">,</span> <span class="n">public_key</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -2013,23 +2027,23 @@ Any suggestions for improvements will be very welcome.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/security.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">jwk_from_config_str</span><span class="p">(</span><span class="n">jwk_base64_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">jwk_from_config_str</span><span class="p">(</span><span class="n">jwk_base64_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a JWK from a string that was stored in a config file.</span>
 
@@ -2252,32 +2266,32 @@ Any suggestions for improvements will be very welcome.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/security.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
 <span class="normal">277</span>
-<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">public_from_private_jwk</span><span class="p">(</span><span class="n">private_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">public_from_private_jwk</span><span class="p">(</span><span class="n">private_jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWK</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a public JWK from a private JWK.</span>
 
@@ -2389,28 +2403,7 @@ Any suggestions for improvements will be very welcome.</p>
 
             <details class="quote">
               <summary>Source code in <code>src/sqooler/security.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
 <span class="normal">218</span>
 <span class="normal">219</span>
 <span class="normal">220</span>
@@ -2418,7 +2411,28 @@ Any suggestions for improvements will be very welcome.</p>
 <span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
-<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">sign_payload</span><span class="p">(</span><span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWSDict</span><span class="p">:</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">sign_payload</span><span class="p">(</span><span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">jwk</span><span class="p">:</span> <span class="n">JWK</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JWSDict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert a payload to a JWS object.</span>
 
