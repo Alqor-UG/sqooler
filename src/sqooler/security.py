@@ -6,7 +6,7 @@ Any suggestions for improvements will be very welcome."""
 import base64
 import datetime
 import json
-from typing import Any, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
@@ -138,11 +138,14 @@ class JWSDict(BaseModel):
     https://datatracker.ietf.org/doc/html/rfc7515
     """
 
-    header: JWSHeader = Field(description="The header of the JWS object")
-    payload: dict = Field(description="The payload of the JWS object")
-    signature: str = Field(
-        description="The signature of the JWS objec. It is base64url encoded as a string."
-    )
+    header: Annotated[JWSHeader, Field(description="The header of the JWS object")]
+    payload: Annotated[dict, Field(description="The payload of the JWS object")]
+    signature: Annotated[
+        str,
+        Field(
+            description="The signature of the JWS objec. It is base64url encoded as a string."
+        ),
+    ]
 
     def verify_signature(self, public_jwk: JWK) -> bool:
         """
@@ -183,9 +186,13 @@ class JWSFlat(BaseModel):
     https://datatracker.ietf.org/doc/html/rfc7515
     """
 
-    protected: Base64UrlStr = Field(description="The header of the JWS object")
-    payload: Base64UrlStr = Field(description="The payload of the JWS object")
-    signature: Base64UrlBytes = Field(description="The signature of the JWS object.")
+    protected: Annotated[
+        Base64UrlStr, Field(description="The header of the JWS object")
+    ]
+    payload: Annotated[Base64UrlStr, Field(description="The payload of the JWS object")]
+    signature: Annotated[
+        Base64UrlBytes, Field(description="The signature of the JWS object.")
+    ]
 
 
 def jwk_from_config_str(jwk_base64_str: str) -> JWK:
