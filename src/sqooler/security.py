@@ -13,7 +13,8 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
 )
-from pydantic import Base64UrlStr, BaseModel, Field
+from icecream import ic
+from pydantic import Base64UrlBytes, Base64UrlStr, BaseModel, Field
 
 
 class JWSHeader(BaseModel):
@@ -183,9 +184,9 @@ class JWSFlat(BaseModel):
     https://datatracker.ietf.org/doc/html/rfc7515
     """
 
-    protected: Base64UrlStr
-    payload: Base64UrlStr
-    signature: Base64UrlStr
+    protected: Base64UrlStr = Field(description="The header of the JWS object")
+    payload: Base64UrlStr = Field(description="The payload of the JWS object")
+    signature: Base64UrlBytes = Field(description="The signature of the JWS object.")
 
 
 def jwk_from_config_str(jwk_base64_str: str) -> JWK:
@@ -290,18 +291,3 @@ def public_from_private_jwk(private_jwk: JWK) -> JWK:
         x=private_jwk.x,
     )
     return public_jwk
-
-
-def create_key_pair() -> tuple[Ed25519PrivateKey, Ed25519PublicKey]:
-    """
-    Create a new key pair for signing and verification.
-
-    Returns:
-        tuple : A tuple containing the public and private keys
-    """
-
-    # create a new key pair
-    private_key = Ed25519PrivateKey.generate()
-    public_key = private_key.public_key()
-
-    return private_key, public_key
