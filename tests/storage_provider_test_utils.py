@@ -388,10 +388,11 @@ class StorageProviderTestUtils:
         # now also the datetime
         config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
 
+        ic("start the update")
         storage_provider.update_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
-
+        ic("finished the update")
         # and again also with a poor name in the config_info
         config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
         config_info.display_name = "dummy"

@@ -141,10 +141,8 @@ class JWSDict(BaseModel):
     header: Annotated[JWSHeader, Field(description="The header of the JWS object")]
     payload: Annotated[dict, Field(description="The payload of the JWS object")]
     signature: Annotated[
-        str,
-        Field(
-            description="The signature of the JWS objec. It is base64url encoded as a string."
-        ),
+        Base64UrlBytes,
+        Field(description="The signature of the JWS object."),
     ]
 
     def verify_signature(self, public_jwk: JWK) -> bool:
@@ -163,15 +161,13 @@ class JWSDict(BaseModel):
 
         public_bytes = base64.urlsafe_b64decode(public_jwk.x)
         public_key = Ed25519PublicKey.from_public_bytes(public_bytes)
-        signature_base64 = self.signature.encode("utf-8")  # pylint: disable=no-member
-        signature_decoded = base64.urlsafe_b64decode(signature_base64)
 
         header_base64 = self.header.to_base64url()  # pylint: disable=no-member
         payload_base64 = payload_to_base64url(self.payload)
         full_message = header_base64 + b"." + payload_base64
 
         try:
-            public_key.verify(signature_decoded, full_message)
+            public_key.verify(self.signature, full_message)
             return True
         except InvalidSignature:
             return False
@@ -242,8 +238,7 @@ def sign_payload(payload: dict, jwk: JWK) -> JWSDict:
 
     signature = private_key.sign(full_message)
     signature_base64 = base64.urlsafe_b64encode(signature)
-    signature_str = signature_base64.decode("utf-8")
-    return JWSDict(header=header, payload=payload, signature=signature_str)
+    return JWSDict(header=header, payload=payload, signature=signature_base64)
 
 
 def create_jwk_pair(kid: str) -> tuple[JWK, JWK]:
