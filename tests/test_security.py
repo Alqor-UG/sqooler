@@ -84,7 +84,7 @@ def test_jwk() -> None:
     # can we also get the public key from the private key?
     reloaded_public = public_from_private_jwk(reloaded_jwk)
     assert reloaded_public.d is None
-    assert reloaded_public.x == public_base64
+    assert reloaded_public.x == public_key.public_bytes_raw()
 
     # do we get and error if we try it with a public key input ?
     with pytest.raises(ValueError):

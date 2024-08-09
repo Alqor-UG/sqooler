@@ -12,7 +12,6 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Mapping, Optional
 
 from decouple import config
-from icecream import ic
 
 from ..schemes import (
     AttributeIdStr,
@@ -506,20 +505,16 @@ class StorageProvider(StorageCore):
             None
         """
         config_dict = self._verify_config(config_dict, display_name)
-        ic("I am here.")
         config_path = self.get_attribute_path("configs", display_name=display_name)
-        ic("I am here.")
         config_id = self.get_attribute_id(
             "configs", job_id="", display_name=display_name
         )
         upload_dict = self._format_config_dict(config_dict, private_jwk)
-        ic("I start the upload here.")
         self.upload(
             content_dict=upload_dict,
             storage_path=config_path,
             job_id=config_id,
         )
-        ic("I finished the upload here.")
 
     @abstractmethod
     def update_config(

@@ -9,7 +9,6 @@ import shutil
 import uuid
 from typing import Mapping, Optional
 
-from icecream import ic
 from pathvalidate import validate_filename
 
 from ..schemes import (
@@ -77,7 +76,6 @@ class LocalCore(StorageCore):
             raise FileExistsError(
                 f"The file {secure_path} already exists and should not be overwritten."
             )
-        ic(content_dict)
         with open(secure_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file, default=datetime_handler)
 
