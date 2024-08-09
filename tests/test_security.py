@@ -50,8 +50,7 @@ def test_sign_payload() -> None:
         public_key.verify(signature, wrong_message)
 
     # now test with the signature from the jws object
-    signature_from_jws = base64.urlsafe_b64decode(jws_obj.signature)
-    public_key.verify(signature_from_jws, full_message)
+    public_key.verify(jws_obj.signature, full_message)
 
     # test with poor payload
 
@@ -84,7 +83,7 @@ def test_jwk() -> None:
     # can we also get the public key from the private key?
     reloaded_public = public_from_private_jwk(reloaded_jwk)
     assert reloaded_public.d is None
-    assert reloaded_public.x == public_base64
+    assert reloaded_public.x == public_key.public_bytes_raw()
 
     # do we get and error if we try it with a public key input ?
     with pytest.raises(ValueError):
@@ -150,19 +149,14 @@ def test_flat_jws() -> None:
     b64_header_str = signed_pl.header.to_base64url().decode("utf-8")
     b64_payload_str = payload_to_base64url(signed_pl.payload).decode("utf-8")
 
-    # some tests with the signature
-
-    signature_str = signed_pl.signature.encode("utf-8")
-    signature_bytes = base64.urlsafe_b64decode(signature_str)
-
     # now try to serialize it
     flat_jws = JWSFlat(
         protected=b64_header_str,
         payload=b64_payload_str,
-        signature=signature_str,
+        signature=base64.urlsafe_b64encode(signed_pl.signature),
     )
 
-    assert flat_jws.signature == signature_bytes
+    assert flat_jws.signature == signed_pl.signature
     assert json.loads(flat_jws.payload) == payload
 
     # and are we able to dump it into a json ?
@@ -171,5 +165,5 @@ def test_flat_jws() -> None:
     # and can we load it back?
     json_dict = json.loads(json_jws)
     loaded_jws = JWSFlat(**json_dict)
-    assert loaded_jws.signature == signature_bytes
+    assert loaded_jws.signature == signed_pl.signature
     assert json.loads(loaded_jws.payload) == payload

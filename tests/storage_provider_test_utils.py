@@ -11,7 +11,6 @@ import dropbox
 import pytest
 from decouple import config
 from dropbox.exceptions import ApiError, AuthError
-from icecream import ic
 from pydantic import ValidationError
 from pytest import LogCaptureFixture
 
@@ -316,7 +315,6 @@ class StorageProviderTestUtils:
         # now make sure that we can get the files back
         test_result = storage_provider.get_file_queue("test/subcollection")
 
-        ic(test_result)
         assert len(test_result) >= 2
         # make sure that the .json is not in the file names that are returned
         assert all(".json" not in res_string for res_string in test_result)
@@ -354,8 +352,6 @@ class StorageProviderTestUtils:
 
         with pytest.warns(UserWarning):
             poor_backend_name, poor_config_info = get_dummy_config(sign)
-            ic(poor_config_info.display_name)
-            ic(poor_backend_name)
             poor_config_info.display_name = "dummynone"
             storage_provider.upload_config(
                 poor_config_info,
@@ -391,7 +387,6 @@ class StorageProviderTestUtils:
         storage_provider.update_config(
             config_info, display_name=backend_name, private_jwk=private_jwk
         )
-
         # and again also with a poor name in the config_info
         config_info.last_queue_check = datetime.now(timezone.utc).replace(microsecond=0)
         config_info.display_name = "dummy"
@@ -410,10 +405,9 @@ class StorageProviderTestUtils:
                 )
         with pytest.raises(FileNotFoundError), pytest.warns(UserWarning):
             storage_provider.update_config(config_info, display_name="randonname")
-        ic(backend_name)
+
         # can we get the backend in the list ?
         backends = storage_provider.get_backends()
-        ic(backends)
         assert backend_name in backends
 
         # can we get the config of the backend ?

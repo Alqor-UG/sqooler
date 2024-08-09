@@ -91,14 +91,14 @@ class JWK(BaseModel):
     https://datatracker.ietf.org/doc/html/rfc8037
     """
 
-    x: bytes = Field(
+    x: Base64UrlBytes = Field(
         description="Contain the public key encoded using the base64url encoding"
     )
     key_ops: Literal["sign", "verify"] = Field(
         description="Identifies the operation for which the key is intended to be used"
     )
     kid: str = Field(description="The key id of the key")
-    d: Optional[bytes] = Field(
+    d: Optional[Base64UrlBytes] = Field(
         default=None,
         description="Contains the private key encoded using the base64url encoding.",
     )
@@ -141,10 +141,8 @@ class JWSDict(BaseModel):
     header: Annotated[JWSHeader, Field(description="The header of the JWS object")]
     payload: Annotated[dict, Field(description="The payload of the JWS object")]
     signature: Annotated[
-        str,
-        Field(
-            description="The signature of the JWS objec. It is base64url encoded as a string."
-        ),
+        Base64UrlBytes,
+        Field(description="The signature of the JWS object."),
     ]
 
     def verify_signature(self, public_jwk: JWK) -> bool:
@@ -161,17 +159,14 @@ class JWSDict(BaseModel):
         if not public_jwk.key_ops == "verify":
             raise ValueError("The key is not intended for verification")
 
-        public_bytes = base64.urlsafe_b64decode(public_jwk.x)
-        public_key = Ed25519PublicKey.from_public_bytes(public_bytes)
-        signature_base64 = self.signature.encode("utf-8")  # pylint: disable=no-member
-        signature_decoded = base64.urlsafe_b64decode(signature_base64)
+        public_key = Ed25519PublicKey.from_public_bytes(public_jwk.x)
 
         header_base64 = self.header.to_base64url()  # pylint: disable=no-member
         payload_base64 = payload_to_base64url(self.payload)
         full_message = header_base64 + b"." + payload_base64
 
         try:
-            public_key.verify(signature_decoded, full_message)
+            public_key.verify(self.signature, full_message)
             return True
         except InvalidSignature:
             return False
@@ -237,13 +232,11 @@ def sign_payload(payload: dict, jwk: JWK) -> JWSDict:
     if jwk.d is None:
         raise ValueError("The private key is missing from the JWK")
 
-    private_bytes = base64.urlsafe_b64decode(jwk.d)
-    private_key = Ed25519PrivateKey.from_private_bytes(private_bytes)
+    private_key = Ed25519PrivateKey.from_private_bytes(jwk.d)
 
     signature = private_key.sign(full_message)
     signature_base64 = base64.urlsafe_b64encode(signature)
-    signature_str = signature_base64.decode("utf-8")
-    return JWSDict(header=header, payload=payload, signature=signature_str)
+    return JWSDict(header=header, payload=payload, signature=signature_base64)
 
 
 def create_jwk_pair(kid: str) -> tuple[JWK, JWK]:
@@ -290,10 +283,10 @@ def public_from_private_jwk(private_jwk: JWK) -> JWK:
         raise ValueError(
             "The private key is not intended for signing. Might not be a private key."
         )
-
+    b64_public_key = base64.urlsafe_b64encode(private_jwk.x)
     public_jwk = JWK(
         key_ops="verify",
         kid=private_jwk.kid,
-        x=private_jwk.x,
+        x=b64_public_key,
     )
     return public_jwk

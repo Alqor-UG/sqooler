@@ -851,13 +851,15 @@ class StorageProvider(StorageCore):
                     "The private key is not given, but the backend is configured to sign."
                 )
             if set(old_config_jws.keys()) == expected_keys_for_jws:
+
                 # the old config is signed and we need to check if the private key is the same
-                payload = old_config_jws["payload"]
+                jws_dict = JWSDict(**old_config_jws)
 
                 # now proof that the new private key would create the same signature for the old
                 # config to validate that we still have the same private key
-                test_signature = sign_payload(payload, private_jwk)
-                if not test_signature.signature == old_config_jws["signature"]:
+                test_signature = sign_payload(jws_dict.payload, private_jwk)
+
+                if not test_signature.signature == jws_dict.signature:
                     raise ValueError(
                         "The new private key does not create the same signature as the old one."
                     )
@@ -1103,6 +1105,9 @@ def datetime_handler(in_var: Any) -> str:
     Returns:
         str : The string representation of the object
     """
+
     if isinstance(in_var, datetime):
         return in_var.isoformat()
-    raise TypeError("Unknown type")
+    elif isinstance(in_var, bytes):
+        return in_var.decode("utf-8")
+    raise TypeError("Unknown type {type(in_var)}")

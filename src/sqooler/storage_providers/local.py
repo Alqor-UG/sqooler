@@ -76,7 +76,6 @@ class LocalCore(StorageCore):
             raise FileExistsError(
                 f"The file {secure_path} already exists and should not be overwritten."
             )
-
         with open(secure_path, "w", encoding="utf-8") as json_file:
             json.dump(content_dict, json_file, default=datetime_handler)
 
